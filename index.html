@@ -58,7 +58,7 @@
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* PDF Styling Sempurna Anti Rusak */
+        /* PDF Styling */
         .pdf-mode { background: white !important; color: black !important; padding: 20px !important; font-size: 11px !important; width: 100% !important; }
         .pdf-mode .no-print { display: none !important; }
         .pdf-mode .print-logo { display: block !important; }
@@ -81,16 +81,6 @@
             <img src="logopt2.webp" class="h-20 md:h-28 object-contain animate-bounce hidden dark:block">
             <div class="w-8 h-8 border-4 border-kuningemas border-t-transparent rounded-full animate-spin mt-4"></div>
             <span class="text-xs font-black tracking-widest mt-3 opacity-80 uppercase text-birunavy dark:text-kuningemas">Memuat Sistem...</span>
-        </div>
-    </div>
-
-    <!-- OVERLAY LOADING TRANSPARAN -->
-    <div x-show="isGlobalLoading" x-transition.opacity.duration.300ms class="fixed inset-0 z-[200] bg-black/40 backdrop-blur-sm flex flex-col items-center justify-center">
-        <div class="glass p-6 rounded-3xl shadow-2xl flex flex-col items-center border border-kuningemas/40">
-            <img src="logopt1.webp" class="h-10 w-auto object-contain animate-pulse mb-3 block dark:hidden">
-            <img src="logopt2.webp" class="h-10 w-auto object-contain animate-pulse mb-3 hidden dark:block">
-            <div class="w-6 h-6 border-3 border-kuningemas border-t-transparent rounded-full animate-spin mb-2"></div>
-            <p class="text-xs font-black uppercase tracking-wider text-birunavy dark:text-kuningemas" x-text="globalLoadingText"></p>
         </div>
     </div>
 
@@ -148,7 +138,6 @@
                     <span class="hidden sm:inline">Keluar</span>
                 </button>
                 <div class="w-[1px] h-4 bg-birunavy/20 dark:bg-kuningemas/30"></div>
-                <!-- TOMBOL TEMA DENGAN VEKTOR MATAHARI / BULAN PADAT -->
                 <button @click="toggleTheme()" class="w-8 h-8 rounded-full bg-birunavy/5 dark:bg-white/10 text-birunavy dark:text-kuningemas hover:bg-birunavy/15 transition flex items-center justify-center shadow-inner" title="Ubah Tema">
                     <svg x-show="!isDark" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0 .39-.39.39-1.03 0-1.41l-1.06-1.06zm1.06-10.96c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z"/></svg>
                     <svg x-show="isDark" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12.3 2.01C7.58 1.96 3.82 5.72 3.82 10.45c0 4.26 3.16 7.79 7.3 8.32.55.07.9-.47.66-.96-.65-1.34-.98-2.82-.98-4.31 0-5.52 4.48-10 10-10 .33 0 .66.02.99.06.51.07.9-.43.76-.92C21.14 3.73 17.06 2.06 12.3 2.01z"/></svg>
@@ -175,7 +164,7 @@
             </div>
         </div>
 
-        <!-- NOTIFIKASI TOAST -->
+        <!-- NOTIFIKASI TOAST HANYA MUNCUL SEBENTAR -->
         <div x-show="showToast" x-transition class="no-print fixed top-20 left-1/2 -translate-x-1/2 z-[250] bg-emerald-600 text-white font-black px-6 py-3 rounded-2xl shadow-2xl text-xs tracking-wider uppercase border border-emerald-400 flex items-center gap-2">
             <span>✅</span> <span x-text="toastMessage"></span>
         </div>
@@ -210,7 +199,7 @@
             <div x-show="['pendapatan', 'pengeluaran', 'gaji', 'neraca'].includes(activeTab)" class="mb-6 no-print">
                 <div id="month-scroll-container" class="flex overflow-x-auto gap-2 pb-4 snap-x hide-scrollbar px-1 scroll-smooth">
                     <template x-for="(bulan, index) in months" :key="index">
-                        <button :id="'month-btn-' + (index + 1)" @click="activeMonth = index + 1; scrollToActiveMonth()" 
+                        <button :id="'month-btn-' + (index + 1)" @click="activeMonth = index + 1; saveState()" 
                                 class="snap-center shrink-0 min-w-[100px] md:min-w-[120px] p-3 rounded-2xl border-2 transition-all duration-300 flex justify-center glass active:scale-95"
                                 :class="activeMonth === index + 1 ? 'border-kuningemas bg-birunavy text-kuningemas font-black scale-105 shadow-xl' : 'border-transparent text-birunavy/80 dark:text-kuningemas/80 font-bold'">
                             <span class="text-xs md:text-sm uppercase tracking-wider" x-text="bulan"></span>
@@ -244,7 +233,7 @@
                 </div>
                 <div class="flex flex-col sm:flex-row justify-between items-center mt-5 gap-3">
                     <button @click="tambahBarisGlobal('staffList')" class="no-print w-full sm:w-auto px-6 py-3 bg-birunavy text-kuningemas rounded-xl text-sm font-bold shadow-lg transition hover:opacity-90 flex items-center justify-center gap-2">
-                        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg> Tambah Staff
+                        + Tambah Staff
                     </button>
                     <button @click="simpanKategoriData()" class="no-print w-full sm:w-auto px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-black shadow-lg transition flex items-center justify-center gap-2 active:scale-95">
                         💾 Simpan Data Staff
@@ -574,14 +563,12 @@
                 printAll: false,
                 showToast: false,
                 toastMessage: '',
-                isGlobalLoading: false,
-                globalLoadingText: 'Memproses...',
                 realtimeClock: '',
                 
                 months: ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'],
                 
                 activeYear: 2026,
-                activeMonth: new Date().getMonth() + 1, // Otomatis September (9)
+                activeMonth: new Date().getMonth() + 1, // September (9)
                 availableYears: [2026, 2027, 2028, 2029, 2030, 2031],
 
                 tabs: [
@@ -608,7 +595,7 @@
                     this.updateClock();
                     setInterval(() => this.updateClock(), 1000);
 
-                    // Memuat memori sesi tab terakhir, tapi BULAN dan TAHUN dipaksa ke waktu live (September 2026)
+                    // Memuat tab terakhir, tapi BULAN dipaksa ke bulan saat ini secara mutlak
                     const lastState = localStorage.getItem('sistemKeuanganMTM_ActiveTab');
                     if (lastState) {
                         try {
@@ -716,27 +703,18 @@
                 },
 
                 simpanKategoriData() {
-                    this.globalLoadingText = "Menyimpan Data...";
-                    this.isGlobalLoading = true;
                     this.initYear(this.activeYear);
-
-                    // Simpan instan ke LocalStorage
                     localStorage.setItem('sistemKeuanganMTM_Storage', JSON.stringify(this.data));
 
-                    setTimeout(() => {
-                        if (this.isLoggedIn && firebase.auth().currentUser) {
-                            dbRef.set(this.data).then(() => {
-                                this.isGlobalLoading = false;
-                                this.triggerToast("Data Berhasil Disimpan ke Cloud & Lokal!");
-                            }).catch(err => {
-                                this.isGlobalLoading = false;
-                                this.triggerToast("Tersimpan di Lokal (Cloud Gagal)");
-                            });
-                        } else {
-                            this.isGlobalLoading = false;
-                            this.triggerToast("Data Berhasil Disimpan secara Lokal!");
-                        }
-                    }, 600);
+                    if (this.isLoggedIn && firebase.auth().currentUser) {
+                        dbRef.set(this.data).then(() => {
+                            this.triggerToast("Data Berhasil Disimpan ke Cloud & Lokal!");
+                        }).catch(err => {
+                            this.triggerToast("Tersimpan di Lokal (Cloud Gagal)");
+                        });
+                    } else {
+                        this.triggerToast("Data Berhasil Disimpan secara Lokal!");
+                    }
                 },
 
                 triggerToast(msg) {
@@ -858,8 +836,6 @@
                 },
 
                 downloadRABPDF() {
-                    this.globalLoadingText = "Memproses Dokumen PDF...";
-                    this.isGlobalLoading = true;
                     const originalTab = this.activeTab;
                     this.activeTab = 'rab';
                     document.getElementById('pdf-header').classList.remove('hidden');
@@ -878,28 +854,23 @@
                             element.classList.remove('pdf-mode');
                             document.getElementById('pdf-header').classList.add('hidden');
                             this.activeTab = originalTab;
-                            this.isGlobalLoading = false;
                         }).catch(err => {
                             alert("Gagal cetak PDF: " + err);
                             element.classList.remove('pdf-mode');
                             document.getElementById('pdf-header').classList.add('hidden');
                             this.activeTab = originalTab;
-                            this.isGlobalLoading = false;
                         });
-                    }, 600);
+                    }, 300);
                 },
 
                 downloadPDF(mode) {
-                    this.globalLoadingText = "Memproses Laporan PDF...";
-                    this.isGlobalLoading = true;
                     let filename = mode === 'all' ? `Laporan_CFO_Tahunan_${this.activeYear}.pdf` : `Laporan_${this.activeTab.toUpperCase()}_${this.months[this.activeMonth-1]}_${this.activeYear}.pdf`;
                     if (mode !== 'all' && this.activeTab === 'staff') {
-                        this.isGlobalLoading = false;
                         return alert('Gunakan tab laporan atau RAB untuk mengunduh PDF.');
                     }
 
                     if (mode === 'all') this.printAll = true;
-                    document.getElementById('pdf-header').classList.add('hidden');
+                    document.getElementById('pdf-header').classList.remove('hidden');
 
                     setTimeout(() => {
                         const element = document.getElementById('print-area');
@@ -917,15 +888,13 @@
                             element.classList.remove('pdf-mode');
                             document.getElementById('pdf-header').classList.add('hidden');
                             if (mode === 'all') this.printAll = false;
-                            this.isGlobalLoading = false;
                         }).catch(err => {
                             alert("Gagal cetak PDF: " + err);
                             element.classList.remove('pdf-mode');
                             document.getElementById('pdf-header').classList.add('hidden');
                             if (mode === 'all') this.printAll = false;
-                            this.isGlobalLoading = false;
                         });
-                    }, 600);
+                    }, 300);
                 }
             }));
         });
