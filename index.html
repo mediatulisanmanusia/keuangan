@@ -74,13 +74,13 @@
       x-data="keuanganApp()" 
       x-init="initApp()">
 
-    <!-- 1. SPLASH SCREEN (Menggunakan logopt.webp & logopt2.webp) -->
+    <!-- 1. SPLASH SCREEN -->
     <div x-show="isSplash" x-transition.opacity.duration.1000ms class="fixed inset-0 z-[100] bg-light-theme flex flex-col items-center justify-center">
         <img src="logopt.webp" class="h-24 md:h-32 object-contain animate-pulse block dark:hidden">
         <img src="logopt2.webp" class="h-24 md:h-32 object-contain animate-pulse hidden dark:block">
     </div>
 
-    <!-- 2. HALAMAN LOGIN (Menggunakan logopt.webp & logopt2.webp) -->
+    <!-- 2. HALAMAN LOGIN -->
     <div x-show="!isSplash && !isLoggedIn" x-transition class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="glass w-full max-w-md p-8 rounded-3xl text-center shadow-2xl border-t-4 border-kuningemas relative overflow-hidden">
             <img src="logopt.webp" class="h-16 mx-auto mb-6 block dark:hidden">
@@ -120,7 +120,7 @@
     <!-- 3. SISTEM APLIKASI UTAMA -->
     <div x-show="!isSplash && isLoggedIn" x-transition class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 flex-grow w-full relative">
         
-        <!-- GELEMBUNG MELAYANG DI ATAS (Menggunakan rev1.webp & rev2.webp) -->
+        <!-- GELEMBUNG MELAYANG DI ATAS -->
         <div class="fixed top-3 left-4 right-4 md:left-8 md:right-8 z-50 glass px-4 py-2.5 rounded-full flex items-center justify-between shadow-xl no-print border border-birunavy/15 dark:border-kuningemas/30 backdrop-blur-md">
             <div class="flex items-center gap-2">
                 <img src="rev1.webp" class="h-7 w-auto object-contain block dark:hidden">
@@ -146,7 +146,8 @@
                 <h1 class="text-lg md:text-2xl font-black text-birunavy dark:text-kuningemas tracking-widest uppercase">SISTEM KEUANGAN MTM</h1>
             </div>
             
-            <div class="mt-2 text-xs font-bold opacity-75 tracking-wider no-print uppercase text-birunavy dark:text-kuningemas" x-text="realtimeClock"></div>
+            <!-- Font Tanggal & Jam Diperkecil Menjadi Sangat Estetik (text-[10px] md:text-xs) -->
+            <div class="mt-2 text-[10px] md:text-xs font-semibold opacity-70 tracking-widest no-print uppercase text-birunavy dark:text-kuningemas" x-text="realtimeClock"></div>
 
             <div class="hidden print-only-header mb-6 text-center">
                 <h1 class="text-2xl font-bold uppercase border-b-2 border-black pb-2">Laporan Keuangan <span x-text="months[activeMonth-1]"></span> <span x-text="activeYear"></span></h1>
@@ -185,7 +186,7 @@
             <div x-show="['pendapatan', 'pengeluaran', 'gaji', 'neraca'].includes(activeTab) && !printAll" class="mb-6 no-print">
                 <div class="flex overflow-x-auto gap-2 pb-4 snap-x hide-scrollbar px-1">
                     <template x-for="(bulan, index) in months" :key="index">
-                        <button @click="activeMonth = index + 1; saveState()" 
+                        <button @click="activeMonth = index + 1" 
                                 class="snap-center shrink-0 min-w-[100px] md:min-w-[120px] p-3 rounded-2xl border-2 transition-all duration-300 flex justify-center glass"
                                 :class="activeMonth === index + 1 ? 'border-kuningemas bg-birunavy text-kuningemas font-black scale-105 shadow-xl' : 'border-transparent text-birunavy/80 dark:text-kuningemas/80 font-bold'">
                             <span class="text-xs md:text-sm uppercase tracking-wider" x-text="bulan"></span>
@@ -483,7 +484,7 @@
     <!-- DOCK MENU NAVIGASI BAWAH -->
     <nav x-show="!isSplash && isLoggedIn" x-transition class="fixed bottom-3 md:bottom-6 left-1/2 -translate-x-1/2 z-50 glass px-1.5 py-1.5 rounded-full flex items-center gap-1 md:gap-2 shadow-2xl no-print border border-birunavy/10 dark:border-kuningemas/30 backdrop-blur-xl">
         <template x-for="tab in tabs" :key="tab.id">
-            <button @click="activeTab = tab.id; saveState()" 
+            <button @click="activeTab = tab.id" 
                     class="group flex items-center justify-center rounded-full transition-all duration-300 ease-out h-10 md:h-12 overflow-hidden outline-none"
                     :class="activeTab === tab.id ? 'bg-kuningemas text-birunavy dark:bg-birunavy dark:text-kuningemas px-4 md:px-5 shadow border border-birunavy/20' : 'w-10 md:w-12 text-birunavy dark:text-kuningemas hover:bg-birunavy/10 dark:hover:bg-white/10'">
                 <div class="w-5 h-5 flex items-center justify-center shrink-0" x-html="tab.icon"></div>
@@ -558,16 +559,6 @@
                     this.updateClock();
                     setInterval(() => this.updateClock(), 1000);
 
-                    const lastState = localStorage.getItem('sistemKeuanganMTM_State');
-                    if (lastState) {
-                        try {
-                            const parsed = JSON.parse(lastState);
-                            if (parsed.year) this.activeYear = parsed.year;
-                            if (parsed.month) this.activeMonth = parsed.month;
-                            if (parsed.tab) this.activeTab = parsed.tab;
-                        } catch(e) {}
-                    }
-
                     setTimeout(() => {
                         this.isSplash = false;
                         this.checkAuthStatus();
@@ -580,18 +571,9 @@
                     this.realtimeClock = now.toLocaleDateString('id-ID', options) + ' WIB';
                 },
 
-                saveState() {
-                    localStorage.setItem('sistemKeuanganMTM_State', JSON.stringify({
-                        year: this.activeYear,
-                        month: this.activeMonth,
-                        tab: this.activeTab
-                    }));
-                },
-
                 gantiTahun(year) {
                     this.activeYear = year;
                     this.initYear(year);
-                    this.saveState();
                 },
 
                 checkAuthStatus() {
@@ -621,7 +603,7 @@
                 },
 
                 loadLocalData() {
-                    const saved = localStorage.getItem('sistemKeuanganMTM_V13');
+                    const saved = localStorage.getItem('sistemKeuanganMTM_V15');
                     if (saved) {
                         this.data = JSON.parse(saved);
                     }
@@ -655,7 +637,7 @@
                             alert("Gagal menyimpan ke cloud: " + err.message);
                         });
                     } else {
-                        localStorage.setItem('sistemKeuanganMTM_V13', JSON.stringify(this.data));
+                        localStorage.setItem('sistemKeuanganMTM_V15', JSON.stringify(this.data));
                         this.tampilNotif();
                     }
                 },
