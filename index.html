@@ -58,7 +58,7 @@
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* PDF Styling */
+        /* PDF Styling Bersih & Presisi */
         .pdf-mode { background: white !important; color: black !important; padding: 20px !important; font-size: 11px !important; width: 100% !important; }
         .pdf-mode .no-print { display: none !important; }
         .pdf-mode .print-logo { display: block !important; }
@@ -164,7 +164,7 @@
             </div>
         </div>
 
-        <!-- NOTIFIKASI TOAST HANYA MUNCUL SEBENTAR -->
+        <!-- NOTIFIKASI TOAST -->
         <div x-show="showToast" x-transition class="no-print fixed top-20 left-1/2 -translate-x-1/2 z-[250] bg-emerald-600 text-white font-black px-6 py-3 rounded-2xl shadow-2xl text-xs tracking-wider uppercase border border-emerald-400 flex items-center gap-2">
             <span>✅</span> <span x-text="toastMessage"></span>
         </div>
@@ -195,7 +195,7 @@
         <!-- AREA CETAK UTAMA -->
         <div id="print-area" class="w-full">
 
-            <!-- Sub-Menu 12 Bulan (Auto Scroll Aktif) -->
+            <!-- Sub-Menu 12 Bulan (Auto Scroll Otomatis ke Bulan Berjalan) -->
             <div x-show="['pendapatan', 'pengeluaran', 'gaji', 'neraca'].includes(activeTab)" class="mb-6 no-print">
                 <div id="month-scroll-container" class="flex overflow-x-auto gap-2 pb-4 snap-x hide-scrollbar px-1 scroll-smooth">
                     <template x-for="(bulan, index) in months" :key="index">
@@ -595,7 +595,10 @@
                     this.updateClock();
                     setInterval(() => this.updateClock(), 1000);
 
-                    // Memuat tab terakhir, tapi BULAN dipaksa ke bulan saat ini secara mutlak
+                    // Paksa bulan aktif ke September (9) secara mutlak saat pertama kali dimuat
+                    this.activeMonth = new Date().getMonth() + 1;
+
+                    // Memuat tab terakhir yang diakses pengguna
                     const lastState = localStorage.getItem('sistemKeuanganMTM_ActiveTab');
                     if (lastState) {
                         try {
@@ -608,7 +611,7 @@
                         this.isSplash = false;
                         this.checkAuthStatus();
                         this.scrollToActiveMonth();
-                    }, 1000);
+                    }, 800);
                 },
 
                 saveState() {
@@ -901,3 +904,4 @@
     </script>
 </body>
 </html>
+
