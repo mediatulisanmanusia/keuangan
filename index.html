@@ -61,11 +61,11 @@
         .pdf-mode .print-logo { display: block !important; }
         .pdf-mode .no-print-logo { display: none !important; }
 
-        .pdf-mode { background: white !important; color: black !important; padding: 5px !important; font-size: 11px !important; }
+        .pdf-mode { background: white !important; color: black !important; padding: 5px !important; font-size: 10px !important; }
         .pdf-mode .glass { background: transparent !important; backdrop-filter: none !important; box-shadow: none !important; border: none !important; border-radius: 0 !important; }
         .pdf-mode * { color: black !important; border-color: #333 !important; }
-        .pdf-mode table { width: 100% !important; border-collapse: collapse !important; margin-bottom: 15px !important; font-size: 10px !important; table-layout: auto !important; }
-        .pdf-mode th, .pdf-mode td { border: 1px solid #000 !important; padding: 5px 8px !important; word-wrap: break-word !important; }
+        .pdf-mode table { width: 100% !important; border-collapse: collapse !important; margin-bottom: 12px !important; font-size: 9px !important; table-layout: auto !important; }
+        .pdf-mode th, .pdf-mode td { border: 1px solid #000 !important; padding: 4px 6px !important; word-wrap: break-word !important; }
         .pdf-mode th { background-color: #e5e7eb !important; font-weight: bold !important; -webkit-print-color-adjust: exact; }
         .pdf-mode input, .pdf-mode select { border: none !important; background: transparent !important; appearance: none !important; padding: 0 !important; font-weight: inherit !important; color: black !important; }
     </style>
@@ -122,12 +122,13 @@
     <!-- 3. SISTEM APLIKASI UTAMA -->
     <div x-show="!isSplash && isLoggedIn" x-transition class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 flex-grow w-full relative">
         
-        <button @click="logout" class="fixed top-4 left-4 z-50 glass rounded-full p-3 text-red-500 hover:bg-red-50 transition shadow-lg no-print" title="Keluar Akun">
+        <!-- Tombol Logout di Kiri & Mode Tema di Kanan -->
+        <button @click="logout" class="fixed top-4 left-4 z-50 glass rounded-full p-3 text-red-500 hover:bg-red-50 transition shadow-lg no-print flex items-center justify-center" title="Keluar Akun">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
         </button>
-        <button @click="toggleTheme()" class="fixed top-4 right-4 z-50 glass rounded-full p-3 text-kuningemas hover:opacity-80 transition shadow-lg no-print" title="Ubah Tema">
-            <svg x-show="!isDark" class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
-            <svg x-show="isDark" class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+        <button @click="toggleTheme()" class="fixed top-4 right-4 z-50 glass rounded-full p-3 text-kuningemas hover:opacity-80 transition shadow-lg no-print flex items-center justify-center" title="Ubah Tema">
+            <svg x-show="!isDark" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+            <svg x-show="isDark" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
         </button>
 
         <div class="text-center mb-8 pt-4">
@@ -138,6 +139,9 @@
                 <h1 class="text-xl md:text-3xl font-black text-birunavy dark:text-kuningemas tracking-widest uppercase">SISTEM KEUANGAN</h1>
             </div>
             
+            <!-- Jam & Tanggal Realtime di Atas -->
+            <div class="mt-2 text-xs font-bold opacity-70 tracking-widest no-print uppercase text-birunavy dark:text-kuningemas" x-text="realtimeClock"></div>
+
             <div class="hidden print-only-header mb-6 text-center">
                 <h1 class="text-2xl font-bold uppercase border-b-2 border-black pb-2">Laporan Keuangan <span x-text="months[activeMonth-1]"></span> <span x-text="activeYear"></span></h1>
             </div>
@@ -246,34 +250,38 @@
                 <button @click="tambahBarisGlobal('rab')" class="no-print mt-5 px-6 py-3 bg-birunavy text-kuningemas rounded-xl text-sm font-bold shadow-lg transition hover:opacity-90">+ Tambah Baris RAB</button>
             </div>
 
-            <!-- Tab: Pendapatan -->
+            <!-- Tab: Pendapatan (Dilengkapi Tanggal, Barang/Uraian, Klien, Harga, Jumlah, Total) -->
             <div x-show="activeTab === 'pendapatan' || printAll" class="glass rounded-3xl p-5 md:p-8 mb-6">
                 <h2 class="text-xl md:text-2xl font-black mb-6 text-birunavy dark:text-kuningemas uppercase border-b-2 border-kuningemas/30 pb-3">Pendapatan - <span x-text="months[activeMonth-1]"></span></h2>
                 <div class="overflow-x-auto rounded-xl border border-birunavy/10 dark:border-kuningemas/20">
-                    <table class="w-full text-left min-w-[700px]">
+                    <table class="w-full text-left min-w-[850px]">
                         <thead class="bg-birunavy/5 dark:bg-birunavy text-birunavy dark:text-kuningemas">
                             <tr class="text-xs md:text-sm uppercase tracking-wider border-b border-birunavy/10 dark:border-kuningemas/20">
-                                <th class="p-4">Sumber Pendapatan</th>
-                                <th class="p-4 w-40">Nominal (Rp)</th>
-                                <th class="p-4 w-24">Jumlah</th>
-                                <th class="p-4 w-40">Total Omset</th>
-                                <th class="p-4 w-16 text-center no-print">Opsi</th>
+                                <th class="p-3 w-32">Tanggal</th>
+                                <th class="p-3">Uraian / Barang</th>
+                                <th class="p-3">Klien / Sumber</th>
+                                <th class="p-3 w-36">Harga (Rp)</th>
+                                <th class="p-3 w-20 text-center">Jml</th>
+                                <th class="p-3 w-36">Total Omset</th>
+                                <th class="p-3 w-16 text-center no-print">Opsi</th>
                             </tr>
                         </thead>
                         <tbody x-data="{ items: getDataBulanan('pendapatan') }">
                             <template x-for="(item, index) in items" :key="index">
                                 <tr class="border-b border-birunavy/5 dark:border-kuningemas/10">
-                                    <td class="p-3"><input type="text" x-model="item.nama" class="w-full p-2.5 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold"></td>
-                                    <td class="p-3"><input type="number" x-model.number="item.biaya" class="w-full p-2.5 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold"></td>
-                                    <td class="p-3"><input type="number" x-model.number="item.jumlah" class="w-full p-2.5 bg-transparent border-none text-center font-semibold"></td>
-                                    <td class="p-4 font-black text-green-700 dark:text-green-400" x-text="formatRp(item.biaya * item.jumlah)"></td>
-                                    <td class="p-3 text-center no-print"><button @click="hapusBarisBulan('pendapatan', index)" class="text-red-500 font-black text-xl hover:scale-125 transition">✕</button></td>
+                                    <td class="p-2"><input type="date" x-model="item.tanggal" class="w-full p-2 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas text-xs font-semibold"></td>
+                                    <td class="p-2"><input type="text" x-model="item.nama" class="w-full p-2 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold" placeholder="Nama barang/jasa..."></td>
+                                    <td class="p-2"><input type="text" x-model="item.klien" class="w-full p-2 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold" placeholder="Nama klien..."></td>
+                                    <td class="p-2"><input type="number" x-model.number="item.biaya" class="w-full p-2 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold"></td>
+                                    <td class="p-2"><input type="number" x-model.number="item.jumlah" class="w-full p-2 bg-transparent border-none text-center font-semibold"></td>
+                                    <td class="p-3 font-black text-green-700 dark:text-green-400" x-text="formatRp(item.biaya * item.jumlah)"></td>
+                                    <td class="p-2 text-center no-print"><button @click="hapusBarisBulan('pendapatan', index)" class="text-red-500 font-black text-xl hover:scale-125 transition">✕</button></td>
                                 </tr>
                             </template>
                         </tbody>
                         <tfoot class="bg-green-50 dark:bg-green-900/40 text-green-700 dark:text-green-400">
                             <tr>
-                                <td colspan="3" class="p-4 text-right font-black uppercase text-sm">Total Omset Bulan Ini:</td>
+                                <td colspan="5" class="p-4 text-right font-black uppercase text-sm">Total Omset Bulan Ini:</td>
                                 <td colspan="2" class="p-4 font-black text-lg" x-text="formatRp(hitungTotalBulan('pendapatan'))"></td>
                             </tr>
                         </tfoot>
@@ -282,34 +290,38 @@
                 <button @click="tambahBarisBulan('pendapatan')" class="no-print mt-5 px-6 py-3 bg-birunavy text-kuningemas rounded-xl text-sm font-bold shadow-lg transition hover:opacity-90">+ Tambah Sumber Dana</button>
             </div>
 
-            <!-- Tab: Pengeluaran -->
+            <!-- Tab: Pengeluaran (Dilengkapi Tanggal, Nama Barang, Penanggung Jawab, Harga, Jumlah, Total) -->
             <div x-show="activeTab === 'pengeluaran' || printAll" class="glass rounded-3xl p-5 md:p-8 mb-6">
                 <h2 class="text-xl md:text-2xl font-black mb-6 text-birunavy dark:text-kuningemas uppercase border-b-2 border-kuningemas/30 pb-3">Pengeluaran - <span x-text="months[activeMonth-1]"></span></h2>
                 <div class="overflow-x-auto rounded-xl border border-birunavy/10 dark:border-kuningemas/20">
-                    <table class="w-full text-left min-w-[700px]">
+                    <table class="w-full text-left min-w-[850px]">
                         <thead class="bg-birunavy/5 dark:bg-birunavy text-birunavy dark:text-kuningemas">
                             <tr class="text-xs md:text-sm uppercase tracking-wider border-b border-birunavy/10 dark:border-kuningemas/20">
-                                <th class="p-4">Keterangan Belanja</th>
-                                <th class="p-4 w-40">Biaya (Rp)</th>
-                                <th class="p-4 w-24">Jumlah</th>
-                                <th class="p-4 w-40">Total Keluaran</th>
-                                <th class="p-4 w-16 text-center no-print">Opsi</th>
+                                <th class="p-3 w-32">Tanggal</th>
+                                <th class="p-3">Nama Barang / Keperluan</th>
+                                <th class="p-3">Penanggung Jawab</th>
+                                <th class="p-3 w-36">Harga (Rp)</th>
+                                <th class="p-3 w-20 text-center">Jml</th>
+                                <th class="p-3 w-36">Total Keluaran</th>
+                                <th class="p-3 w-16 text-center no-print">Opsi</th>
                             </tr>
                         </thead>
                         <tbody x-data="{ items: getDataBulanan('pengeluaran') }">
                             <template x-for="(item, index) in items" :key="index">
                                 <tr class="border-b border-birunavy/5 dark:border-kuningemas/10">
-                                    <td class="p-3"><input type="text" x-model="item.nama" class="w-full p-2.5 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold"></td>
-                                    <td class="p-3"><input type="number" x-model.number="item.biaya" class="w-full p-2.5 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold"></td>
-                                    <td class="p-3"><input type="number" x-model.number="item.jumlah" class="w-full p-2.5 bg-transparent border-none text-center font-semibold"></td>
-                                    <td class="p-4 font-black text-red-600 dark:text-red-400" x-text="formatRp(item.biaya * item.jumlah)"></td>
-                                    <td class="p-3 text-center no-print"><button @click="hapusBarisBulan('pengeluaran', index)" class="text-red-500 font-black text-xl hover:scale-125 transition">✕</button></td>
+                                    <td class="p-2"><input type="date" x-model="item.tanggal" class="w-full p-2 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas text-xs font-semibold"></td>
+                                    <td class="p-2"><input type="text" x-model="item.nama" class="w-full p-2 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold" placeholder="Nama barang..."></td>
+                                    <td class="p-2"><input type="text" x-model="item.pic" class="w-full p-2 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold" placeholder="Penanggung jawab..."></td>
+                                    <td class="p-2"><input type="number" x-model.number="item.biaya" class="w-full p-2 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold"></td>
+                                    <td class="p-2"><input type="number" x-model.number="item.jumlah" class="w-full p-2 bg-transparent border-none text-center font-semibold"></td>
+                                    <td class="p-3 font-black text-red-600 dark:text-red-400" x-text="formatRp(item.biaya * item.jumlah)"></td>
+                                    <td class="p-2 text-center no-print"><button @click="hapusBarisBulan('pengeluaran', index)" class="text-red-500 font-black text-xl hover:scale-125 transition">✕</button></td>
                                 </tr>
                             </template>
                         </tbody>
                         <tfoot class="bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400">
                             <tr>
-                                <td colspan="3" class="p-4 text-right font-black uppercase text-sm">Total Belanja Operasional:</td>
+                                <td colspan="5" class="p-4 text-right font-black uppercase text-sm">Total Belanja Operasional:</td>
                                 <td colspan="2" class="p-4 font-black text-lg" x-text="formatRp(hitungTotalBulan('pengeluaran'))"></td>
                             </tr>
                         </tfoot>
@@ -444,13 +456,13 @@
         </div> <!-- End Print Area -->
     </div>
 
-    <!-- DOCK MENU NAVIGASI BAWAH -->
+    <!-- DOCK MENU NAVIGASI BAWAH (Menggunakan Ikon Vektor SVG Solid yang Dijamin Muncul) -->
     <nav x-show="!isSplash && isLoggedIn" x-transition class="fixed bottom-3 md:bottom-6 left-1/2 -translate-x-1/2 z-50 glass px-1.5 py-1.5 rounded-full flex items-center gap-1 md:gap-2 shadow-2xl no-print border border-birunavy/10 dark:border-kuningemas/30 backdrop-blur-xl">
         <template x-for="tab in tabs" :key="tab.id">
             <button @click="activeTab = tab.id; saveState()" 
                     class="group flex items-center justify-center rounded-full transition-all duration-300 ease-out h-10 md:h-12 overflow-hidden outline-none"
                     :class="activeTab === tab.id ? 'bg-kuningemas text-birunavy dark:bg-birunavy dark:text-kuningemas px-4 md:px-5 shadow border border-birunavy/20' : 'w-10 md:w-12 text-birunavy dark:text-kuningemas hover:bg-birunavy/10 dark:hover:bg-white/10'">
-                <span class="text-base" x-text="tab.icon"></span>
+                <div class="w-5 h-5 flex items-center justify-center shrink-0" x-html="tab.icon"></div>
                 <span x-show="activeTab === tab.id" class="ml-2 font-black text-[10px] md:text-xs tracking-widest uppercase whitespace-nowrap">
                     <span x-text="tab.label"></span>
                 </span>
@@ -492,6 +504,7 @@
                 showSaveToast: false,
                 saveTimeout: null,
                 isLoadedFromCloud: false,
+                realtimeClock: '',
                 
                 months: ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'],
                 
@@ -499,13 +512,14 @@
                 activeMonth: new Date().getMonth() + 1,
                 availableYears: Array.from({length: 6}, (_, i) => 2025 + i),
 
+                // Ikon Vektor SVG Solid Berkualitas Tinggi
                 tabs: [
-                    { id: 'staff', label: 'Staff', icon: '👥' },
-                    { id: 'rab', label: 'RAB', icon: '📋' },
-                    { id: 'pendapatan', label: 'Masuk', icon: '📥' },
-                    { id: 'pengeluaran', label: 'Keluar', icon: '📤' },
-                    { id: 'gaji', label: 'Gaji', icon: '💵' },
-                    { id: 'neraca', label: 'Neraca', icon: '📊' }
+                    { id: 'staff', label: 'Staff', icon: '<svg fill="currentColor" viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>' },
+                    { id: 'rab', label: 'RAB', icon: '<svg fill="currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>' },
+                    { id: 'pendapatan', label: 'Masuk', icon: '<svg fill="currentColor" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>' },
+                    { id: 'pengeluaran', label: 'Keluar', icon: '<svg fill="currentColor" viewBox="0 0 24 24"><path d="M19 13H5v-2h14v2z"/></svg>' },
+                    { id: 'gaji', label: 'Gaji', icon: '<svg fill="currentColor" viewBox="0 0 24 24"><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>' },
+                    { id: 'neraca', label: 'Neraca', icon: '<svg fill="currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg>' }
                 ],
                 
                 data: {
@@ -519,6 +533,10 @@
                         this.isDark = true;
                         document.documentElement.classList.add('dark');
                     }
+
+                    // Jam Realtime otomatis update setiap detik
+                    this.updateClock();
+                    setInterval(() => this.updateClock(), 1000);
 
                     const lastState = localStorage.getItem('sistemKeuanganMTM_State');
                     if (lastState) {
@@ -534,6 +552,12 @@
                         this.isSplash = false;
                         this.checkAuthStatus();
                     }, 3000);
+                },
+
+                updateClock() {
+                    const now = new Date();
+                    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
+                    this.realtimeClock = now.toLocaleDateString('id-ID', options) + ' WIB';
                 },
 
                 saveState() {
@@ -569,7 +593,7 @@
                 },
                 loginGoogle() {
                     let provider = new firebase.auth.GoogleAuthProvider();
-                    firebase.auth().signInWithRedirect(provider);
+                    firebase.auth().signInWithPopup(provider).catch(err => alert("Gagal login Google: " + err.message));
                 },
                 loginOffline() {
                     this.isLoggedIn = true;
@@ -582,7 +606,7 @@
                 },
 
                 loadLocalData() {
-                    const saved = localStorage.getItem('sistemKeuanganMTM_V7');
+                    const saved = localStorage.getItem('sistemKeuanganMTM_V8');
                     if (saved) {
                         this.data = JSON.parse(saved);
                     }
@@ -599,10 +623,8 @@
                         }
                         this.isLoadedFromCloud = true;
                         
-                        // Setelah data dari cloud sukses ditarik, pasang listener live-sync
                         dbRef.on('value', (snap) => {
                             if (snap.exists() && this.isLoadedFromCloud) {
-                                // Hanya perbarui jika ada perubahan dari device lain
                                 let remoteData = snap.val();
                                 if (JSON.stringify(remoteData) !== JSON.stringify(this.data)) {
                                     this.data = remoteData;
@@ -612,7 +634,6 @@
                     });
                 },
                 autoSave() {
-                    // Jangan simpan otomatis jika data belum selesai dimuat dari cloud
                     if (!this.isLoadedFromCloud && this.isLoggedIn) return;
 
                     clearTimeout(this.saveTimeout);
@@ -620,7 +641,7 @@
                         if(this.isLoggedIn && firebase.auth().currentUser) {
                             dbRef.set(this.data).then(() => this.tampilNotif());
                         } else {
-                            localStorage.setItem('sistemKeuanganMTM_V7', JSON.stringify(this.data));
+                            localStorage.setItem('sistemKeuanganMTM_V8', JSON.stringify(this.data));
                             this.tampilNotif();
                         }
                     }, 500);
@@ -636,8 +657,8 @@
                         this.data.years[year] = {};
                         for(let i=1; i<=12; i++) {
                             this.data.years[year][i] = {
-                                pendapatan: [{ nama: '', biaya: 0, jumlah: 1 }],
-                                pengeluaran: [{ nama: '', biaya: 0, jumlah: 1 }],
+                                pendapatan: [{ tanggal: '', nama: '', klien: '', biaya: 0, jumlah: 1 }],
+                                pengeluaran: [{ tanggal: '', nama: '', pic: '', biaya: 0, jumlah: 1 }],
                                 gaji: [{ nama: '', jasa: 0, keuntungan: 20 }]
                             };
                         }
@@ -680,8 +701,10 @@
                     }
                     if (kategori === 'gaji') {
                         this.data.years[this.activeYear][this.activeMonth][kategori].push({ nama: '', jasa: 0, keuntungan: 20 });
+                    } else if (kategori === 'pendapatan') {
+                        this.data.years[this.activeYear][this.activeMonth][kategori].push({ tanggal: '', nama: '', klien: '', biaya: 0, jumlah: 1 });
                     } else {
-                        this.data.years[this.activeYear][this.activeMonth][kategori].push({ nama: '', biaya: 0, jumlah: 1 });
+                        this.data.years[this.activeYear][this.activeMonth][kategori].push({ tanggal: '', nama: '', pic: '', biaya: 0, jumlah: 1 });
                     }
                     this.autoSave();
                 },
@@ -735,10 +758,10 @@
                         element.classList.add('pdf-mode');
                         
                         const opt = {
-                            margin:       0.4,
+                            margin:       0.3,
                             filename:     filename,
                             image:        { type: 'jpeg', quality: 0.98 },
-                            html2canvas:  { scale: 2, useCORS: true, windowWidth: 800 }, 
+                            html2canvas:  { scale: 2, useCORS: true, windowWidth: 900 }, 
                             jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
                         };
 
@@ -754,4 +777,3 @@
     </script>
 </body>
 </html>
-
