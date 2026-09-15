@@ -62,7 +62,7 @@
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* PERBAIKAN PDF KESELURUHAN (REKAP) */
+        /* PERBAIKAN MUTLAK PDF MODE KESELURUHAN */
         .pdf-mode { 
             background: white !important; color: black !important; padding: 20px !important; 
             font-size: 11px !important; width: 1000px !important; max-width: none !important; margin: 0 auto !important; 
@@ -82,7 +82,8 @@
         .pdf-mode th { background-color: #f3f4f6 !important; font-weight: bold !important; -webkit-print-color-adjust: exact; text-align: left !important; }
         .pdf-mode tfoot td { background-color: #e5e7eb !important; font-weight: 900 !important; -webkit-print-color-adjust: exact; }
         
-        .pdf-page-break { page-break-before: always !important; padding-top: 20px !important; }
+        /* Class khusus yang hanya aktif saat cetak PDF (Supaya layar HP tetap rapi) */
+        .pdf-mode .pdf-page-break { page-break-before: always !important; padding-top: 30px !important; }
         
         .pdf-text { display: none; }
         .pdf-mode .pdf-text { display: inline-block; font-weight: 600; }
@@ -94,122 +95,182 @@
       x-data="keuanganApp()" 
       x-init="initApp()">
 
-    <!-- TEMPLATE SLIP GAJI (Off-screen rendering agar PDF pasti terisi) -->
-    <div id="slip-gaji-print" class="bg-white text-black p-10 absolute w-[800px] z-[-9999]" style="left: -9999px; top: 0;">
-        <div class="flex items-center justify-between border-b-4 border-birunavy pb-4 mb-6">
-            <div>
-                <h1 class="text-3xl font-black text-birunavy tracking-widest uppercase">SLIP GAJI</h1>
-                <p class="text-sm font-bold text-gray-600 uppercase mt-1">PT MEDIA TULISAN MANUSIA</p>
-                <p class="text-xs font-bold text-gray-400 uppercase">Periode: <span x-text="months[activeMonth-1]"></span> <span x-text="activeYear"></span></p>
-            </div>
-            <img src="logopt.webp" class="h-16 object-contain">
-        </div>
+    <!-- CONTAINER CETAK INVOICE/SLIP (Berada tepat di bawah loading overlay agar ter-render sempurna) -->
+    <div x-show="showPrint" class="absolute top-0 left-0 w-[800px] z-[50] bg-white text-black min-h-screen no-print">
         
-        <div class="mb-8">
-            <table class="w-full text-sm font-bold">
-                <tr><td class="py-2 w-48 text-gray-500 uppercase">Nama Staff / Freelance</td><td class="py-2 text-xl uppercase" x-text="printData.nama || '-'"></td></tr>
-                <tr><td class="py-2 w-48 text-gray-500 uppercase">Jabatan / Posisi</td><td class="py-2 text-lg uppercase" x-text="getJabatan(printData.nama)"></td></tr>
+        <!-- 1. TEMPLATE SLIP GAJI -->
+        <div x-show="printType === 'slip'" id="slip-gaji-print" class="p-10 bg-white">
+            <div class="flex items-center justify-between border-b-4 border-birunavy pb-4 mb-6">
+                <div>
+                    <h1 class="text-3xl font-black text-birunavy tracking-widest uppercase">SLIP GAJI</h1>
+                    <p class="text-sm font-bold text-gray-600 uppercase mt-1">PT MEDIA TULISAN MANUSIA</p>
+                    <p class="text-xs font-bold text-gray-400 uppercase">Periode: <span x-text="months[activeMonth-1]"></span> <span x-text="activeYear"></span></p>
+                </div>
+                <img src="logopt.webp" class="h-16 object-contain">
+            </div>
+            
+            <div class="mb-8">
+                <table class="w-full text-sm font-bold border-none">
+                    <tr><td class="py-2 w-48 text-gray-500 uppercase border-none">Nama Staff</td><td class="py-2 text-xl uppercase border-none" x-text="printData.nama || '-'"></td></tr>
+                    <tr><td class="py-2 w-48 text-gray-500 uppercase border-none">Jabatan</td><td class="py-2 text-lg uppercase border-none" x-text="getJabatan(printData.nama)"></td></tr>
+                </table>
+            </div>
+
+            <table class="w-full mb-8 border-collapse border border-gray-400">
+                <thead>
+                    <tr class="bg-gray-200">
+                        <th class="p-4 border border-gray-400 text-left uppercase font-black text-sm">Deskripsi Pendapatan</th>
+                        <th class="p-4 border border-gray-400 text-right uppercase font-black text-sm w-56">Nominal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="p-4 border border-gray-400 font-bold uppercase text-sm">Nilai Jasa Project Utama</td>
+                        <td class="p-4 border border-gray-400 font-bold text-right text-sm" x-text="formatRp(printData.jasa)"></td>
+                    </tr>
+                    <tr>
+                        <td class="p-4 border border-gray-400 font-bold uppercase text-sm">Persentase Bagi Hasil (<span x-text="printData.keuntungan"></span>%)</td>
+                        <td class="p-4 border border-gray-400 font-bold text-right text-sm text-gray-500">Termasuk</td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr class="bg-birunavy text-kuningemas" style="background-color: #081c34 !important; color: #D4AF37 !important; -webkit-print-color-adjust: exact;">
+                        <td class="p-5 border border-birunavy font-black uppercase text-right text-sm">TOTAL DITERIMA (TAKE HOME PAY)</td>
+                        <td class="p-5 border border-birunavy font-black text-2xl text-right" x-text="formatRp(hitungGaji(printData))"></td>
+                    </tr>
+                </tfoot>
             </table>
+
+            <div class="flex justify-end mt-20 text-center">
+                <div class="w-64">
+                    <p class="mb-20 font-bold uppercase text-sm">Pasuruan, <span x-text="currentDateFormatted()"></span><br>Direktur Utama</p>
+                    <p class="font-black uppercase text-base underline decoration-2 underline-offset-4">Ach. Sufyan Wahyudi</p>
+                    <p class="font-bold text-xs mt-1 text-gray-500 uppercase">PT Media Tulisan Manusia</p>
+                </div>
+            </div>
         </div>
 
-        <table class="w-full mb-8 border-collapse border border-gray-400">
-            <thead>
-                <tr class="bg-gray-200">
-                    <th class="p-4 border border-gray-400 text-left uppercase font-black text-sm">Deskripsi Pendapatan</th>
-                    <th class="p-4 border border-gray-400 text-right uppercase font-black text-sm w-56">Nominal</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td class="p-4 border border-gray-400 font-bold uppercase text-sm">Nilai Jasa Project Utama</td>
-                    <td class="p-4 border border-gray-400 font-bold text-right text-sm" x-text="formatRp(printData.jasa)"></td>
-                </tr>
-                <tr>
-                    <td class="p-4 border border-gray-400 font-bold uppercase text-sm">Persentase Bagi Hasil (<span x-text="printData.keuntungan"></span>%)</td>
-                    <td class="p-4 border border-gray-400 font-bold text-right text-sm text-gray-500">Termasuk</td>
-                </tr>
-            </tbody>
-            <tfoot>
-                <tr class="bg-birunavy text-kuningemas" style="background-color: #081c34 !important; color: #D4AF37 !important; -webkit-print-color-adjust: exact;">
-                    <td class="p-5 border border-birunavy font-black uppercase text-right text-sm">TOTAL DITERIMA (TAKE HOME PAY)</td>
-                    <td class="p-5 border border-birunavy font-black text-2xl text-right" x-text="formatRp(hitungGaji(printData))"></td>
-                </tr>
-            </tfoot>
-        </table>
+        <!-- 2. TEMPLATE INVOICE PENDAPATAN -->
+        <div x-show="printType === 'invoice'" id="invoice-print" class="p-10 bg-white">
+            <div class="flex items-center justify-between border-b-4 border-birunavy pb-4 mb-8">
+                <img src="logopt.webp" class="h-16 object-contain">
+                <div class="text-right">
+                    <h1 class="text-4xl font-black text-birunavy tracking-widest uppercase">INVOICE</h1>
+                    <p class="text-sm font-bold text-gray-700 uppercase mt-1">PT MEDIA TULISAN MANUSIA</p>
+                    <p class="text-xs font-bold text-gray-400 uppercase">INV/MTM/<span x-text="activeYear"></span>/<span x-text="months[activeMonth-1].substring(0,3).toUpperCase()"></span>/<span x-text="printData.index || 1"></span></p>
+                </div>
+            </div>
 
-        <div class="flex justify-end mt-20 text-center">
-            <div class="w-64">
-                <p class="mb-20 font-bold uppercase text-sm">Pasuruan, <span x-text="currentDateFormatted()"></span><br>Direktur Utama</p>
+            <div class="flex justify-between mb-10">
+                <div>
+                    <p class="text-xs text-gray-500 font-black uppercase mb-1 tracking-wider">Ditagihkan Kepada:</p>
+                    <h2 class="text-2xl font-black uppercase text-birunavy" x-text="printData.klien || '-'"></h2>
+                </div>
+                <div class="text-right">
+                    <p class="text-xs text-gray-500 font-black uppercase mb-1 tracking-wider">Tanggal Terbit:</p>
+                    <p class="font-bold uppercase text-lg" x-text="formatTanggalIndo(printData.tanggal)"></p>
+                </div>
+            </div>
+
+            <table class="w-full mb-10 border-collapse border border-gray-400">
+                <thead>
+                    <tr class="bg-gray-200">
+                        <th class="p-4 border border-gray-400 text-left uppercase font-black text-sm">Kategori</th>
+                        <th class="p-4 border border-gray-400 text-left uppercase font-black text-sm">Deskripsi Layanan / Judul</th>
+                        <th class="p-4 border border-gray-400 text-center uppercase font-black text-sm w-16">QTY</th>
+                        <th class="p-4 border border-gray-400 text-right uppercase font-black text-sm w-32">Harga Satuan</th>
+                        <th class="p-4 border border-gray-400 text-right uppercase font-black text-sm w-36">Total Tagihan</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="p-4 border border-gray-400 font-bold uppercase text-sm" x-text="printData.kategori || '-'"></td>
+                        <td class="p-4 border border-gray-400 font-bold uppercase text-sm" x-text="printData.nama || '-'"></td>
+                        <td class="p-4 border border-gray-400 font-bold text-center text-sm" x-text="printData.jumlah || 1"></td>
+                        <td class="p-4 border border-gray-400 font-bold text-right text-sm" x-text="formatRp(printData.biaya)"></td>
+                        <td class="p-4 border border-gray-400 font-black text-right text-sm text-birunavy" x-text="formatRp(printData.biaya * printData.jumlah)"></td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr class="bg-birunavy text-kuningemas" style="background-color: #081c34 !important; color: #D4AF37 !important; -webkit-print-color-adjust: exact;">
+                        <td colspan="4" class="p-5 border border-birunavy font-black uppercase text-right text-sm">GRAND TOTAL DIBAYARKAN</td>
+                        <td class="p-5 border border-birunavy font-black text-2xl text-right" x-text="formatRp(printData.biaya * printData.jumlah)"></td>
+                    </tr>
+                </tfoot>
+            </table>
+
+            <div class="mt-24 text-center w-72 ml-auto">
+                <p class="mb-20 font-bold uppercase text-sm">Pasuruan, <span x-text="currentDateFormatted()"></span><br>PT Media Tulisan Manusia</p>
                 <p class="font-black uppercase text-base underline decoration-2 underline-offset-4">Ach. Sufyan Wahyudi</p>
-                <p class="font-bold text-xs mt-1 text-gray-500 uppercase">PT Media Tulisan Manusia</p>
+                <p class="font-bold text-xs mt-1 text-gray-500 uppercase">Direktur Utama</p>
+            </div>
+        </div>
+
+        <!-- 3. TEMPLATE BUKTI PENGELUARAN -->
+        <div x-show="printType === 'receipt'" id="receipt-print" class="p-10 bg-white">
+            <div class="flex items-center justify-between border-b-4 border-red-800 pb-4 mb-8">
+                <img src="logopt.webp" class="h-16 object-contain">
+                <div class="text-right">
+                    <h1 class="text-3xl font-black text-red-800 tracking-widest uppercase">BUKTI PENGELUARAN</h1>
+                    <p class="text-sm font-bold text-gray-700 uppercase mt-1">PT MEDIA TULISAN MANUSIA</p>
+                    <p class="text-xs font-bold text-gray-400 uppercase">OUT/MTM/<span x-text="activeYear"></span>/<span x-text="months[activeMonth-1].substring(0,3).toUpperCase()"></span>/<span x-text="printData.index || 1"></span></p>
+                </div>
+            </div>
+
+            <div class="flex justify-between mb-10">
+                <div>
+                    <p class="text-xs text-gray-500 font-black uppercase mb-1 tracking-wider">Penanggung Jawab:</p>
+                    <h2 class="text-2xl font-black uppercase text-red-800" x-text="printData.pic || '-'"></h2>
+                </div>
+                <div class="text-right">
+                    <p class="text-xs text-gray-500 font-black uppercase mb-1 tracking-wider">Tanggal Transaksi:</p>
+                    <p class="font-bold uppercase text-lg" x-text="formatTanggalIndo(printData.tanggal)"></p>
+                </div>
+            </div>
+
+            <table class="w-full mb-10 border-collapse border border-gray-400">
+                <thead>
+                    <tr class="bg-gray-200">
+                        <th class="p-4 border border-gray-400 text-left uppercase font-black text-sm">Deskripsi Keperluan</th>
+                        <th class="p-4 border border-gray-400 text-center uppercase font-black text-sm w-24">QTY</th>
+                        <th class="p-4 border border-gray-400 text-right uppercase font-black text-sm w-40">Harga Satuan</th>
+                        <th class="p-4 border border-gray-400 text-right uppercase font-black text-sm w-40">Total Pengeluaran</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="p-4 border border-gray-400 font-bold uppercase text-sm" x-text="printData.nama || '-'"></td>
+                        <td class="p-4 border border-gray-400 font-bold text-center text-sm" x-text="printData.jumlah || 1"></td>
+                        <td class="p-4 border border-gray-400 font-bold text-right text-sm" x-text="formatRp(printData.biaya)"></td>
+                        <td class="p-4 border border-gray-400 font-black text-right text-sm text-red-800" x-text="formatRp(printData.biaya * printData.jumlah)"></td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr class="bg-red-900 text-white" style="background-color: #7f1d1d !important; color: #ffffff !important; -webkit-print-color-adjust: exact;">
+                        <td colspan="3" class="p-5 border border-red-900 font-black uppercase text-right text-sm">GRAND TOTAL DIKELUARKAN</td>
+                        <td class="p-5 border border-red-900 font-black text-2xl text-right" x-text="formatRp(printData.biaya * printData.jumlah)"></td>
+                    </tr>
+                </tfoot>
+            </table>
+
+            <div class="mt-24 text-center w-72 ml-auto">
+                <p class="mb-20 font-bold uppercase text-sm">Mengetahui,<br>PT Media Tulisan Manusia</p>
+                <p class="font-black uppercase text-base underline decoration-2 underline-offset-4">Ach. Sufyan Wahyudi</p>
+                <p class="font-bold text-xs mt-1 text-gray-500 uppercase">Direktur Utama</p>
             </div>
         </div>
     </div>
 
-    <!-- TEMPLATE INVOICE (Off-screen rendering) -->
-    <div id="invoice-print" class="bg-white text-black p-10 absolute w-[800px] z-[-9999]" style="left: -9999px; top: 0;">
-        <div class="flex items-center justify-between border-b-4 border-birunavy pb-4 mb-8">
-            <img src="logopt.webp" class="h-16 object-contain">
-            <div class="text-right">
-                <h1 class="text-4xl font-black text-birunavy tracking-widest uppercase">INVOICE</h1>
-                <p class="text-sm font-bold text-gray-700 uppercase mt-1">PT MEDIA TULISAN MANUSIA</p>
-                <p class="text-xs font-bold text-gray-400 uppercase">INV/MTM/<span x-text="activeYear"></span>/<span x-text="months[activeMonth-1].substring(0,3).toUpperCase()"></span>/<span x-text="printData.index || 1"></span></p>
-            </div>
-        </div>
-
-        <div class="flex justify-between mb-10">
-            <div>
-                <p class="text-xs text-gray-500 font-black uppercase mb-1 tracking-wider">Ditagihkan Kepada:</p>
-                <h2 class="text-2xl font-black uppercase text-birunavy" x-text="printData.klien || '-'"></h2>
-            </div>
-            <div class="text-right">
-                <p class="text-xs text-gray-500 font-black uppercase mb-1 tracking-wider">Tanggal Terbit:</p>
-                <p class="font-bold uppercase text-lg" x-text="formatTanggalIndo(printData.tanggal)"></p>
-            </div>
-        </div>
-
-        <table class="w-full mb-10 border-collapse border border-gray-400">
-            <thead>
-                <tr class="bg-gray-200">
-                    <th class="p-4 border border-gray-400 text-left uppercase font-black text-sm">Deskripsi Layanan / Produk</th>
-                    <th class="p-4 border border-gray-400 text-center uppercase font-black text-sm w-24">QTY</th>
-                    <th class="p-4 border border-gray-400 text-right uppercase font-black text-sm w-40">Harga Satuan</th>
-                    <th class="p-4 border border-gray-400 text-right uppercase font-black text-sm w-40">Total Tagihan</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td class="p-4 border border-gray-400 font-bold uppercase text-sm" x-text="printData.nama || '-'"></td>
-                    <td class="p-4 border border-gray-400 font-bold text-center text-sm" x-text="printData.jumlah || 1"></td>
-                    <td class="p-4 border border-gray-400 font-bold text-right text-sm" x-text="formatRp(printData.biaya)"></td>
-                    <td class="p-4 border border-gray-400 font-black text-right text-sm text-birunavy" x-text="formatRp(printData.biaya * printData.jumlah)"></td>
-                </tr>
-            </tbody>
-            <tfoot>
-                <tr class="bg-birunavy text-kuningemas" style="background-color: #081c34 !important; color: #D4AF37 !important; -webkit-print-color-adjust: exact;">
-                    <td colspan="3" class="p-5 border border-birunavy font-black uppercase text-right text-sm">GRAND TOTAL DIBAYARKAN</td>
-                    <td class="p-5 border border-birunavy font-black text-2xl text-right" x-text="formatRp(printData.biaya * printData.jumlah)"></td>
-                </tr>
-            </tfoot>
-        </table>
-
-        <div class="mt-24 text-center w-72 ml-auto">
-            <p class="mb-20 font-bold uppercase text-sm">Pasuruan, <span x-text="currentDateFormatted()"></span><br>PT Media Tulisan Manusia</p>
-            <p class="font-black uppercase text-base underline decoration-2 underline-offset-4">Ach. Sufyan Wahyudi</p>
-            <p class="font-bold text-xs mt-1 text-gray-500 uppercase">Direktur Utama</p>
-        </div>
-    </div>
-
-    <!-- SPLASH SCREEN CEPAT -->
-    <div x-show="isSplash" x-transition.opacity.duration.300ms class="fixed inset-0 z-[1000] bg-light-theme flex flex-col items-center justify-center">
+    <!-- SPLASH SCREEN -->
+    <div x-show="isSplash" x-transition.opacity.duration.500ms class="fixed inset-0 z-[1000] bg-light-theme flex flex-col items-center justify-center">
         <div class="glass p-6 rounded-3xl flex items-center justify-center border border-white/50 dark:border-kuningemas/30 shadow-2xl">
             <img src="logopt.webp" class="h-16 w-auto object-contain animate-bounce block dark:hidden">
             <img src="logopt2.webp" class="h-16 w-auto object-contain animate-bounce hidden dark:block">
         </div>
     </div>
 
-    <!-- OVERLAY LOADING GLOBAL CEPAT (Loading Simpan & Unduh) -->
-    <div x-show="isGlobalLoading" x-transition.opacity.duration.100ms class="fixed inset-0 z-[999] bg-slate-900/40 dark:bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center pointer-events-none">
+    <!-- OVERLAY LOADING GLOBAL (Loading PDF & Save - Super Cepat & Tepat di atas Z-50) -->
+    <div x-show="isGlobalLoading" x-transition.opacity.duration.100ms class="fixed inset-0 z-[999] bg-slate-900/40 dark:bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center">
         <div class="glass p-6 rounded-3xl flex items-center justify-center border border-white/50 dark:border-kuningemas/30 shadow-2xl scale-110">
             <img src="logopt.webp" class="h-14 w-auto object-contain animate-pulse block dark:hidden">
             <img src="logopt2.webp" class="h-14 w-auto object-contain animate-pulse hidden dark:block">
@@ -311,7 +372,7 @@
                 </div>
             </div>
 
-            <!-- Header PDF -->
+            <!-- Header PDF Umum -->
             <div id="pdf-header" class="hidden text-center mb-6">
                 <img src="logopt.webp" class="print-logo h-16 w-auto">
                 <h1 id="pdf-title" class="text-2xl font-black uppercase text-black border-b-4 border-black pb-2 mb-4">Laporan Keuangan <span class="uppercase" x-text="months[activeMonth-1]"></span> <span x-text="activeYear"></span></h1>
@@ -341,11 +402,11 @@
             </div>
         </div>
 
-        <!-- AREA CETAK UTAMA -->
+        <!-- AREA CETAK UTAMA REKAP -->
         <div id="print-area" class="w-full">
 
             <!-- Sub-Menu 12 Bulan -->
-            <div x-show="['pendapatan', 'pengeluaran', 'gaji', 'neraca'].includes(activeTab)" class="mb-6 no-print">
+            <div x-show="['pendapatan', 'pengeluaran', 'gaji', 'neraca'].includes(activeTab) && !printAll" class="mb-6 no-print">
                 <div id="month-scroll-container" class="flex overflow-x-auto gap-3 pb-4 snap-x hide-scrollbar px-2 sm:px-4 scroll-smooth">
                     <template x-for="(bulan, index) in months" :key="index">
                         <button :id="'month-btn-' + (index + 1)" @click="activeMonth = index + 1; saveState(); scrollToActiveMonth()" 
@@ -357,8 +418,8 @@
                 </div>
             </div>
 
-            <!-- Tab: Staff -->
-            <div x-show="activeTab === 'staff' || printAll" :class="{'pdf-page-break': printAll}" x-transition class="glass rounded-[2rem] p-5 sm:p-8 mb-6 relative overflow-hidden">
+            <!-- Tab: Staff (Tidak ikut rekap pdf) -->
+            <div x-show="activeTab === 'staff' && !printAll" x-transition class="glass rounded-[2rem] p-5 sm:p-8 mb-6 relative overflow-hidden">
                 <div class="absolute top-0 left-0 w-2 h-full bg-kuningemas"></div>
                 <h2 class="text-lg sm:text-2xl font-black mb-6 text-birunavy dark:text-kuningemas uppercase tracking-tight ml-2 border-b border-birunavy/10 dark:border-kuningemas/20 pb-4">Daftar Staff Internal</h2>
                 <div class="overflow-x-auto rounded-xl border border-birunavy/5 dark:border-kuningemas/10 bg-white/40 dark:bg-black/20">
@@ -375,11 +436,9 @@
                                 <tr class="border-b border-birunavy/5 dark:border-kuningemas/5 hover:bg-white/60 dark:hover:bg-white/5 transition">
                                     <td class="p-2 sm:p-3">
                                         <input type="text" x-model="st.nama" @input="debouncedSave()" class="w-full p-2.5 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold text-xs sm:text-sm uppercase" placeholder="Ketik nama...">
-                                        <span class="pdf-text uppercase" x-text="st.nama || '-'"></span>
                                     </td>
                                     <td class="p-2 sm:p-3">
                                         <input type="text" x-model="st.jabatan" @input="debouncedSave()" class="w-full p-2.5 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold text-xs sm:text-sm uppercase" placeholder="Jabatan">
-                                        <span class="pdf-text uppercase" x-text="st.jabatan || '-'"></span>
                                     </td>
                                     <td class="p-2 sm:p-3 text-center no-print">
                                         <button @click="hapusBarisGlobal('staffList', index)" class="text-red-500/70 hover:text-red-600 font-black p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition active:scale-90" title="Hapus">
@@ -402,7 +461,7 @@
             </div>
 
             <!-- Tab: RAB -->
-            <div x-show="activeTab === 'rab' || printAll" :class="{'pdf-page-break': printAll}" x-transition class="glass rounded-[2rem] p-5 sm:p-8 mb-6 relative overflow-hidden">
+            <div x-show="activeTab === 'rab' || printAll" :class="{'pdf-page-break': printAll && activeTab !== 'rab'}" x-transition class="glass rounded-[2rem] p-5 sm:p-8 mb-6 relative overflow-hidden">
                 <div class="absolute top-0 left-0 w-2 h-full bg-kuningemas"></div>
                 <h2 class="text-lg sm:text-2xl font-black mb-6 text-birunavy dark:text-kuningemas uppercase tracking-tight ml-2 border-b border-birunavy/10 dark:border-kuningemas/20 pb-4">Rencana Anggaran Modal (RAB)</h2>
                 <div class="overflow-x-auto rounded-xl border border-birunavy/5 dark:border-kuningemas/10 bg-white/40 dark:bg-black/20">
@@ -448,13 +507,11 @@
                         </tfoot>
                     </table>
                 </div>
-                <div class="flex flex-col sm:flex-row justify-between items-center mt-6 gap-3">
-                    <div class="flex gap-2 w-full sm:w-auto">
-                        <button @click="tambahBarisGlobal('rab')" class="no-print flex-1 sm:flex-none px-5 py-3 bg-birunavy/10 dark:bg-white/10 text-birunavy dark:text-kuningemas rounded-xl text-xs font-bold transition hover:bg-birunavy/20 flex items-center justify-center gap-2">
-                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd"/></svg> Tambah Baris
-                        </button>
-                    </div>
-                    <button @click="manualSave()" class="no-print w-full sm:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black shadow-lg transition flex items-center justify-center gap-2 active:scale-95 uppercase tracking-wider">
+                <div class="flex flex-col sm:flex-row justify-between items-center mt-6 gap-3 no-print">
+                    <button @click="tambahBarisGlobal('rab')" class="w-full sm:w-auto px-5 py-3 bg-birunavy/10 dark:bg-white/10 text-birunavy dark:text-kuningemas rounded-xl text-xs font-bold transition hover:bg-birunavy/20 flex items-center justify-center gap-2">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd"/></svg> Tambah Baris
+                    </button>
+                    <button @click="manualSave()" class="w-full sm:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black shadow-lg transition flex items-center justify-center gap-2 active:scale-95 uppercase tracking-wider">
                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6h5a2 2 0 012 2v7a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2h5v5.586l-1.293-1.293zM9 4a1 1 0 012 0v2H9V4z"/></svg> Simpan RAB
                     </button>
                 </div>
@@ -465,48 +522,60 @@
                 <div class="absolute top-0 left-0 w-2 h-full bg-green-500"></div>
                 <h2 class="text-lg sm:text-2xl font-black mb-6 text-birunavy dark:text-kuningemas uppercase tracking-tight ml-2 border-b border-birunavy/10 dark:border-kuningemas/20 pb-4">Pendapatan - <span class="uppercase" x-text="months[activeMonth-1]"></span></h2>
                 <div class="overflow-x-auto rounded-xl border border-birunavy/5 dark:border-kuningemas/10 bg-white/40 dark:bg-black/20">
-                    <table class="w-full text-left min-w-[850px]">
+                    <table class="w-full text-left min-w-[950px]">
                         <thead class="bg-slate-100 dark:bg-birunavy text-birunavy dark:text-kuningemas">
                             <tr class="text-[10px] sm:text-xs uppercase tracking-widest border-b border-birunavy/5 dark:border-kuningemas/20">
-                                <th class="p-3 w-32">Tanggal</th>
-                                <th class="p-3 w-1/4">Uraian / Barang</th>
+                                <th class="p-3 w-28">Tanggal</th>
+                                <th class="p-3 w-32">Kategori</th>
+                                <th class="p-3 w-1/4">Uraian / Judul</th>
                                 <th class="p-3 w-1/4">Klien / Sumber</th>
-                                <th class="p-3 w-32">Harga (Rp)</th>
+                                <th class="p-3 w-28">Harga (Rp)</th>
                                 <th class="p-3 w-16 text-center">Jml</th>
                                 <th class="p-3 w-32">Total Omset</th>
-                                <th class="p-3 w-28 text-center no-print">Opsi</th>
+                                <th class="p-3 w-24 text-center no-print">Opsi</th>
                             </tr>
                         </thead>
                         <tbody>
                             <template x-for="(item, index) in getDataBulanan('pendapatan')" :key="index">
                                 <tr class="border-b border-birunavy/5 dark:border-kuningemas/5 hover:bg-white/60 dark:hover:bg-white/5 transition">
                                     <td class="p-2">
-                                        <input type="date" x-model="item.tanggal" @change="executeSave(false)" class="w-full p-2.5 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas text-xs font-semibold uppercase">
-                                        <span class="pdf-text uppercase" x-text="item.tanggal || '-'"></span>
+                                        <!-- FAILSAFE @CHANGE -->
+                                        <input type="date" x-model="item.tanggal" @change="executeSave(false)" class="w-full p-2 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas text-[10px] sm:text-xs font-semibold uppercase">
+                                        <span class="pdf-text uppercase text-[10px]" x-text="item.tanggal || '-'"></span>
                                     </td>
                                     <td class="p-2">
-                                        <input type="text" x-model="item.nama" @input="debouncedSave()" class="w-full p-2.5 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold text-xs sm:text-sm uppercase" placeholder="Nama barang...">
+                                        <select x-model="item.kategori" @change="executeSave(false)" class="w-full p-2 bg-white/50 dark:bg-birunavy border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-bold text-[10px] sm:text-xs text-birunavy dark:text-kuningemas uppercase">
+                                            <option value="">-- Kategori --</option>
+                                            <option value="Hak Cipta">Hak Cipta</option>
+                                            <option value="Penerbitan">Penerbitan</option>
+                                            <option value="Investor">Investor</option>
+                                            <option value="Lainnya">Lainnya</option>
+                                        </select>
+                                        <span class="pdf-text uppercase" x-text="item.kategori || '-'"></span>
+                                    </td>
+                                    <td class="p-2">
+                                        <input type="text" x-model="item.nama" @input="debouncedSave()" class="w-full p-2 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold text-xs sm:text-sm uppercase" placeholder="Nama / Judul...">
                                         <span class="pdf-text uppercase" x-text="item.nama || '-'"></span>
                                     </td>
                                     <td class="p-2">
-                                        <input type="text" x-model="item.klien" @input="debouncedSave()" class="w-full p-2.5 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold text-xs sm:text-sm uppercase" placeholder="Nama klien...">
+                                        <input type="text" x-model="item.klien" @input="debouncedSave()" class="w-full p-2 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold text-xs sm:text-sm uppercase" placeholder="Nama klien...">
                                         <span class="pdf-text uppercase" x-text="item.klien || '-'"></span>
                                     </td>
                                     <td class="p-2">
-                                        <input type="number" x-model.number="item.biaya" @input="debouncedSave()" class="w-full p-2.5 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold text-xs sm:text-sm">
+                                        <input type="number" x-model.number="item.biaya" @input="debouncedSave()" class="w-full p-2 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold text-xs sm:text-sm">
                                         <span class="pdf-text" x-text="formatRp(item.biaya)"></span>
                                     </td>
                                     <td class="p-2">
-                                        <input type="number" x-model.number="item.jumlah" @input="debouncedSave()" class="w-full p-2.5 bg-transparent border-none rounded-lg text-center font-semibold text-xs sm:text-sm">
+                                        <input type="number" x-model.number="item.jumlah" @input="debouncedSave()" class="w-full p-2 bg-transparent border-none rounded-lg text-center font-semibold text-xs sm:text-sm">
                                         <span class="pdf-text text-center w-full" x-text="item.jumlah"></span>
                                     </td>
-                                    <td class="p-2 sm:p-3 font-black text-green-700 dark:text-green-400 text-xs sm:text-sm" x-text="formatRp(item.biaya * item.jumlah)"></td>
+                                    <td class="p-2 font-black text-green-700 dark:text-green-400 text-xs sm:text-sm" x-text="formatRp(item.biaya * item.jumlah)"></td>
                                     <td class="p-2 text-center no-print flex items-center justify-center gap-1 mt-1">
-                                        <button @click="cetakInvoice(item, index)" class="text-birunavy hover:text-kuningemas dark:text-white p-2 bg-slate-200 hover:bg-slate-300 dark:bg-white/10 dark:hover:bg-white/20 rounded-lg transition active:scale-90" title="Cetak Invoice">
+                                        <button @click="cetakDokumen('invoice', item, index)" class="text-birunavy hover:text-kuningemas dark:text-white p-2 bg-slate-200 hover:bg-slate-300 dark:bg-white/10 dark:hover:bg-white/20 rounded-lg transition active:scale-90" title="Cetak Invoice">
                                             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/></svg>
                                         </button>
                                         <button @click="hapusBarisBulan('pendapatan', index)" class="text-red-500/70 hover:text-red-600 font-black p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition active:scale-90" title="Hapus">
-                                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
                                         </button>
                                     </td>
                                 </tr>
@@ -514,17 +583,17 @@
                         </tbody>
                         <tfoot class="bg-green-50/50 dark:bg-green-900/20 text-green-800 dark:text-green-400">
                             <tr>
-                                <td colspan="5" class="p-4 text-right font-black uppercase text-xs tracking-wider">Total Omset Bulan Ini:</td>
+                                <td colspan="6" class="p-4 text-right font-black uppercase text-xs tracking-wider">Total Omset Bulan Ini:</td>
                                 <td colspan="2" class="p-4 font-black text-sm sm:text-base" x-text="formatRp(hitungTotalBulan('pendapatan'))"></td>
                             </tr>
                         </tfoot>
                     </table>
                 </div>
-                <div class="flex flex-col sm:flex-row justify-between items-center mt-6 gap-3">
-                    <button @click="tambahBarisBulan('pendapatan')" class="no-print w-full sm:w-auto px-5 py-3 bg-birunavy/10 dark:bg-white/10 text-birunavy dark:text-kuningemas rounded-xl text-xs font-bold transition hover:bg-birunavy/20 flex items-center justify-center gap-2">
+                <div class="flex flex-col sm:flex-row justify-between items-center mt-6 gap-3 no-print">
+                    <button @click="tambahBarisBulan('pendapatan')" class="w-full sm:w-auto px-5 py-3 bg-birunavy/10 dark:bg-white/10 text-birunavy dark:text-kuningemas rounded-xl text-xs font-bold transition hover:bg-birunavy/20 flex items-center justify-center gap-2">
                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd"/></svg> Tambah Dana Masuk
                     </button>
-                    <button @click="manualSave()" class="no-print w-full sm:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black shadow-lg transition flex items-center justify-center gap-2 active:scale-95 uppercase tracking-wider">
+                    <button @click="manualSave()" class="w-full sm:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black shadow-lg transition flex items-center justify-center gap-2 active:scale-95 uppercase tracking-wider">
                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6h5a2 2 0 012 2v7a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2h5v5.586l-1.293-1.293zM9 4a1 1 0 012 0v2H9V4z"/></svg> Simpan Pendapatan
                     </button>
                 </div>
@@ -544,36 +613,39 @@
                                 <th class="p-3 w-32">Harga (Rp)</th>
                                 <th class="p-3 w-16 text-center">Jml</th>
                                 <th class="p-3 w-36">Total Keluaran</th>
-                                <th class="p-3 w-16 text-center no-print">Opsi</th>
+                                <th class="p-3 w-28 text-center no-print">Opsi</th>
                             </tr>
                         </thead>
                         <tbody>
                             <template x-for="(item, index) in getDataBulanan('pengeluaran')" :key="index">
                                 <tr class="border-b border-birunavy/5 dark:border-kuningemas/5 hover:bg-white/60 dark:hover:bg-white/5 transition">
                                     <td class="p-2">
-                                        <input type="date" x-model="item.tanggal" @change="executeSave(false)" class="w-full p-2.5 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas text-xs font-semibold uppercase">
-                                        <span class="pdf-text uppercase" x-text="item.tanggal || '-'"></span>
+                                        <input type="date" x-model="item.tanggal" @change="executeSave(false)" class="w-full p-2 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas text-[10px] sm:text-xs font-semibold uppercase">
+                                        <span class="pdf-text uppercase text-[10px]" x-text="item.tanggal || '-'"></span>
                                     </td>
                                     <td class="p-2">
-                                        <input type="text" x-model="item.nama" @input="debouncedSave()" class="w-full p-2.5 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold text-xs sm:text-sm uppercase" placeholder="Nama barang...">
+                                        <input type="text" x-model="item.nama" @input="debouncedSave()" class="w-full p-2 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold text-xs sm:text-sm uppercase" placeholder="Nama barang...">
                                         <span class="pdf-text uppercase" x-text="item.nama || '-'"></span>
                                     </td>
                                     <td class="p-2">
-                                        <input type="text" x-model="item.pic" @input="debouncedSave()" class="w-full p-2.5 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold text-xs sm:text-sm uppercase" placeholder="Penanggung jawab...">
+                                        <input type="text" x-model="item.pic" @input="debouncedSave()" class="w-full p-2 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold text-xs sm:text-sm uppercase" placeholder="PIC...">
                                         <span class="pdf-text uppercase" x-text="item.pic || '-'"></span>
                                     </td>
                                     <td class="p-2">
-                                        <input type="number" x-model.number="item.biaya" @input="debouncedSave()" class="w-full p-2.5 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold text-xs sm:text-sm">
+                                        <input type="number" x-model.number="item.biaya" @input="debouncedSave()" class="w-full p-2 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold text-xs sm:text-sm">
                                         <span class="pdf-text" x-text="formatRp(item.biaya)"></span>
                                     </td>
                                     <td class="p-2">
-                                        <input type="number" x-model.number="item.jumlah" @input="debouncedSave()" class="w-full p-2.5 bg-transparent border-none rounded-lg text-center font-semibold text-xs sm:text-sm">
+                                        <input type="number" x-model.number="item.jumlah" @input="debouncedSave()" class="w-full p-2 bg-transparent border-none rounded-lg text-center font-semibold text-xs sm:text-sm">
                                         <span class="pdf-text text-center w-full" x-text="item.jumlah"></span>
                                     </td>
-                                    <td class="p-2 sm:p-3 font-black text-red-600 dark:text-red-400 text-xs sm:text-sm" x-text="formatRp(item.biaya * item.jumlah)"></td>
-                                    <td class="p-2 text-center no-print">
-                                        <button @click="hapusBarisBulan('pengeluaran', index)" class="text-red-500/70 hover:text-red-600 font-black p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition active:scale-90">
-                                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                                    <td class="p-2 font-black text-red-600 dark:text-red-400 text-xs sm:text-sm" x-text="formatRp(item.biaya * item.jumlah)"></td>
+                                    <td class="p-2 text-center no-print flex items-center justify-center gap-1 mt-1">
+                                        <button @click="cetakDokumen('receipt', item, index)" class="text-birunavy hover:text-kuningemas dark:text-white p-2 bg-slate-200 hover:bg-slate-300 dark:bg-white/10 dark:hover:bg-white/20 rounded-lg transition active:scale-90" title="Cetak Bukti">
+                                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/></svg>
+                                        </button>
+                                        <button @click="hapusBarisBulan('pengeluaran', index)" class="text-red-500/70 hover:text-red-600 font-black p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition active:scale-90" title="Hapus">
+                                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
                                         </button>
                                     </td>
                                 </tr>
@@ -587,11 +659,11 @@
                         </tfoot>
                     </table>
                 </div>
-                <div class="flex flex-col sm:flex-row justify-between items-center mt-6 gap-3">
-                    <button @click="tambahBarisBulan('pengeluaran')" class="no-print w-full sm:w-auto px-5 py-3 bg-birunavy/10 dark:bg-white/10 text-birunavy dark:text-kuningemas rounded-xl text-xs font-bold transition hover:bg-birunavy/20 flex items-center justify-center gap-2">
+                <div class="flex flex-col sm:flex-row justify-between items-center mt-6 gap-3 no-print">
+                    <button @click="tambahBarisBulan('pengeluaran')" class="w-full sm:w-auto px-5 py-3 bg-birunavy/10 dark:bg-white/10 text-birunavy dark:text-kuningemas rounded-xl text-xs font-bold transition hover:bg-birunavy/20 flex items-center justify-center gap-2">
                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd"/></svg> Catat Pengeluaran
                     </button>
-                    <button @click="manualSave()" class="no-print w-full sm:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black shadow-lg transition flex items-center justify-center gap-2 active:scale-95 uppercase tracking-wider">
+                    <button @click="manualSave()" class="w-full sm:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black shadow-lg transition flex items-center justify-center gap-2 active:scale-95 uppercase tracking-wider">
                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6h5a2 2 0 012 2v7a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2h5v5.586l-1.293-1.293zM9 4a1 1 0 012 0v2H9V4z"/></svg> Simpan Pengeluaran
                     </button>
                 </div>
@@ -616,9 +688,9 @@
                             <template x-for="(item, index) in getDataBulanan('gaji')" :key="index">
                                 <tr class="border-b border-birunavy/5 dark:border-kuningemas/5 hover:bg-white/60 dark:hover:bg-white/5 transition">
                                     <td class="p-3">
-                                        <!-- Pengunci Failsafe Select agar tidak reset -->
                                         <select x-model="item.nama" @change="executeSave(false)" class="w-full p-2.5 bg-white/50 dark:bg-birunavy border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-bold text-birunavy dark:text-kuningemas text-xs sm:text-sm uppercase">
                                             <option value="">-- Pilih Staff --</option>
+                                            <!-- Pilihan tersembunyi agar tidak blank kalau memori telat -->
                                             <option :value="item.nama" x-text="item.nama" class="hidden"></option>
                                             <template x-for="st in data.staffList">
                                                 <option :value="st.nama" x-text="st.nama + (st.jabatan ? ' - '+st.jabatan : '')"></option>
@@ -635,13 +707,13 @@
                                         <span class="absolute right-6 top-1/2 -translate-y-1/2 opacity-70">%</span>
                                         <span class="pdf-text text-center w-full" x-text="item.keuntungan + '%'"></span>
                                     </td>
-                                    <td class="p-3 sm:p-4 font-black text-orange-600 dark:text-orange-400 text-xs sm:text-sm" x-text="formatRp(hitungGaji(item))"></td>
+                                    <td class="p-3 font-black text-orange-600 dark:text-orange-400 text-xs sm:text-sm" x-text="formatRp(hitungGaji(item))"></td>
                                     <td class="p-3 text-center no-print flex items-center justify-center gap-1 mt-1">
-                                        <button @click="cetakSlipGaji(item)" class="text-birunavy hover:text-kuningemas dark:text-white p-2 bg-slate-200 hover:bg-slate-300 dark:bg-white/10 dark:hover:bg-white/20 rounded-lg transition active:scale-90" title="Cetak Slip Gaji">
+                                        <button @click="cetakDokumen('slip', item, index)" class="text-birunavy hover:text-kuningemas dark:text-white p-2 bg-slate-200 hover:bg-slate-300 dark:bg-white/10 dark:hover:bg-white/20 rounded-lg transition active:scale-90" title="Cetak Slip Gaji">
                                             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/></svg>
                                         </button>
                                         <button @click="hapusBarisBulan('gaji', index)" class="text-red-500/70 hover:text-red-600 font-black p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition active:scale-90" title="Hapus">
-                                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
                                         </button>
                                     </td>
                                 </tr>
@@ -655,11 +727,11 @@
                         </tfoot>
                     </table>
                 </div>
-                <div class="flex flex-col sm:flex-row justify-between items-center mt-6 gap-3">
-                    <button @click="tambahBarisBulan('gaji')" class="no-print w-full sm:w-auto px-5 py-3 bg-birunavy/10 dark:bg-white/10 text-birunavy dark:text-kuningemas rounded-xl text-xs font-bold transition hover:bg-birunavy/20 flex items-center justify-center gap-2">
+                <div class="flex flex-col sm:flex-row justify-between items-center mt-6 gap-3 no-print">
+                    <button @click="tambahBarisBulan('gaji')" class="w-full sm:w-auto px-5 py-3 bg-birunavy/10 dark:bg-white/10 text-birunavy dark:text-kuningemas rounded-xl text-xs font-bold transition hover:bg-birunavy/20 flex items-center justify-center gap-2">
                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd"/></svg> Hitung Gaji Baru
                     </button>
-                    <button @click="manualSave()" class="no-print w-full sm:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black shadow-lg transition flex items-center justify-center gap-2 active:scale-95 uppercase tracking-wider">
+                    <button @click="manualSave()" class="w-full sm:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black shadow-lg transition flex items-center justify-center gap-2 active:scale-95 uppercase tracking-wider">
                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6h5a2 2 0 012 2v7a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2h5v5.586l-1.293-1.293zM9 4a1 1 0 012 0v2H9V4z"/></svg> Simpan Distribusi Gaji
                     </button>
                 </div>
@@ -703,8 +775,8 @@
                     </div>
                 </div>
 
-                <!-- PAGE BREAK BUKU BESAR -->
-                <h3 class="text-lg md:text-2xl font-black mb-6 text-birunavy dark:text-kuningemas uppercase border-b-2 border-kuningemas/30 pb-3 mt-16 pt-8 pdf-page-break">Data Buku Besar CFO (<span x-text="activeYear"></span>)</h3>
+                <!-- BUKU BESAR (PDF Page Break Terjaga Rapi) -->
+                <h3 class="text-lg md:text-2xl font-black mb-6 text-birunavy dark:text-kuningemas uppercase border-b-2 border-kuningemas/30 pb-3 mt-12 pt-4 pdf-page-break">Data Buku Besar CFO (<span x-text="activeYear"></span>)</h3>
                 <div class="overflow-x-auto rounded-2xl border border-birunavy/20 dark:border-kuningemas/30 shadow-inner bg-white/30 dark:bg-black/20">
                     <table class="w-full text-left min-w-[800px] text-xs sm:text-sm">
                         <thead class="bg-birunavy text-kuningemas">
@@ -797,15 +869,17 @@
 
                 activeTab: 'neraca',
                 printAll: false,
+                showPrint: false,
+                printType: '',
                 showToast: false,
                 toastMessage: '',
                 isGlobalLoading: false,
                 saveTimeout: null,
                 isSyncing: false,
+                isReadyToWatch: false,
                 realtimeClock: '',
                 
                 months: ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'],
-                
                 activeYear: 2026,
                 activeMonth: new Date().getMonth() + 1, 
                 availableYears: [2026, 2027, 2028, 2029, 2030, 2031],
@@ -839,8 +913,10 @@
                     }
                     this.initYear(this.activeYear);
 
+                    setTimeout(() => { this.isReadyToWatch = true; }, 800);
+
                     this.$watch('data', (value) => {
-                        if(!this.isSyncing) this.debouncedSave();
+                        if(this.isReadyToWatch && !this.isSyncing) this.debouncedSave();
                     }, { deep: true });
 
                     this.checkAuthStatus();
@@ -911,6 +987,14 @@
                     });
                 },
 
+                sanitizeData(d) {
+                    if (!d) return { staffList: [{ nama: '', jabatan: '' }], rab: [{ nama: 'Modal Proyek', biaya: 0, jumlah: 1 }], years: {}, lastUpdate: Date.now() };
+                    if (!d.staffList || d.staffList.length === 0) d.staffList = [{ nama: '', jabatan: '' }];
+                    if (!d.rab || d.rab.length === 0) d.rab = [{ nama: 'Modal Proyek', biaya: 0, jumlah: 1 }];
+                    if (!d.years) d.years = {};
+                    return d;
+                },
+
                 syncWithFirebase() {
                     dbRef.once('value').then((snapshot) => {
                         let remoteData = snapshot.exists() ? snapshot.val() : null;
@@ -922,7 +1006,7 @@
                             dbRef.set(this.data);
                         } else if (remoteTime >= localTime && remoteData) {
                             this.isSyncing = true; 
-                            this.data = remoteData;
+                            this.data = this.sanitizeData(remoteData);
                             localStorage.setItem('sistemKeuangan_Data', JSON.stringify(this.data));
                             setTimeout(() => { this.isSyncing = false; }, 500);
                         }
@@ -933,13 +1017,12 @@
                                 let liveData = snap.val();
                                 if(liveData.lastUpdate && this.data && liveData.lastUpdate > (this.data.lastUpdate || 0)) {
                                     this.isSyncing = true;
-                                    this.data = liveData;
+                                    this.data = this.sanitizeData(liveData);
                                     localStorage.setItem('sistemKeuangan_Data', JSON.stringify(this.data));
                                     setTimeout(() => { this.isSyncing = false; }, 500);
                                 }
                             }
                         });
-
                     }).catch(() => {});
                 },
                 
@@ -975,7 +1058,7 @@
                     this.saveTimeout = setTimeout(() => {
                         this.executeSave(false);
                         this.saveTimeout = null;
-                    }, 800);
+                    }, 1000);
                 },
 
                 manualSave() {
@@ -994,7 +1077,7 @@
                         
                         let failsafe = setTimeout(() => {
                             this.isGlobalLoading = false;
-                            if(showAnimation) this.triggerToast("Disimpan Lokal (Menunggu Sinyal)");
+                            if(showAnimation) this.triggerToast("Disimpan Lokal (Koneksi Lambat)");
                         }, 2000); 
 
                         dbRef.set(this.data).then(() => {
@@ -1036,7 +1119,7 @@
                     for(let i=1; i<=12; i++) {
                         if (!this.data.years[year][i]) {
                             this.data.years[year][i] = {
-                                pendapatan: [{ tanggal: '', nama: '', klien: '', biaya: 0, jumlah: 1 }],
+                                pendapatan: [{ tanggal: '', kategori: '', nama: '', klien: '', biaya: 0, jumlah: 1 }],
                                 pengeluaran: [{ tanggal: '', nama: '', pic: '', biaya: 0, jumlah: 1 }],
                                 gaji: [{ nama: '', jasa: 0, keuntungan: 20 }]
                             };
@@ -1062,13 +1145,13 @@
                     } else {
                         this.data.rab.push({ nama: '', biaya: 0, jumlah: 1 });
                     }
-                    this.debouncedSave(); 
+                    if(this.isReadyToWatch) this.debouncedSave(); 
                 },
 
                 hapusBarisGlobal(kategori, index) {
                     if(this.data[kategori].length > 1 || kategori === 'staffList') {
                         this.data[kategori].splice(index, 1);
-                        this.debouncedSave();
+                        if(this.isReadyToWatch) this.debouncedSave();
                     }
                 },
 
@@ -1088,18 +1171,18 @@
                     if(kategori === 'gaji') {
                         target.push({ nama: '', jasa: 0, keuntungan: 20 });
                     } else if(kategori === 'pendapatan') {
-                        target.push({ tanggal: '', nama: '', klien: '', biaya: 0, jumlah: 1 });
+                        target.push({ tanggal: '', kategori: '', nama: '', klien: '', biaya: 0, jumlah: 1 });
                     } else {
                         target.push({ tanggal: '', nama: '', pic: '', biaya: 0, jumlah: 1 });
                     }
-                    this.debouncedSave(); 
+                    if(this.isReadyToWatch) this.debouncedSave(); 
                 },
 
                 hapusBarisBulan(kategori, index) {
                     let arr = this.getDataBulanan(kategori);
                     if(arr && arr.length > 1) {
                         arr.splice(index, 1);
-                        this.debouncedSave();
+                        if(this.isReadyToWatch) this.debouncedSave();
                     }
                 },
 
@@ -1147,40 +1230,44 @@
                     return st && st.jabatan ? st.jabatan : '-';
                 },
 
-                cetakInvoice(item, index) {
+                // PDF INVOICE/SLIP/RECEIPT RENDERER ON-SCREEN
+                async cetakDokumen(type, item, index) {
                     this.printData = { ...item, index: index + 1 };
+                    this.printType = type;
+                    this.showPrint = true; // Munculkan ke DOM agar html2canvas bisa baca
                     this.isGlobalLoading = true;
+                    
+                    // Tunggu Alpine me-render DOM
+                    await this.$nextTick();
+                    
                     setTimeout(() => {
-                        const el = document.getElementById('invoice-print');
-                        const opt = {
-                            margin: 0.5,
-                            filename: `Invoice_MTM_${item.klien || 'Klien'}_${item.tanggal || 'Tanggal'}.pdf`,
-                            image: { type: 'jpeg', quality: 1 },
-                            html2canvas: { scale: 2, useCORS: true, logging: false },
-                            jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } 
-                        };
-                        html2pdf().set(opt).from(el).save().then(() => {
-                            this.isGlobalLoading = false;
-                        });
-                    }, 800); 
-                },
+                        let elId = '';
+                        let filename = '';
+                        if(type === 'slip') {
+                            elId = 'slip-gaji-print';
+                            filename = `Slip_Gaji_${item.nama || 'Staff'}_${this.months[this.activeMonth-1]}.pdf`;
+                        } else if(type === 'invoice') {
+                            elId = 'invoice-print';
+                            filename = `Invoice_MTM_${item.klien || 'Klien'}_${item.tanggal || 'Tanggal'}.pdf`;
+                        } else if(type === 'receipt') {
+                            elId = 'receipt-print';
+                            filename = `Bukti_Pengeluaran_MTM_${item.pic || 'PIC'}_${item.tanggal || 'Tanggal'}.pdf`;
+                        }
 
-                cetakSlipGaji(item) {
-                    this.printData = item;
-                    this.isGlobalLoading = true;
-                    setTimeout(() => {
-                        const el = document.getElementById('slip-gaji-print');
+                        const el = document.getElementById(elId);
                         const opt = {
                             margin: 0.5,
-                            filename: `Slip_Gaji_${item.nama || 'Staff'}_${this.months[this.activeMonth-1]}.pdf`,
+                            filename: filename,
                             image: { type: 'jpeg', quality: 1 },
                             html2canvas: { scale: 2, useCORS: true, logging: false },
                             jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } 
                         };
+
                         html2pdf().set(opt).from(el).save().then(() => {
+                            this.showPrint = false; // Sembunyikan lagi
                             this.isGlobalLoading = false;
                         });
-                    }, 800); 
+                    }, 500); 
                 },
 
                 downloadPDF(mode) {
@@ -1226,10 +1313,11 @@
                             this.isGlobalLoading = false;
                             alert("Gagal cetak PDF");
                         });
-                    }, 800); 
+                    }, 500); 
                 }
             }));
         });
     </script>
 </body>
 </html>
+
