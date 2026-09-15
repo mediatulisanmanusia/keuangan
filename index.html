@@ -56,18 +56,16 @@
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        .no-print { display: block; }
+        /* Pengaturan Cetak PDF yang Presisi & Terlihat Jelas */
+        .pdf-mode { background: white !important; color: black !important; padding: 15px !important; font-size: 11px !important; width: 100% !important; }
         .pdf-mode .no-print { display: none !important; }
         .pdf-mode .print-logo { display: block !important; }
-        .pdf-mode .no-print-logo { display: none !important; }
-
-        .pdf-mode { background: white !important; color: black !important; padding: 10px !important; font-size: 11px !important; }
         .pdf-mode .glass { background: transparent !important; backdrop-filter: none !important; box-shadow: none !important; border: none !important; border-radius: 0 !important; }
-        .pdf-mode * { color: black !important; border-color: #444 !important; }
+        .pdf-mode *, .pdf-mode th, .pdf-mode td { color: black !important; border-color: #333 !important; }
         .pdf-mode table { width: 100% !important; border-collapse: collapse !important; margin-bottom: 15px !important; font-size: 10px !important; }
         .pdf-mode th, .pdf-mode td { border: 1px solid #000 !important; padding: 6px 8px !important; }
         .pdf-mode th { background-color: #e5e7eb !important; font-weight: bold !important; -webkit-print-color-adjust: exact; }
-        .pdf-mode input, .pdf-mode select { border: none !important; background: transparent !important; appearance: none !important; padding: 0 !important; font-weight: inherit !important; color: black !important; }
+        .pdf-mode input, .pdf-mode select { border: none !important; background: transparent !important; appearance: none !important; padding: 0 !important; font-weight: bold !important; color: black !important; }
     </style>
 </head>
 <body class="bg-light-theme text-slate-800 dark:text-slate-200 font-sans min-h-screen flex flex-col pb-36" 
@@ -143,19 +141,15 @@
 
         <div class="text-center mb-8 pt-16">
             <div class="inline-block glass rounded-2xl px-6 md:px-10 py-2.5 no-print">
-                <h1 class="text-lg md:text-2xl font-black text-birunavy dark:text-kuningemas tracking-widest uppercase">SISTEM KEUANGAN MTM</h1>
+                <h1 class="text-lg md:text-2xl font-black text-birunavy dark:text-kuningemas tracking-widest uppercase">SISTEM KEUANGAN</h1>
             </div>
             
-            <!-- Font Tanggal & Jam Diperkecil Menjadi Sangat Estetik (text-[10px] md:text-xs) -->
             <div class="mt-2 text-[10px] md:text-xs font-semibold opacity-70 tracking-widest no-print uppercase text-birunavy dark:text-kuningemas" x-text="realtimeClock"></div>
 
-            <div class="hidden print-only-header mb-6 text-center">
-                <h1 class="text-2xl font-bold uppercase border-b-2 border-black pb-2">Laporan Keuangan <span x-text="months[activeMonth-1]"></span> <span x-text="activeYear"></span></h1>
+            <!-- Header khusus saat cetak PDF -->
+            <div id="pdf-header" class="hidden mb-6 text-center">
+                <h1 class="text-xl font-bold uppercase text-black border-b-2 border-black pb-2">Laporan Keuangan <span x-text="months[activeMonth-1]"></span> <span x-text="activeYear"></span></h1>
             </div>
-        </div>
-
-        <div x-show="showSaveToast" x-transition class="no-print fixed top-16 left-1/2 -translate-x-1/2 glass rounded-full !bg-emerald-600 !text-white px-6 py-2 font-bold shadow-lg text-xs tracking-wider z-50">
-            ✓ Kategori Berhasil Disimpan!
         </div>
 
         <!-- Pemilihan Tahun & Tombol Unduh -->
@@ -170,11 +164,11 @@
             </div>
             
             <div class="flex flex-row gap-2 w-full md:w-auto justify-center">
-                <button @click="downloadPDF('current')" class="glass rounded-xl !bg-birunavy hover:opacity-90 text-kuningemas px-3 md:px-5 py-2.5 text-xs md:text-sm font-bold flex flex-1 md:flex-none justify-center items-center gap-1 border border-kuningemas/30 shadow-lg">
-                    Unduh (Aktif)
+                <button @click="downloadPDF('current')" :disabled="isExporting" class="glass rounded-xl !bg-birunavy hover:opacity-90 text-kuningemas px-3 md:px-5 py-2.5 text-xs md:text-sm font-bold flex flex-1 md:flex-none justify-center items-center gap-1 border border-kuningemas/30 shadow-lg transition">
+                    <span x-text="isExporting ? '⏳ Memproses PDF...' : 'Unduh (Aktif)'"></span>
                 </button>
-                <button @click="downloadPDF('all')" class="glass rounded-xl !bg-kuningemas hover:opacity-90 text-birunavy px-3 md:px-5 py-2.5 text-xs md:text-sm font-bold flex flex-1 md:flex-none justify-center items-center gap-1 border border-birunavy/30 shadow-lg">
-                    Unduh (Rekap)
+                <button @click="downloadPDF('all')" :disabled="isExporting" class="glass rounded-xl !bg-kuningemas hover:opacity-90 text-birunavy px-3 md:px-5 py-2.5 text-xs md:text-sm font-bold flex flex-1 md:flex-none justify-center items-center gap-1 border border-birunavy/30 shadow-lg transition">
+                    <span x-text="isExporting ? '⏳ Memproses PDF...' : 'Unduh (Rekap)'"></span>
                 </button>
             </div>
         </div>
@@ -183,7 +177,7 @@
         <div id="print-area" class="w-full">
 
             <!-- Sub-Menu 12 Bulan -->
-            <div x-show="['pendapatan', 'pengeluaran', 'gaji', 'neraca'].includes(activeTab) && !printAll" class="mb-6 no-print">
+            <div x-show="['pendapatan', 'pengeluaran', 'gaji', 'neraca'].includes(activeTab)" class="mb-6 no-print">
                 <div class="flex overflow-x-auto gap-2 pb-4 snap-x hide-scrollbar px-1">
                     <template x-for="(bulan, index) in months" :key="index">
                         <button @click="activeMonth = index + 1" 
@@ -196,7 +190,7 @@
             </div>
 
             <!-- Tab: Daftar Staff -->
-            <div x-show="activeTab === 'staff' && !printAll" class="glass rounded-3xl p-5 md:p-8 mb-6">
+            <div x-show="activeTab === 'staff'" class="glass rounded-3xl p-5 md:p-8 mb-6">
                 <h2 class="text-xl md:text-2xl font-black mb-6 text-birunavy dark:text-kuningemas uppercase border-b-2 border-kuningemas/30 pb-3">Daftar Staff Internal</h2>
                 <div class="overflow-x-auto rounded-xl border border-birunavy/10 dark:border-kuningemas/20">
                     <table class="w-full text-left min-w-[600px]">
@@ -220,12 +214,14 @@
                 </div>
                 <div class="flex flex-col sm:flex-row justify-between items-center mt-5 gap-3">
                     <button @click="tambahBarisGlobal('staffList')" class="no-print w-full sm:w-auto px-6 py-3 bg-birunavy text-kuningemas rounded-xl text-sm font-bold shadow-lg transition hover:opacity-90">+ Tambah Staff</button>
-                    <button @click="simpanKategoriData()" class="no-print w-full sm:w-auto px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-black shadow-lg transition">💾 Simpan Data Staff</button>
+                    <button @click="simpanKategoriData()" :disabled="isSaving" class="no-print w-full sm:w-auto px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-black shadow-lg transition flex items-center justify-center gap-2">
+                        <span x-text="isSaving ? '⏳ Menyimpan (1s)...' : '💾 Simpan Data Staff'"></span>
+                    </button>
                 </div>
             </div>
 
             <!-- Tab: RAB -->
-            <div x-show="activeTab === 'rab' || (printAll && false)" class="glass rounded-3xl p-5 md:p-8 mb-6">
+            <div x-show="activeTab === 'rab'" class="glass rounded-3xl p-5 md:p-8 mb-6">
                 <h2 class="text-xl md:text-2xl font-black mb-6 text-birunavy dark:text-kuningemas uppercase border-b-2 border-kuningemas/30 pb-3">Rencana Anggaran Modal (RAB)</h2>
                 <div class="overflow-x-auto rounded-xl border border-birunavy/10 dark:border-kuningemas/20">
                     <table class="w-full text-left min-w-[700px]">
@@ -260,14 +256,18 @@
                 <div class="flex flex-col sm:flex-row justify-between items-center mt-5 gap-3">
                     <div class="flex gap-2 w-full sm:w-auto">
                         <button @click="tambahBarisGlobal('rab')" class="no-print flex-1 sm:flex-none px-6 py-3 bg-birunavy text-kuningemas rounded-xl text-sm font-bold shadow-lg transition hover:opacity-90">+ Tambah Baris</button>
-                        <button @click="downloadRABPDF()" class="no-print flex-1 sm:flex-none px-6 py-3 bg-kuningemas text-birunavy rounded-xl text-sm font-black shadow-lg transition hover:opacity-90">Unduh PDF</button>
+                        <button @click="downloadRABPDF()" :disabled="isExporting" class="no-print flex-1 sm:flex-none px-6 py-3 bg-kuningemas text-birunavy rounded-xl text-sm font-black shadow-lg transition hover:opacity-90">
+                            <span x-text="isExporting ? '⏳ Proses...' : 'Unduh PDF'"></span>
+                        </button>
                     </div>
-                    <button @click="simpanKategoriData()" class="no-print w-full sm:w-auto px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-black shadow-lg transition">💾 Simpan Kategori RAB</button>
+                    <button @click="simpanKategoriData()" :disabled="isSaving" class="no-print w-full sm:w-auto px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-black shadow-lg transition flex items-center justify-center gap-2">
+                        <span x-text="isSaving ? '⏳ Menyimpan (1s)...' : '💾 Simpan Kategori RAB'"></span>
+                    </button>
                 </div>
             </div>
 
             <!-- Tab: Pendapatan -->
-            <div x-show="activeTab === 'pendapatan' || printAll" class="glass rounded-3xl p-5 md:p-8 mb-6">
+            <div x-show="activeTab === 'pendapatan'" class="glass rounded-3xl p-5 md:p-8 mb-6">
                 <h2 class="text-xl md:text-2xl font-black mb-6 text-birunavy dark:text-kuningemas uppercase border-b-2 border-kuningemas/30 pb-3">Pendapatan - <span x-text="months[activeMonth-1]"></span></h2>
                 <div class="overflow-x-auto rounded-xl border border-birunavy/10 dark:border-kuningemas/20">
                     <table class="w-full text-left min-w-[850px]">
@@ -305,12 +305,14 @@
                 </div>
                 <div class="flex flex-col sm:flex-row justify-between items-center mt-5 gap-3">
                     <button @click="tambahBarisBulan('pendapatan')" class="no-print w-full sm:w-auto px-6 py-3 bg-birunavy text-kuningemas rounded-xl text-sm font-bold shadow-lg transition hover:opacity-90">+ Tambah Sumber Dana</button>
-                    <button @click="simpanKategoriData()" class="no-print w-full sm:w-auto px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-black shadow-lg transition">💾 Simpan Pendapatan Bulan Ini</button>
+                    <button @click="simpanKategoriData()" :disabled="isSaving" class="no-print w-full sm:w-auto px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-black shadow-lg transition flex items-center justify-center gap-2">
+                        <span x-text="isSaving ? '⏳ Menyimpan (1s)...' : '💾 Simpan Pendapatan Bulan Ini'"></span>
+                    </button>
                 </div>
             </div>
 
             <!-- Tab: Pengeluaran -->
-            <div x-show="activeTab === 'pengeluaran' || printAll" class="glass rounded-3xl p-5 md:p-8 mb-6">
+            <div x-show="activeTab === 'pengeluaran'" class="glass rounded-3xl p-5 md:p-8 mb-6">
                 <h2 class="text-xl md:text-2xl font-black mb-6 text-birunavy dark:text-kuningemas uppercase border-b-2 border-kuningemas/30 pb-3">Pengeluaran - <span x-text="months[activeMonth-1]"></span></h2>
                 <div class="overflow-x-auto rounded-xl border border-birunavy/10 dark:border-kuningemas/20">
                     <table class="w-full text-left min-w-[850px]">
@@ -348,12 +350,14 @@
                 </div>
                 <div class="flex flex-col sm:flex-row justify-between items-center mt-5 gap-3">
                     <button @click="tambahBarisBulan('pengeluaran')" class="no-print w-full sm:w-auto px-6 py-3 bg-birunavy text-kuningemas rounded-xl text-sm font-bold shadow-lg transition hover:opacity-90">+ Catat Pengeluaran</button>
-                    <button @click="simpanKategoriData()" class="no-print w-full sm:w-auto px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-black shadow-lg transition">💾 Simpan Pengeluaran Bulan Ini</button>
+                    <button @click="simpanKategoriData()" :disabled="isSaving" class="no-print w-full sm:w-auto px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-black shadow-lg transition flex items-center justify-center gap-2">
+                        <span x-text="isSaving ? '⏳ Menyimpan (1s)...' : '💾 Simpan Pengeluaran Bulan Ini'"></span>
+                    </button>
                 </div>
             </div>
 
             <!-- Tab: Gaji Staff -->
-            <div x-show="activeTab === 'gaji' || printAll" class="glass rounded-3xl p-5 md:p-8 mb-6">
+            <div x-show="activeTab === 'gaji'" class="glass rounded-3xl p-5 md:p-8 mb-6">
                 <h2 class="text-xl md:text-2xl font-black mb-6 text-birunavy dark:text-kuningemas uppercase border-b-2 border-kuningemas/30 pb-3">Distribusi Gaji - <span x-text="months[activeMonth-1]"></span></h2>
                 <div class="overflow-x-auto rounded-xl border border-birunavy/10 dark:border-kuningemas/20">
                     <table class="w-full text-left min-w-[750px]">
@@ -397,12 +401,14 @@
                 </div>
                 <div class="flex flex-col sm:flex-row justify-between items-center mt-5 gap-3">
                     <button @click="tambahBarisBulan('gaji')" class="no-print w-full sm:w-auto px-6 py-3 bg-birunavy text-kuningemas rounded-xl text-sm font-bold shadow-lg transition hover:opacity-90">+ Hitung Gaji Baru</button>
-                    <button @click="simpanKategoriData()" class="no-print w-full sm:w-auto px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-black shadow-lg transition">💾 Simpan Distribusi Gaji</button>
+                    <button @click="simpanKategoriData()" :disabled="isSaving" class="no-print w-full sm:w-auto px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-black shadow-lg transition flex items-center justify-center gap-2">
+                        <span x-text="isSaving ? '⏳ Menyimpan (1s)...' : '💾 Simpan Distribusi Gaji'"></span>
+                    </button>
                 </div>
             </div>
 
             <!-- Tab: Neraca & Laba Bersih -->
-            <div x-show="activeTab === 'neraca' || printAll" class="glass rounded-3xl p-5 md:p-8 mb-6">
+            <div x-show="activeTab === 'neraca'" class="glass rounded-3xl p-5 md:p-8 mb-6">
                 
                 <h2 class="text-xl md:text-2xl font-black mb-6 text-center text-birunavy dark:text-kuningemas uppercase border-b-2 border-kuningemas/30 pb-4">
                     Papan Neraca <span class="text-kuningemas" x-text="months[activeMonth-1]"></span>
@@ -472,8 +478,8 @@
                 </div>
                 
                 <div class="mt-6 flex justify-end no-print">
-                    <button @click="downloadPDF('current')" class="glass rounded-xl !bg-birunavy hover:opacity-90 text-kuningemas px-6 py-3 text-sm font-black shadow-xl border border-kuningemas/50 hover:scale-105 transition">
-                        CETAK LAPORAN TAHUNAN
+                    <button @click="downloadPDF('current')" :disabled="isExporting" class="glass rounded-xl !bg-birunavy hover:opacity-90 text-kuningemas px-6 py-3 text-sm font-black shadow-xl border border-kuningemas/50 hover:scale-105 transition">
+                        <span x-text="isExporting ? '⏳ Memproses PDF...' : 'CETAK LAPORAN TAHUNAN'"></span>
                     </button>
                 </div>
             </div>
@@ -526,14 +532,16 @@
 
                 activeTab: 'neraca',
                 printAll: false,
-                showSaveToast: false,
+                isSaving: false,
+                isExporting: false,
                 realtimeClock: '',
                 
                 months: ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'],
                 
-                activeYear: new Date().getFullYear(),
+                // Mengunci tahun dan bulan aktif murni ke waktu real-time 2026
+                activeYear: 2026,
                 activeMonth: new Date().getMonth() + 1,
-                availableYears: Array.from({length: 6}, (_, i) => 2025 + i),
+                availableYears: [2025, 2026, 2027, 2028, 2029, 2030],
 
                 tabs: [
                     { id: 'staff', label: 'Staff', icon: '<svg fill="currentColor" viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>' },
@@ -562,7 +570,7 @@
                     setTimeout(() => {
                         this.isSplash = false;
                         this.checkAuthStatus();
-                    }, 2500);
+                    }, 2000);
                 },
 
                 updateClock() {
@@ -583,6 +591,7 @@
                             this.loadDataFromFirebase();
                         } else {
                             this.isLoggedIn = false;
+                            this.loadLocalData();
                         }
                     });
                 },
@@ -603,12 +612,15 @@
                 },
 
                 loadLocalData() {
-                    const saved = localStorage.getItem('sistemKeuanganMTM_V15');
+                    const saved = localStorage.getItem('sistemKeuanganMTM_V17');
                     if (saved) {
-                        this.data = JSON.parse(saved);
+                        try {
+                            this.data = JSON.parse(saved);
+                        } catch(e) {}
                     }
                     this.initYear(this.activeYear);
                 },
+
                 loadDataFromFirebase() {
                     dbRef.once('value').then((snapshot) => {
                         if (snapshot.exists()) {
@@ -630,24 +642,29 @@
                 },
 
                 simpanKategoriData() {
-                    if (this.isLoggedIn && firebase.auth().currentUser) {
-                        dbRef.set(this.data).then(() => {
-                            this.tampilNotif();
-                        }).catch(err => {
-                            alert("Gagal menyimpan ke cloud: " + err.message);
-                        });
-                    } else {
-                        localStorage.setItem('sistemKeuanganMTM_V15', JSON.stringify(this.data));
-                        this.tampilNotif();
-                    }
-                },
+                    this.isSaving = true;
+                    setTimeout(() => {
+                        // Pastikan struktur tahun aktif ada sebelum disimpan
+                        this.initYear(this.activeYear);
 
-                tampilNotif() {
-                    this.showSaveToast = true;
-                    setTimeout(() => this.showSaveToast = false, 2000);
+                        if (this.isLoggedIn && firebase.auth().currentUser) {
+                            dbRef.set(this.data).then(() => {
+                                this.isSaving = false;
+                                alert("✓ Data Kategori Berhasil Disimpan ke Cloud!");
+                            }).catch(err => {
+                                this.isSaving = false;
+                                alert("Gagal menyimpan: " + err.message);
+                            });
+                        } else {
+                            localStorage.setItem('sistemKeuanganMTM_V17', JSON.stringify(this.data));
+                            this.isSaving = false;
+                            alert("✓ Data Kategori Berhasil Disimpan (Offline)!");
+                        }
+                    }, 1000);
                 },
 
                 initYear(year) {
+                    if (!this.data) this.data = {};
                     if (!this.data.staffList) this.data.staffList = [{ nama: '', jabatan: '' }];
                     if (!this.data.rab) this.data.rab = [{ nama: 'Modal Proyek', biaya: 0, jumlah: 1 }];
                     if (!this.data.years) this.data.years = {};
@@ -759,50 +776,72 @@
                 },
 
                 downloadRABPDF() {
+                    this.isExporting = true;
                     const originalTab = this.activeTab;
                     this.activeTab = 'rab';
+                    document.getElementById('pdf-header').classList.remove('hidden');
+
                     setTimeout(() => {
                         const element = document.getElementById('print-area');
                         element.classList.add('pdf-mode');
                         const opt = {
-                            margin: 0.4,
+                            margin: 0.3,
                             filename: `RAB_PT_Media_Tulisan_Manusia_${this.activeYear}.pdf`,
                             image: { type: 'jpeg', quality: 0.98 },
-                            html2canvas: { scale: 2, useCORS: true },
+                            html2canvas: { scale: 2, useCORS: true, logging: true },
                             jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
                         };
                         html2pdf().set(opt).from(element).save().then(() => {
                             element.classList.remove('pdf-mode');
+                            document.getElementById('pdf-header').classList.add('hidden');
                             this.activeTab = originalTab;
+                            this.isExporting = false;
+                        }).catch(err => {
+                            alert("Gagal cetak PDF: " + err);
+                            element.classList.remove('pdf-mode');
+                            document.getElementById('pdf-header').classList.add('hidden');
+                            this.activeTab = originalTab;
+                            this.isExporting = false;
                         });
-                    }, 400);
+                    }, 1000);
                 },
 
                 downloadPDF(mode) {
+                    this.isExporting = true;
                     let filename = mode === 'all' ? `Laporan_CFO_Tahunan_${this.activeYear}.pdf` : `Laporan_${this.activeTab.toUpperCase()}_${this.months[this.activeMonth-1]}_${this.activeYear}.pdf`;
-                    if (mode !== 'all' && this.activeTab === 'staff') return alert('Gunakan tab laporan atau RAB untuk mengunduh PDF.');
+                    if (mode !== 'all' && this.activeTab === 'staff') {
+                        this.isExporting = false;
+                        return alert('Gunakan tab laporan atau RAB untuk mengunduh PDF.');
+                    }
 
                     if (mode === 'all') this.printAll = true;
-                    document.querySelector('.print-only-header').classList.remove('hidden');
+                    document.getElementById('pdf-header').classList.remove('hidden');
 
                     setTimeout(() => {
                         const element = document.getElementById('print-area');
                         element.classList.add('pdf-mode');
                         
                         const opt = {
-                            margin: 0.4,
+                            margin: 0.3,
                             filename: filename,
                             image: { type: 'jpeg', quality: 0.98 },
-                            html2canvas: { scale: 2, useCORS: true },
+                            html2canvas: { scale: 2, useCORS: true, logging: true },
                             jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
                         };
 
                         html2pdf().set(opt).from(element).save().then(() => {
                             element.classList.remove('pdf-mode');
-                            document.querySelector('.print-only-header').classList.add('hidden');
+                            document.getElementById('pdf-header').classList.add('hidden');
                             if (mode === 'all') this.printAll = false;
+                            this.isExporting = false;
+                        }).catch(err => {
+                            alert("Gagal cetak PDF: " + err);
+                            element.classList.remove('pdf-mode');
+                            document.getElementById('pdf-header').classList.add('hidden');
+                            if (mode === 'all') this.printAll = false;
+                            this.isExporting = false;
                         });
-                    }, 500);
+                    }, 1000);
                 }
             }));
         });
