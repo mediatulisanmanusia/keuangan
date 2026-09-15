@@ -34,29 +34,29 @@
     
     <style>
         .glass {
-            background: rgba(255, 255, 255, 0.88);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            box-shadow: 0 10px 30px rgba(10, 37, 64, 0.12);
+            background: rgba(255, 255, 255, 0.90);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 15px 35px rgba(10, 37, 64, 0.1);
         }
         .dark .glass {
-            background: rgba(10, 37, 64, 0.88);
+            background: rgba(10, 37, 64, 0.90);
             border: 1px solid rgba(212, 175, 55, 0.25);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.8);
         }
 
         body { 
             background-attachment: fixed !important;
             transition: background 0.5s ease; 
         }
-        .bg-light-theme { background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%) fixed; }
+        .bg-light-theme { background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%) fixed; }
         .dark .bg-light-theme { background: linear-gradient(135deg, #020b14 0%, #0A2540 100%) fixed; }
 
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* Pengaturan Cetak PDF yang Presisi & Terlihat Jelas */
+        /* Pengaturan Cetak PDF Profesional */
         .pdf-mode { background: white !important; color: black !important; padding: 15px !important; font-size: 11px !important; width: 100% !important; }
         .pdf-mode .no-print { display: none !important; }
         .pdf-mode .print-logo { display: block !important; }
@@ -118,7 +118,7 @@
     <!-- 3. SISTEM APLIKASI UTAMA -->
     <div x-show="!isSplash && isLoggedIn" x-transition class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 flex-grow w-full relative">
         
-        <!-- GELEMBUNG MELAYANG DI ATAS -->
+        <!-- GELEMBUNG MELAYANG UTAMA (Atas) -->
         <div class="fixed top-3 left-4 right-4 md:left-8 md:right-8 z-50 glass px-4 py-2.5 rounded-full flex items-center justify-between shadow-xl no-print border border-birunavy/15 dark:border-kuningemas/30 backdrop-blur-md">
             <div class="flex items-center gap-2">
                 <img src="rev1.webp" class="h-7 w-auto object-contain block dark:hidden">
@@ -140,11 +140,17 @@
         </div>
 
         <div class="text-center mb-8 pt-16">
-            <div class="inline-block glass rounded-2xl px-6 md:px-10 py-2.5 no-print">
-                <h1 class="text-lg md:text-2xl font-black text-birunavy dark:text-kuningemas tracking-widest uppercase">SISTEM KEUANGAN</h1>
+            <div class="inline-block glass rounded-2xl px-6 md:px-10 py-2.5 no-print mb-2 shadow-sm">
+                <h1 class="text-lg md:text-2xl font-black text-birunavy dark:text-kuningemas tracking-widest uppercase">SISTEM KEUANGAN MTM</h1>
             </div>
             
-            <div class="mt-2 text-[10px] md:text-xs font-semibold opacity-70 tracking-widest no-print uppercase text-birunavy dark:text-kuningemas" x-text="realtimeClock"></div>
+            <!-- GELEMBUNG KECIL ESTETIK UNTUK HARI, TANGGAL & JAM LIVE -->
+            <div class="flex justify-center no-print">
+                <div class="inline-flex items-center gap-2 glass px-4 py-1.5 rounded-full shadow-sm border border-birunavy/10 dark:border-kuningemas/20">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span class="text-[10px] md:text-xs font-bold tracking-wider uppercase text-birunavy dark:text-kuningemas" x-text="realtimeClock"></span>
+                </div>
+            </div>
 
             <!-- Header khusus saat cetak PDF -->
             <div id="pdf-header" class="hidden mb-6 text-center">
@@ -538,7 +544,6 @@
                 
                 months: ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'],
                 
-                // Mengunci tahun dan bulan aktif murni ke waktu real-time 2026
                 activeYear: 2026,
                 activeMonth: new Date().getMonth() + 1,
                 availableYears: [2025, 2026, 2027, 2028, 2029, 2030],
@@ -612,7 +617,7 @@
                 },
 
                 loadLocalData() {
-                    const saved = localStorage.getItem('sistemKeuanganMTM_V17');
+                    const saved = localStorage.getItem('sistemKeuanganMTM_V18');
                     if (saved) {
                         try {
                             this.data = JSON.parse(saved);
@@ -644,7 +649,6 @@
                 simpanKategoriData() {
                     this.isSaving = true;
                     setTimeout(() => {
-                        // Pastikan struktur tahun aktif ada sebelum disimpan
                         this.initYear(this.activeYear);
 
                         if (this.isLoggedIn && firebase.auth().currentUser) {
@@ -656,7 +660,7 @@
                                 alert("Gagal menyimpan: " + err.message);
                             });
                         } else {
-                            localStorage.setItem('sistemKeuanganMTM_V17', JSON.stringify(this.data));
+                            localStorage.setItem('sistemKeuanganMTM_V18', JSON.stringify(this.data));
                             this.isSaving = false;
                             alert("✓ Data Kategori Berhasil Disimpan (Offline)!");
                         }
@@ -848,4 +852,3 @@
     </script>
 </body>
 </html>
-
