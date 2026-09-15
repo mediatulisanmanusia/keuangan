@@ -37,7 +37,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     
     <style>
-        /* Efek Kaca (Glassmorphism) */
+        /* Efek Kaca */
         .glass {
             background: rgba(255, 255, 255, 0.75);
             backdrop-filter: blur(16px);
@@ -63,7 +63,7 @@
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* PERBAIKAN MUTLAK PDF MODE */
+        /* PERBAIKAN MUTLAK PDF MODE - Rapi, Teks Tidak Tertutup, Tabel Kanan-Kiri Presisi */
         .pdf-mode { 
             background: white !important; 
             color: black !important; 
@@ -84,12 +84,15 @@
             color: black !important; 
         }
         .pdf-mode *, .pdf-mode th, .pdf-mode td, .pdf-mode span { color: black !important; border-color: #333 !important; }
+        
+        /* Auto Page Break untuk mencegah tabel terpotong setengah */
         .pdf-mode table { 
             width: 100% !important; 
             border-collapse: collapse !important; 
             margin-bottom: 20px !important; 
             font-size: 11px !important; 
             table-layout: auto !important;
+            page-break-inside: avoid !important; /* Jangan potong tabel */
         }
         .pdf-mode th, .pdf-mode td { border: 1px solid #000 !important; padding: 10px !important; word-wrap: break-word !important; }
         .pdf-mode th { background-color: #f3f4f6 !important; font-weight: bold !important; -webkit-print-color-adjust: exact; text-align: left !important; }
@@ -106,7 +109,7 @@
       x-data="keuanganApp()" 
       x-init="initApp()">
 
-    <!-- SPLASH SCREEN CEPAT (Hanya Logo) -->
+    <!-- SPLASH SCREEN CEPAT -->
     <div x-show="isSplash" x-transition.opacity.duration.500ms class="fixed inset-0 z-[1000] bg-light-theme flex flex-col items-center justify-center">
         <div class="glass p-6 rounded-3xl flex items-center justify-center border border-white/50 dark:border-kuningemas/30 shadow-2xl">
             <img src="logopt.webp" class="h-16 w-auto object-contain animate-bounce block dark:hidden">
@@ -114,21 +117,21 @@
         </div>
     </div>
 
-    <!-- OVERLAY LOADING GLOBAL (Sama persis seperti Splash, Cepat & Tanpa Teks) -->
+    <!-- OVERLAY LOADING GLOBAL CEPAT (Tanpa Teks) -->
     <div x-show="isGlobalLoading" x-transition.opacity.duration.200ms class="fixed inset-0 z-[999] bg-slate-900/30 dark:bg-black/50 backdrop-blur-sm flex flex-col items-center justify-center pointer-events-none">
         <div class="glass p-6 rounded-3xl flex items-center justify-center border border-white/50 dark:border-kuningemas/30 shadow-2xl">
-            <img src="logopt.webp" class="h-14 w-auto object-contain animate-bounce block dark:hidden">
-            <img src="logopt2.webp" class="h-14 w-auto object-contain animate-bounce hidden dark:block">
+            <img src="logopt.webp" class="h-14 w-auto object-contain animate-pulse block dark:hidden">
+            <img src="logopt2.webp" class="h-14 w-auto object-contain animate-pulse hidden dark:block">
         </div>
     </div>
 
-    <!-- NOTIFIKASI TOAST SUKSES (Cepat Hilang) -->
+    <!-- NOTIFIKASI TOAST SUKSES -->
     <div x-show="showToast" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 -translate-y-10" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 -translate-y-10" class="no-print fixed top-6 left-1/2 -translate-x-1/2 z-[1000] bg-emerald-500/95 backdrop-blur-md text-white font-black px-5 py-2.5 rounded-full shadow-lg text-[10px] sm:text-xs tracking-wider uppercase border border-emerald-300 flex items-center gap-2">
         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
         <span x-text="toastMessage"></span>
     </div>
 
-    <!-- HALAMAN LOGIN (Metode Popup Google Anti-Nyangkut) -->
+    <!-- HALAMAN LOGIN (Popup Cepat) -->
     <div x-show="!isLoggedIn && !authChecking && !isSplash" x-transition class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="glass w-full max-w-sm sm:max-w-md p-8 sm:p-10 rounded-[2rem] text-center shadow-glass dark:shadow-glass-dark border border-white/60 dark:border-kuningemas/20 relative overflow-hidden">
             <img src="logopt.webp" class="h-16 sm:h-20 mx-auto mb-6 block dark:hidden drop-shadow-md">
@@ -171,7 +174,6 @@
                 <hr class="w-full border-birunavy/10 dark:border-kuningemas/20">
             </div>
 
-            <!-- Login Google pakai POPUP, jaminan anti ngelag/error redirect -->
             <button @click="loginGoogle" class="w-full py-3 bg-white dark:bg-birunavy text-birunavy dark:text-white border border-birunavy/10 dark:border-kuningemas/30 rounded-2xl font-bold text-sm flex items-center justify-center gap-3 hover:bg-slate-50 dark:hover:bg-birunavy/80 transition active:scale-[0.98] shadow-sm mb-4">
                 <svg class="w-5 h-5" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
                 Masuk dengan Google
@@ -183,7 +185,7 @@
         </div>
     </div>
 
-    <!-- 3. SISTEM APLIKASI UTAMA -->
+    <!-- SISTEM APLIKASI UTAMA -->
     <div x-show="isLoggedIn && !authChecking && !isSplash" x-transition class="max-w-7xl mx-auto p-3 sm:p-6 lg:p-8 flex-grow w-full relative">
         
         <!-- HEADER ATAS -->
@@ -221,7 +223,7 @@
             <!-- Header PDF -->
             <div id="pdf-header" class="hidden text-center mb-6">
                 <img src="logopt.webp" class="print-logo h-16 w-auto">
-                <h1 class="text-2xl font-black uppercase text-black border-b-4 border-black pb-2 mb-4">Laporan Keuangan <span x-text="months[activeMonth-1]"></span> <span x-text="activeYear"></span></h1>
+                <h1 class="text-2xl font-black uppercase text-black border-b-4 border-black pb-2 mb-4">Laporan Keuangan <span class="uppercase" x-text="months[activeMonth-1]"></span> <span x-text="activeYear"></span></h1>
             </div>
         </div>
 
@@ -281,12 +283,12 @@
                             <template x-for="(st, index) in data.staffList" :key="index">
                                 <tr class="border-b border-birunavy/5 dark:border-kuningemas/5 hover:bg-white/60 dark:hover:bg-white/5 transition">
                                     <td class="p-2 sm:p-3">
-                                        <input type="text" x-model="st.nama" @input="debouncedSave()" class="w-full p-2.5 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold text-xs sm:text-sm" placeholder="Ketik nama...">
-                                        <span class="pdf-text" x-text="st.nama || '-'"></span>
+                                        <input type="text" x-model="st.nama" @input="debouncedSave()" class="w-full p-2.5 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold text-xs sm:text-sm uppercase" placeholder="Ketik nama...">
+                                        <span class="pdf-text uppercase" x-text="st.nama || '-'"></span>
                                     </td>
                                     <td class="p-2 sm:p-3">
-                                        <input type="text" x-model="st.jabatan" @input="debouncedSave()" class="w-full p-2.5 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold text-xs sm:text-sm" placeholder="Jabatan">
-                                        <span class="pdf-text" x-text="st.jabatan || '-'"></span>
+                                        <input type="text" x-model="st.jabatan" @input="debouncedSave()" class="w-full p-2.5 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold text-xs sm:text-sm uppercase" placeholder="Jabatan">
+                                        <span class="pdf-text uppercase" x-text="st.jabatan || '-'"></span>
                                     </td>
                                     <td class="p-2 sm:p-3 text-center no-print">
                                         <button @click="hapusBarisGlobal('staffList', index)" class="text-red-500/70 hover:text-red-600 font-black p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition active:scale-90">
@@ -327,8 +329,8 @@
                             <template x-for="(item, index) in data.rab" :key="index">
                                 <tr class="border-b border-birunavy/5 dark:border-kuningemas/5 hover:bg-white/60 dark:hover:bg-white/5 transition">
                                     <td class="p-2 sm:p-3">
-                                        <input type="text" x-model="item.nama" @input="debouncedSave()" class="w-full p-2.5 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold text-xs sm:text-sm">
-                                        <span class="pdf-text" x-text="item.nama || '-'"></span>
+                                        <input type="text" x-model="item.nama" @input="debouncedSave()" class="w-full p-2.5 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold text-xs sm:text-sm uppercase">
+                                        <span class="pdf-text uppercase" x-text="item.nama || '-'"></span>
                                     </td>
                                     <td class="p-2 sm:p-3">
                                         <input type="number" x-model.number="item.biaya" @input="debouncedSave()" class="w-full p-2.5 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold text-xs sm:text-sm">
@@ -389,15 +391,15 @@
                                 <tr class="border-b border-birunavy/5 dark:border-kuningemas/5 hover:bg-white/60 dark:hover:bg-white/5 transition">
                                     <td class="p-2">
                                         <input type="date" x-model="item.tanggal" @input="debouncedSave()" class="w-full p-2.5 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas text-xs font-semibold">
-                                        <span class="pdf-text" x-text="item.tanggal || '-'"></span>
+                                        <span class="pdf-text uppercase" x-text="item.tanggal || '-'"></span>
                                     </td>
                                     <td class="p-2">
-                                        <input type="text" x-model="item.nama" @input="debouncedSave()" class="w-full p-2.5 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold text-xs sm:text-sm" placeholder="Nama barang...">
-                                        <span class="pdf-text" x-text="item.nama || '-'"></span>
+                                        <input type="text" x-model="item.nama" @input="debouncedSave()" class="w-full p-2.5 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold text-xs sm:text-sm uppercase" placeholder="Nama barang...">
+                                        <span class="pdf-text uppercase" x-text="item.nama || '-'"></span>
                                     </td>
                                     <td class="p-2">
-                                        <input type="text" x-model="item.klien" @input="debouncedSave()" class="w-full p-2.5 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold text-xs sm:text-sm" placeholder="Nama klien...">
-                                        <span class="pdf-text" x-text="item.klien || '-'"></span>
+                                        <input type="text" x-model="item.klien" @input="debouncedSave()" class="w-full p-2.5 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold text-xs sm:text-sm uppercase" placeholder="Nama klien...">
+                                        <span class="pdf-text uppercase" x-text="item.klien || '-'"></span>
                                     </td>
                                     <td class="p-2">
                                         <input type="number" x-model.number="item.biaya" @input="debouncedSave()" class="w-full p-2.5 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold text-xs sm:text-sm">
@@ -456,15 +458,15 @@
                                 <tr class="border-b border-birunavy/5 dark:border-kuningemas/5 hover:bg-white/60 dark:hover:bg-white/5 transition">
                                     <td class="p-2">
                                         <input type="date" x-model="item.tanggal" @input="debouncedSave()" class="w-full p-2.5 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas text-xs font-semibold">
-                                        <span class="pdf-text" x-text="item.tanggal || '-'"></span>
+                                        <span class="pdf-text uppercase" x-text="item.tanggal || '-'"></span>
                                     </td>
                                     <td class="p-2">
-                                        <input type="text" x-model="item.nama" @input="debouncedSave()" class="w-full p-2.5 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold text-xs sm:text-sm" placeholder="Nama barang...">
-                                        <span class="pdf-text" x-text="item.nama || '-'"></span>
+                                        <input type="text" x-model="item.nama" @input="debouncedSave()" class="w-full p-2.5 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold text-xs sm:text-sm uppercase" placeholder="Nama barang...">
+                                        <span class="pdf-text uppercase" x-text="item.nama || '-'"></span>
                                     </td>
                                     <td class="p-2">
-                                        <input type="text" x-model="item.pic" @input="debouncedSave()" class="w-full p-2.5 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold text-xs sm:text-sm" placeholder="Penanggung jawab...">
-                                        <span class="pdf-text" x-text="item.pic || '-'"></span>
+                                        <input type="text" x-model="item.pic" @input="debouncedSave()" class="w-full p-2.5 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold text-xs sm:text-sm uppercase" placeholder="Penanggung jawab...">
+                                        <span class="pdf-text uppercase" x-text="item.pic || '-'"></span>
                                     </td>
                                     <td class="p-2">
                                         <input type="number" x-model.number="item.biaya" @input="debouncedSave()" class="w-full p-2.5 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold text-xs sm:text-sm">
@@ -520,13 +522,13 @@
                             <template x-for="(item, index) in getDataBulanan('gaji')" :key="index">
                                 <tr class="border-b border-birunavy/5 dark:border-kuningemas/5 hover:bg-white/60 dark:hover:bg-white/5 transition">
                                     <td class="p-3">
-                                        <select x-model="item.nama" @change="debouncedSave()" class="w-full p-2.5 bg-white/50 dark:bg-birunavy border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-bold text-birunavy dark:text-kuningemas text-xs sm:text-sm">
+                                        <select x-model="item.nama" @change="debouncedSave()" class="w-full p-2.5 bg-white/50 dark:bg-birunavy border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-bold text-birunavy dark:text-kuningemas text-xs sm:text-sm uppercase">
                                             <option value="">-- Pilih Staff --</option>
                                             <template x-for="st in data.staffList">
                                                 <option :value="st.nama" x-text="st.nama + (st.jabatan ? ' - '+st.jabatan : '')"></option>
                                             </template>
                                         </select>
-                                        <span class="pdf-text" x-text="item.nama || '-'"></span>
+                                        <span class="pdf-text uppercase" x-text="item.nama || '-'"></span>
                                     </td>
                                     <td class="p-3">
                                         <input type="number" x-model.number="item.jasa" @input="debouncedSave()" class="w-full p-2.5 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold text-xs sm:text-sm">
@@ -602,7 +604,8 @@
                     </div>
                 </div>
 
-                <h3 class="text-lg md:text-2xl font-black mb-6 text-birunavy dark:text-kuningemas uppercase border-b-2 border-kuningemas/30 pb-3 mt-16">Data Buku Besar CFO (<span x-text="activeYear"></span>)</h3>
+                <!-- PAGE BREAK UNTUK BUKU BESAR DI PDF -->
+                <h3 style="page-break-before: always;" class="text-lg md:text-2xl font-black mb-6 text-birunavy dark:text-kuningemas uppercase border-b-2 border-kuningemas/30 pb-3 mt-16 pt-8">Data Buku Besar CFO (<span x-text="activeYear"></span>)</h3>
                 <div class="overflow-x-auto rounded-2xl border border-birunavy/20 dark:border-kuningemas/30 shadow-inner bg-white/30 dark:bg-black/20">
                     <table class="w-full text-left min-w-[800px] text-xs sm:text-sm">
                         <thead class="bg-birunavy text-kuningemas">
@@ -675,11 +678,6 @@
         </button>
     </nav>
 
-    <!-- Footer -->
-    <footer x-show="!isSplash && isLoggedIn" class="text-center mt-auto text-[10px] sm:text-xs font-bold opacity-40 no-print text-birunavy dark:text-kuningemas tracking-widest pb-24">
-        &copy; 2026 PT. MEDIA TULISAN MANUSIA
-    </footer>
-
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyCtRNfx_hNUEXY8t_xCXVWRrZPc4SaBTZY",
@@ -710,7 +708,6 @@
                 toastMessage: '',
                 isGlobalLoading: false,
                 saveTimeout: null,
-                isSavingInProgress: false, // Flag anti-nyangkut Firebase
                 realtimeClock: '',
                 
                 months: ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'],
@@ -719,11 +716,7 @@
                 activeMonth: new Date().getMonth() + 1, 
                 availableYears: [2026, 2027, 2028, 2029, 2030, 2031],
                 
-                data: {
-                    staffList: [{ nama: '', jabatan: '' }],
-                    rab: [{ nama: 'Modal Proyek', biaya: 0, jumlah: 1 }],
-                    years: {}
-                },
+                data: null, // Mulai dengan null agar loading bisa dikontrol ketat
 
                 initApp() {
                     if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -746,7 +739,8 @@
                     this.checkAuthStatus();
 
                     this.$watch('data', (value) => {
-                        this.debouncedSave();
+                        // Jangan trigger save jika data masih null (baru loading)
+                        if(this.data) this.debouncedSave();
                     }, { deep: true });
                 },
 
@@ -783,18 +777,18 @@
                         this.authChecking = false;
                         if (user) {
                             this.isLoggedIn = true;
-                            this.loadDataFromFirebase();
                         } else {
                             this.isLoggedIn = false;
-                            this.loadLocalData();
                         }
                         
+                        this.loadData();
+
                         setTimeout(() => {
                             this.isSplash = false;
                             if(this.isLoggedIn) {
                                 this.scrollToActiveMonth();
                             }
-                        }, 1200); 
+                        }, 800); 
                     });
                 },
                 
@@ -806,19 +800,18 @@
                 loginGoogle() {
                     let provider = new firebase.auth.GoogleAuthProvider();
                     this.isGlobalLoading = true;
-                    // Menggunakan Popup agar tidak kena blokir redirect domain
                     firebase.auth().signInWithPopup(provider).then((result) => {
                         this.isGlobalLoading = false;
                     }).catch(err => {
                         this.isGlobalLoading = false;
-                        alert("Gagal login Google. Pastikan domain web ini sudah diizinkan di Firebase Console.");
+                        alert("Gagal login Google.");
                     });
                 },
 
                 loginOffline() {
                     this.isLoggedIn = true;
-                    this.loadLocalData();
-                    setTimeout(() => { this.scrollToActiveMonth(); }, 300);
+                    this.loadData();
+                    setTimeout(() => { this.scrollToActiveMonth(); this.isSplash = false; }, 300);
                 },
 
                 logout() {
@@ -827,38 +820,45 @@
                     });
                 },
 
-                loadLocalData() {
-                    const saved = localStorage.getItem('sistemKeuangan_Data');
-                    if (saved) {
-                        try { this.data = JSON.parse(saved); } catch(e) {}
-                    }
-                    this.initYear(this.activeYear);
-                },
+                // SISTEM LOAD PINTAR ANTI-HILANG DATA (Membaca Stempel Waktu lastUpdate)
+                loadData() {
+                    const localRaw = localStorage.getItem('sistemKeuangan_Data');
+                    let localData = null;
+                    try { if(localRaw) localData = JSON.parse(localRaw); } catch(e) {}
 
-                loadDataFromFirebase() {
-                    dbRef.once('value').then((snapshot) => {
-                        if (snapshot.exists() && snapshot.val().years) {
-                            this.data = snapshot.val();
-                            localStorage.setItem('sistemKeuangan_Data', JSON.stringify(this.data));
-                        } else {
-                            // JIKA CLOUD KOSONG/BARU, DORONG DATA LOKAL KE CLOUD (Jangan dihapus!)
-                            this.loadLocalData();
-                            if(this.isLoggedIn) dbRef.set(this.data);
-                        }
-                        this.initYear(this.activeYear);
-                        
-                        dbRef.on('value', (snap) => {
-                            if (snap.exists() && !this.isSavingInProgress) {
-                                let remoteData = snap.val();
-                                if (JSON.stringify(remoteData) !== JSON.stringify(this.data)) {
-                                    this.data = remoteData;
-                                    localStorage.setItem('sistemKeuangan_Data', JSON.stringify(this.data));
-                                }
+                    if (this.isLoggedIn) {
+                        dbRef.once('value').then((snapshot) => {
+                            let remoteData = snapshot.exists() ? snapshot.val() : null;
+                            
+                            // Bandingkan Stempel Waktu (Siapa yang paling baru disimpan)
+                            let localTime = localData && localData.lastUpdate ? localData.lastUpdate : 0;
+                            let remoteTime = remoteData && remoteData.lastUpdate ? remoteData.lastUpdate : 0;
+
+                            if (localTime > remoteTime && localData) {
+                                // Data lokal HP lebih baru, paksa push ke cloud
+                                this.data = localData;
+                                dbRef.set(this.data);
+                            } else if (remoteTime >= localTime && remoteData) {
+                                // Data Cloud lebih baru, tarik ke HP
+                                this.data = remoteData;
+                                localStorage.setItem('sistemKeuangan_Data', JSON.stringify(this.data));
+                            } else if (localData) {
+                                // Cloud kosong, pakai data lokal
+                                this.data = localData;
+                                dbRef.set(this.data); // Dorong agar cloud tidak kosong
                             }
+                            
+                            this.initYear(this.activeYear);
+                        }).catch(() => {
+                            // Jika koneksi putus saat narik data, pakai lokal yang ada
+                            if(localData) this.data = localData;
+                            this.initYear(this.activeYear);
                         });
-                    }).catch(() => {
-                        this.loadLocalData();
-                    });
+                    } else {
+                        // Offline, murni lokal
+                        if(localData) this.data = localData;
+                        this.initYear(this.activeYear);
+                    }
                 },
 
                 debouncedSave() {
@@ -874,43 +874,40 @@
                 },
 
                 executeSave(showAnimation) {
+                    if(!this.data) return;
+
                     this.initYear(this.activeYear);
-                    this.isSavingInProgress = true;
+                    this.data.lastUpdate = Date.now(); // Beri stempel waktu baru
                     
-                    // 1. Instan Simpan Lokal (Anti Hilang)
+                    // Simpan Instan ke HP (Super Aman)
                     localStorage.setItem('sistemKeuangan_Data', JSON.stringify(this.data)); 
 
                     if (this.isLoggedIn && firebase.auth().currentUser) {
                         if(showAnimation) this.isGlobalLoading = true;
                         
-                        // FAILSAFE: Jika Firebase tidak respon dalam 2 detik, matikan loading!
                         let failsafe = setTimeout(() => {
                             this.isGlobalLoading = false;
-                            this.isSavingInProgress = false;
                             if(showAnimation) this.triggerToast("Disimpan Lokal (Koneksi Lambat)");
                         }, 2000); 
 
                         dbRef.set(this.data).then(() => {
                             clearTimeout(failsafe);
-                            this.isSavingInProgress = false;
                             if(showAnimation) {
                                 this.isGlobalLoading = false;
                                 this.triggerToast("Data Tersimpan!");
                             }
                         }).catch(err => {
                             clearTimeout(failsafe);
-                            this.isSavingInProgress = false;
                             if(showAnimation) this.isGlobalLoading = false;
-                            this.triggerToast("Disimpan Lokal (Cloud Error)");
+                            if(showAnimation) this.triggerToast("Disimpan Lokal (Cloud Error)");
                         });
                     } else {
-                        this.isSavingInProgress = false;
                         if(showAnimation) {
                             this.isGlobalLoading = true;
                             setTimeout(() => {
                                 this.isGlobalLoading = false;
                                 this.triggerToast("Tersimpan Lokal!");
-                            }, 400); // 0.4 Detik saja
+                            }, 400); 
                         }
                     }
                 },
@@ -1064,7 +1061,7 @@
                             this.isGlobalLoading = false;
                             alert("Gagal cetak PDF");
                         });
-                    }, 100); // Super cepat
+                    }, 100); 
                 },
 
                 downloadPDF(mode) {
@@ -1087,7 +1084,6 @@
                             filename: filename,
                             image: { type: 'jpeg', quality: 1 },
                             html2canvas: { scale: 2, useCORS: true, logging: false },
-                            // Laporan bulanan Landscape agar tabel muat kanan-kiri
                             jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' } 
                         };
 
@@ -1103,7 +1099,7 @@
                             this.isGlobalLoading = false;
                             alert("Gagal cetak PDF");
                         });
-                    }, 100); // Super cepat
+                    }, 100); 
                 }
             }));
         });
