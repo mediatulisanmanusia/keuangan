@@ -55,7 +55,7 @@
 
         body { 
             background-attachment: fixed !important;
-            transition: background-color 0.5s ease; 
+            transition: background-color 0.4s ease; 
         }
         .bg-light-theme { background: linear-gradient(145deg, #f0f4f8 0%, #e2e8f0 50%, #cbd5e1 100%) fixed; }
         .dark .bg-light-theme { background: linear-gradient(145deg, #040d17 0%, #081c34 50%, #03080f 100%) fixed; }
@@ -63,13 +63,13 @@
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* PERBAIKAN MUTLAK PDF MODE - Rapi, Teks Tidak Tertutup, Tabel Kanan-Kiri Presisi */
+        /* PERBAIKAN MUTLAK PDF MODE */
         .pdf-mode { 
             background: white !important; 
             color: black !important; 
             padding: 20px !important; 
             font-size: 11px !important; 
-            width: 1000px !important; /* Paksa lebar desktop agar tabel tidak terpotong */
+            width: 1000px !important; 
             max-width: none !important; 
             margin: 0 auto !important; 
         }
@@ -106,30 +106,29 @@
       x-data="keuanganApp()" 
       x-init="initApp()">
 
-    <!-- SPLASH SCREEN LAMA (3 Detik) -->
-    <div x-show="isSplash" x-transition.opacity.duration.800ms class="fixed inset-0 z-[1000] bg-light-theme flex flex-col items-center justify-center">
-        <div class="relative flex flex-col items-center">
-            <img src="logopt.webp" class="h-24 md:h-32 object-contain animate-bounce block dark:hidden">
-            <img src="logopt2.webp" class="h-24 md:h-32 object-contain animate-bounce hidden dark:block">
-            <div class="w-10 h-10 border-4 border-kuningemas border-t-transparent rounded-full animate-spin mt-6"></div>
+    <!-- SPLASH SCREEN CEPAT (Hanya Logo) -->
+    <div x-show="isSplash" x-transition.opacity.duration.500ms class="fixed inset-0 z-[1000] bg-light-theme flex flex-col items-center justify-center">
+        <div class="glass p-6 rounded-3xl flex items-center justify-center border border-white/50 dark:border-kuningemas/30 shadow-2xl">
+            <img src="logopt.webp" class="h-16 w-auto object-contain animate-bounce block dark:hidden">
+            <img src="logopt2.webp" class="h-16 w-auto object-contain animate-bounce hidden dark:block">
         </div>
     </div>
 
-    <!-- OVERLAY LOADING TRANSPARAN -->
+    <!-- OVERLAY LOADING GLOBAL (Sama persis seperti Splash, Cepat & Tanpa Teks) -->
     <div x-show="isGlobalLoading" x-transition.opacity.duration.200ms class="fixed inset-0 z-[999] bg-slate-900/30 dark:bg-black/50 backdrop-blur-sm flex flex-col items-center justify-center pointer-events-none">
-        <div class="glass p-5 rounded-3xl flex items-center justify-center border border-white/50 dark:border-kuningemas/30 shadow-2xl">
-            <img src="logopt.webp" class="h-12 w-auto object-contain animate-pulse block dark:hidden">
-            <img src="logopt2.webp" class="h-12 w-auto object-contain animate-pulse hidden dark:block">
+        <div class="glass p-6 rounded-3xl flex items-center justify-center border border-white/50 dark:border-kuningemas/30 shadow-2xl">
+            <img src="logopt.webp" class="h-14 w-auto object-contain animate-bounce block dark:hidden">
+            <img src="logopt2.webp" class="h-14 w-auto object-contain animate-bounce hidden dark:block">
         </div>
     </div>
 
-    <!-- NOTIFIKASI TOAST -->
+    <!-- NOTIFIKASI TOAST SUKSES (Cepat Hilang) -->
     <div x-show="showToast" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 -translate-y-10" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 -translate-y-10" class="no-print fixed top-6 left-1/2 -translate-x-1/2 z-[1000] bg-emerald-500/95 backdrop-blur-md text-white font-black px-5 py-2.5 rounded-full shadow-lg text-[10px] sm:text-xs tracking-wider uppercase border border-emerald-300 flex items-center gap-2">
         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
         <span x-text="toastMessage"></span>
     </div>
 
-    <!-- HALAMAN LOGIN (Terinspirasi Coretax) -->
+    <!-- HALAMAN LOGIN (Metode Popup Google Anti-Nyangkut) -->
     <div x-show="!isLoggedIn && !authChecking && !isSplash" x-transition class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="glass w-full max-w-sm sm:max-w-md p-8 sm:p-10 rounded-[2rem] text-center shadow-glass dark:shadow-glass-dark border border-white/60 dark:border-kuningemas/20 relative overflow-hidden">
             <img src="logopt.webp" class="h-16 sm:h-20 mx-auto mb-6 block dark:hidden drop-shadow-md">
@@ -172,6 +171,7 @@
                 <hr class="w-full border-birunavy/10 dark:border-kuningemas/20">
             </div>
 
+            <!-- Login Google pakai POPUP, jaminan anti ngelag/error redirect -->
             <button @click="loginGoogle" class="w-full py-3 bg-white dark:bg-birunavy text-birunavy dark:text-white border border-birunavy/10 dark:border-kuningemas/30 rounded-2xl font-bold text-sm flex items-center justify-center gap-3 hover:bg-slate-50 dark:hover:bg-birunavy/80 transition active:scale-[0.98] shadow-sm mb-4">
                 <svg class="w-5 h-5" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
                 Masuk dengan Google
@@ -356,9 +356,11 @@
                     </table>
                 </div>
                 <div class="flex flex-col sm:flex-row justify-between items-center mt-6 gap-3">
-                    <button @click="tambahBarisGlobal('rab')" class="no-print w-full sm:w-auto px-5 py-3 bg-birunavy/10 dark:bg-white/10 text-birunavy dark:text-kuningemas rounded-xl text-xs font-bold transition hover:bg-birunavy/20 flex items-center justify-center gap-2">
-                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd"/></svg> Tambah Baris
-                    </button>
+                    <div class="flex gap-2 w-full sm:w-auto">
+                        <button @click="tambahBarisGlobal('rab')" class="no-print flex-1 sm:flex-none px-5 py-3 bg-birunavy/10 dark:bg-white/10 text-birunavy dark:text-kuningemas rounded-xl text-xs font-bold transition hover:bg-birunavy/20 flex items-center justify-center gap-2">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd"/></svg> Tambah Baris
+                        </button>
+                    </div>
                     <button @click="manualSave()" class="no-print w-full sm:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black shadow-lg transition flex items-center justify-center gap-2 active:scale-95 uppercase tracking-wider">
                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6h5a2 2 0 012 2v7a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2h5v5.586l-1.293-1.293zM9 4a1 1 0 012 0v2H9V4z"/></svg> Simpan RAB
                     </button>
@@ -424,7 +426,7 @@
                 </div>
                 <div class="flex flex-col sm:flex-row justify-between items-center mt-6 gap-3">
                     <button @click="tambahBarisBulan('pendapatan')" class="no-print w-full sm:w-auto px-5 py-3 bg-birunavy/10 dark:bg-white/10 text-birunavy dark:text-kuningemas rounded-xl text-xs font-bold transition hover:bg-birunavy/20 flex items-center justify-center gap-2">
-                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd"/></svg> Tambah Baris
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd"/></svg> Tambah Dana Masuk
                     </button>
                     <button @click="manualSave()" class="no-print w-full sm:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black shadow-lg transition flex items-center justify-center gap-2 active:scale-95 uppercase tracking-wider">
                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6h5a2 2 0 012 2v7a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2h5v5.586l-1.293-1.293zM9 4a1 1 0 012 0v2H9V4z"/></svg> Simpan Pendapatan
@@ -491,7 +493,7 @@
                 </div>
                 <div class="flex flex-col sm:flex-row justify-between items-center mt-6 gap-3">
                     <button @click="tambahBarisBulan('pengeluaran')" class="no-print w-full sm:w-auto px-5 py-3 bg-birunavy/10 dark:bg-white/10 text-birunavy dark:text-kuningemas rounded-xl text-xs font-bold transition hover:bg-birunavy/20 flex items-center justify-center gap-2">
-                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd"/></svg> Tambah Baris
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd"/></svg> Catat Pengeluaran
                     </button>
                     <button @click="manualSave()" class="no-print w-full sm:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black shadow-lg transition flex items-center justify-center gap-2 active:scale-95 uppercase tracking-wider">
                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6h5a2 2 0 012 2v7a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2h5v5.586l-1.293-1.293zM9 4a1 1 0 012 0v2H9V4z"/></svg> Simpan Pengeluaran
@@ -554,7 +556,7 @@
                 </div>
                 <div class="flex flex-col sm:flex-row justify-between items-center mt-6 gap-3">
                     <button @click="tambahBarisBulan('gaji')" class="no-print w-full sm:w-auto px-5 py-3 bg-birunavy/10 dark:bg-white/10 text-birunavy dark:text-kuningemas rounded-xl text-xs font-bold transition hover:bg-birunavy/20 flex items-center justify-center gap-2">
-                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd"/></svg> Tambah Baris
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd"/></svg> Hitung Gaji Baru
                     </button>
                     <button @click="manualSave()" class="no-print w-full sm:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black shadow-lg transition flex items-center justify-center gap-2 active:scale-95 uppercase tracking-wider">
                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6h5a2 2 0 012 2v7a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2h5v5.586l-1.293-1.293zM9 4a1 1 0 012 0v2H9V4z"/></svg> Simpan Distribusi Gaji
@@ -673,6 +675,11 @@
         </button>
     </nav>
 
+    <!-- Footer -->
+    <footer x-show="!isSplash && isLoggedIn" class="text-center mt-auto text-[10px] sm:text-xs font-bold opacity-40 no-print text-birunavy dark:text-kuningemas tracking-widest pb-24">
+        &copy; 2026 PT. MEDIA TULISAN MANUSIA
+    </footer>
+
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyCtRNfx_hNUEXY8t_xCXVWRrZPc4SaBTZY",
@@ -703,6 +710,7 @@
                 toastMessage: '',
                 isGlobalLoading: false,
                 saveTimeout: null,
+                isSavingInProgress: false, // Flag anti-nyangkut Firebase
                 realtimeClock: '',
                 
                 months: ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'],
@@ -735,12 +743,7 @@
                         } catch(e) {}
                     }
 
-                    firebase.auth().getRedirectResult().then(() => {
-                        this.checkAuthStatus();
-                    }).catch(error => {
-                        this.loginError = error.message;
-                        this.checkAuthStatus();
-                    });
+                    this.checkAuthStatus();
 
                     this.$watch('data', (value) => {
                         this.debouncedSave();
@@ -786,13 +789,12 @@
                             this.loadLocalData();
                         }
                         
-                        // Diperpanjang menjadi 3 Detik agar animasi mantap
                         setTimeout(() => {
                             this.isSplash = false;
                             if(this.isLoggedIn) {
                                 this.scrollToActiveMonth();
                             }
-                        }, 3000); 
+                        }, 1200); 
                     });
                 },
                 
@@ -803,7 +805,14 @@
 
                 loginGoogle() {
                     let provider = new firebase.auth.GoogleAuthProvider();
-                    firebase.auth().signInWithRedirect(provider);
+                    this.isGlobalLoading = true;
+                    // Menggunakan Popup agar tidak kena blokir redirect domain
+                    firebase.auth().signInWithPopup(provider).then((result) => {
+                        this.isGlobalLoading = false;
+                    }).catch(err => {
+                        this.isGlobalLoading = false;
+                        alert("Gagal login Google. Pastikan domain web ini sudah diizinkan di Firebase Console.");
+                    });
                 },
 
                 loginOffline() {
@@ -828,16 +837,18 @@
 
                 loadDataFromFirebase() {
                     dbRef.once('value').then((snapshot) => {
-                        if (snapshot.exists()) {
+                        if (snapshot.exists() && snapshot.val().years) {
                             this.data = snapshot.val();
                             localStorage.setItem('sistemKeuangan_Data', JSON.stringify(this.data));
                         } else {
+                            // JIKA CLOUD KOSONG/BARU, DORONG DATA LOKAL KE CLOUD (Jangan dihapus!)
                             this.loadLocalData();
+                            if(this.isLoggedIn) dbRef.set(this.data);
                         }
                         this.initYear(this.activeYear);
                         
                         dbRef.on('value', (snap) => {
-                            if (snap.exists() && !this.saveTimeout) {
+                            if (snap.exists() && !this.isSavingInProgress) {
                                 let remoteData = snap.val();
                                 if (JSON.stringify(remoteData) !== JSON.stringify(this.data)) {
                                     this.data = remoteData;
@@ -855,7 +866,7 @@
                     this.saveTimeout = setTimeout(() => {
                         this.executeSave(false);
                         this.saveTimeout = null;
-                    }, 1500);
+                    }, 1000);
                 },
 
                 manualSave() {
@@ -864,40 +875,42 @@
 
                 executeSave(showAnimation) {
                     this.initYear(this.activeYear);
-                    // 1. Simpan Lokal Instan (PASTI AMAN)
+                    this.isSavingInProgress = true;
+                    
+                    // 1. Instan Simpan Lokal (Anti Hilang)
                     localStorage.setItem('sistemKeuangan_Data', JSON.stringify(this.data)); 
 
                     if (this.isLoggedIn && firebase.auth().currentUser) {
                         if(showAnimation) this.isGlobalLoading = true;
                         
-                        // 2. FAILSAFE TIMEOUT 2 DETIK AGAR TIDAK NYANGKUT
+                        // FAILSAFE: Jika Firebase tidak respon dalam 2 detik, matikan loading!
                         let failsafe = setTimeout(() => {
                             this.isGlobalLoading = false;
-                            this.triggerToast("Disimpan Lokal (Cloud Timeout)");
+                            this.isSavingInProgress = false;
+                            if(showAnimation) this.triggerToast("Disimpan Lokal (Koneksi Lambat)");
                         }, 2000); 
 
                         dbRef.set(this.data).then(() => {
-                            clearTimeout(failsafe); // Hapus failsafe kalau firebase sukses cepat
+                            clearTimeout(failsafe);
+                            this.isSavingInProgress = false;
                             if(showAnimation) {
                                 this.isGlobalLoading = false;
-                                this.triggerToast("Tersimpan ke Cloud & Lokal!");
-                            } else {
-                                this.triggerToast("Otomatis Tersimpan");
+                                this.triggerToast("Data Tersimpan!");
                             }
                         }).catch(err => {
                             clearTimeout(failsafe);
+                            this.isSavingInProgress = false;
                             if(showAnimation) this.isGlobalLoading = false;
-                            this.triggerToast("Gagal Cloud, Tersimpan Lokal");
+                            this.triggerToast("Disimpan Lokal (Cloud Error)");
                         });
                     } else {
+                        this.isSavingInProgress = false;
                         if(showAnimation) {
                             this.isGlobalLoading = true;
                             setTimeout(() => {
                                 this.isGlobalLoading = false;
                                 this.triggerToast("Tersimpan Lokal!");
-                            }, 500);
-                        } else {
-                            this.triggerToast("Otomatis Tersimpan Lokal");
+                            }, 400); // 0.4 Detik saja
                         }
                     }
                 },
@@ -905,7 +918,7 @@
                 triggerToast(msg) {
                     this.toastMessage = msg;
                     this.showToast = true;
-                    setTimeout(() => { this.showToast = false; }, 2500);
+                    setTimeout(() => { this.showToast = false; }, 2000);
                 },
 
                 initYear(year) {
@@ -1035,16 +1048,15 @@
                         const opt = {
                             margin: 0.3,
                             filename: `RAB_PT_Media_Tulisan_Manusia_${this.activeYear}.pdf`,
-                            image: { type: 'jpeg', quality: 0.98 },
+                            image: { type: 'jpeg', quality: 1 },
                             html2canvas: { scale: 2, useCORS: true, logging: false },
-                            jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } // Portrait karena RAB muat
+                            jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } 
                         };
                         html2pdf().set(opt).from(element).save().then(() => {
                             element.classList.remove('pdf-mode');
                             document.getElementById('pdf-header').classList.add('hidden');
                             this.activeTab = originalTab;
                             this.isGlobalLoading = false;
-                            this.triggerToast("PDF Berhasil Diunduh!");
                         }).catch(err => {
                             element.classList.remove('pdf-mode');
                             document.getElementById('pdf-header').classList.add('hidden');
@@ -1052,7 +1064,7 @@
                             this.isGlobalLoading = false;
                             alert("Gagal cetak PDF");
                         });
-                    }, 500);
+                    }, 100); // Super cepat
                 },
 
                 downloadPDF(mode) {
@@ -1073,9 +1085,9 @@
                         const opt = {
                             margin: 0.3,
                             filename: filename,
-                            image: { type: 'jpeg', quality: 0.98 },
+                            image: { type: 'jpeg', quality: 1 },
                             html2canvas: { scale: 2, useCORS: true, logging: false },
-                            // Pakai landscape untuk Laporan Bulanan & Neraca supaya tabel kanan-kiri tidak terpotong
+                            // Laporan bulanan Landscape agar tabel muat kanan-kiri
                             jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' } 
                         };
 
@@ -1084,7 +1096,6 @@
                             document.getElementById('pdf-header').classList.add('hidden');
                             if (mode === 'all') this.printAll = false;
                             this.isGlobalLoading = false;
-                            this.triggerToast("PDF Berhasil Diunduh!");
                         }).catch(err => {
                             element.classList.remove('pdf-mode');
                             document.getElementById('pdf-header').classList.add('hidden');
@@ -1092,7 +1103,7 @@
                             this.isGlobalLoading = false;
                             alert("Gagal cetak PDF");
                         });
-                    }, 500);
+                    }, 100); // Super cepat
                 }
             }));
         });
