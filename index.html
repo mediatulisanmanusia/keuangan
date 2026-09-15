@@ -34,14 +34,14 @@
     
     <style>
         .glass {
-            background: rgba(255, 255, 255, 0.88);
+            background: rgba(255, 255, 255, 0.90);
             backdrop-filter: blur(25px);
             -webkit-backdrop-filter: blur(25px);
             border: 1px solid rgba(255, 255, 255, 0.6);
             box-shadow: 0 15px 35px rgba(10, 37, 64, 0.1);
         }
         .dark .glass {
-            background: rgba(10, 37, 64, 0.88);
+            background: rgba(10, 37, 64, 0.90);
             backdrop-filter: blur(25px);
             -webkit-backdrop-filter: blur(25px);
             border: 1px solid rgba(212, 175, 55, 0.25);
@@ -58,8 +58,8 @@
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* PDF Styling Profesional */
-        .pdf-mode { background: white !important; color: black !important; padding: 15px !important; font-size: 11px !important; width: 100% !important; }
+        /* PDF Styling Sempurna Anti Rusak */
+        .pdf-mode { background: white !important; color: black !important; padding: 20px !important; font-size: 11px !important; width: 100% !important; }
         .pdf-mode .no-print { display: none !important; }
         .pdf-mode .print-logo { display: block !important; }
         .pdf-mode .glass { background: transparent !important; backdrop-filter: none !important; box-shadow: none !important; border: none !important; border-radius: 0 !important; }
@@ -74,7 +74,7 @@
       x-data="keuanganApp()" 
       x-init="initApp()">
 
-    <!-- 1. SPLASH SCREEN DENGAN logopt.webp -->
+    <!-- 1. SPLASH SCREEN -->
     <div x-show="isSplash" x-transition.opacity.duration.800ms class="fixed inset-0 z-[100] bg-light-theme flex flex-col items-center justify-center">
         <div class="relative flex flex-col items-center">
             <img src="logopt.webp" class="h-20 md:h-28 object-contain animate-bounce block dark:hidden">
@@ -84,10 +84,10 @@
         </div>
     </div>
 
-    <!-- OVERLAY LOADING TRANSPARAN DENGAN logopt.webp -->
+    <!-- OVERLAY LOADING TRANSPARAN -->
     <div x-show="isGlobalLoading" x-transition.opacity.duration.300ms class="fixed inset-0 z-[200] bg-black/40 backdrop-blur-sm flex flex-col items-center justify-center">
         <div class="glass p-6 rounded-3xl shadow-2xl flex flex-col items-center border border-kuningemas/40">
-            <img src="logopt.webp" class="h-10 w-auto object-contain animate-pulse mb-3 block dark:hidden">
+            <img src="logopt1.webp" class="h-10 w-auto object-contain animate-pulse mb-3 block dark:hidden">
             <img src="logopt2.webp" class="h-10 w-auto object-contain animate-pulse mb-3 hidden dark:block">
             <div class="w-6 h-6 border-3 border-kuningemas border-t-transparent rounded-full animate-spin mb-2"></div>
             <p class="text-xs font-black uppercase tracking-wider text-birunavy dark:text-kuningemas" x-text="globalLoadingText"></p>
@@ -134,7 +134,7 @@
     <!-- 3. SISTEM APLIKASI UTAMA -->
     <div x-show="!isSplash && isLoggedIn" x-transition class="max-w-7xl mx-auto p-3 sm:p-6 lg:p-8 flex-grow w-full relative">
         
-        <!-- GELEMBUNG ATAS (RESPONSIF, TIDAK MEPET, EFEK KACA) -->
+        <!-- GELEMBUNG ATAS -->
         <div class="fixed top-3 left-3 right-3 sm:left-6 sm:right-6 md:left-12 md:right-12 z-40 glass px-4 py-2.5 rounded-full flex items-center justify-between shadow-xl no-print border border-birunavy/15 dark:border-kuningemas/30 backdrop-blur-xl">
             <div class="flex items-center gap-2">
                 <img src="rev1.webp" class="h-6 sm:h-7 w-auto object-contain block dark:hidden">
@@ -161,7 +161,7 @@
                 <h1 class="text-base md:text-2xl font-black text-birunavy dark:text-kuningemas tracking-widest uppercase">SISTEM KEUANGAN MTM</h1>
             </div>
             
-            <!-- GELEMBUNG KECIL ESTETIK TANGGAL & JAM LIVE -->
+            <!-- GELEMBUNG TANGGAL & JAM LIVE -->
             <div class="flex justify-center no-print">
                 <div class="inline-flex items-center gap-2 glass px-4 py-1.5 rounded-full shadow-sm border border-birunavy/10 dark:border-kuningemas/20">
                     <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -169,18 +169,18 @@
                 </div>
             </div>
 
-            <!-- Header khusus saat cetak PDF -->
+            <!-- Header PDF -->
             <div id="pdf-header" class="hidden mb-6 text-center">
                 <h1 class="text-xl font-bold uppercase text-black border-b-2 border-black pb-2">Laporan Keuangan <span x-text="months[activeMonth-1]"></span> <span x-text="activeYear"></span></h1>
             </div>
         </div>
 
-        <!-- NOTIFIKASI TOAST SUCCESS -->
+        <!-- NOTIFIKASI TOAST -->
         <div x-show="showToast" x-transition class="no-print fixed top-20 left-1/2 -translate-x-1/2 z-[250] bg-emerald-600 text-white font-black px-6 py-3 rounded-2xl shadow-2xl text-xs tracking-wider uppercase border border-emerald-400 flex items-center gap-2">
             <span>✅</span> <span x-text="toastMessage"></span>
         </div>
 
-        <!-- Pemilihan Tahun & Tombol Unduh -->
+        <!-- Tahun & Tombol Unduh -->
         <div class="glass rounded-2xl p-4 mb-8 mx-auto max-w-4xl no-print flex flex-col md:flex-row items-center justify-between gap-4">
             <div class="flex items-center gap-3 w-full md:w-auto justify-center">
                 <label class="font-bold text-sm md:text-base text-birunavy dark:text-kuningemas uppercase whitespace-nowrap">Tahun:</label>
@@ -206,11 +206,11 @@
         <!-- AREA CETAK UTAMA -->
         <div id="print-area" class="w-full">
 
-            <!-- Sub-Menu 12 Bulan (Auto Scroll ke Bulan Aktif) -->
+            <!-- Sub-Menu 12 Bulan (Auto Scroll Aktif) -->
             <div x-show="['pendapatan', 'pengeluaran', 'gaji', 'neraca'].includes(activeTab)" class="mb-6 no-print">
                 <div id="month-scroll-container" class="flex overflow-x-auto gap-2 pb-4 snap-x hide-scrollbar px-1 scroll-smooth">
                     <template x-for="(bulan, index) in months" :key="index">
-                        <button :id="'month-btn-' + (index + 1)" @click="activeMonth = index + 1; saveState()" 
+                        <button :id="'month-btn-' + (index + 1)" @click="activeMonth = index + 1; scrollToActiveMonth()" 
                                 class="snap-center shrink-0 min-w-[100px] md:min-w-[120px] p-3 rounded-2xl border-2 transition-all duration-300 flex justify-center glass active:scale-95"
                                 :class="activeMonth === index + 1 ? 'border-kuningemas bg-birunavy text-kuningemas font-black scale-105 shadow-xl' : 'border-transparent text-birunavy/80 dark:text-kuningemas/80 font-bold'">
                             <span class="text-xs md:text-sm uppercase tracking-wider" x-text="bulan"></span>
@@ -219,7 +219,7 @@
                 </div>
             </div>
 
-            <!-- Tab: Daftar Staff -->
+            <!-- Tab: Staff -->
             <div x-show="activeTab === 'staff'" class="glass rounded-3xl p-5 md:p-8 mb-6">
                 <h2 class="text-xl md:text-2xl font-black mb-6 text-birunavy dark:text-kuningemas uppercase border-b-2 border-kuningemas/30 pb-3">Daftar Staff Internal</h2>
                 <div class="overflow-x-auto rounded-xl border border-birunavy/10 dark:border-kuningemas/20">
@@ -247,7 +247,7 @@
                         <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg> Tambah Staff
                     </button>
                     <button @click="simpanKategoriData()" class="no-print w-full sm:w-auto px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-black shadow-lg transition flex items-center justify-center gap-2 active:scale-95">
-                        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg> Simpan Data Staff
+                        💾 Simpan Data Staff
                     </button>
                 </div>
             </div>
@@ -288,14 +288,14 @@
                 <div class="flex flex-col sm:flex-row justify-between items-center mt-5 gap-3">
                     <div class="flex gap-2 w-full sm:w-auto">
                         <button @click="tambahBarisGlobal('rab')" class="no-print flex-1 sm:flex-none px-6 py-3 bg-birunavy text-kuningemas rounded-xl text-sm font-bold shadow-lg transition hover:opacity-90 flex items-center justify-center gap-2">
-                            <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg> Tambah
+                            + Tambah
                         </button>
                         <button @click="downloadRABPDF()" class="no-print flex-1 sm:flex-none px-6 py-3 bg-kuningemas text-birunavy rounded-xl text-sm font-black shadow-lg transition hover:opacity-90 flex items-center justify-center gap-2">
-                            <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg> Unduh PDF
+                            Unduh PDF
                         </button>
                     </div>
                     <button @click="simpanKategoriData()" class="no-print w-full sm:w-auto px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-black shadow-lg transition flex items-center justify-center gap-2 active:scale-95">
-                        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg> Simpan Kategori RAB
+                        💾 Simpan Kategori RAB
                     </button>
                 </div>
             </div>
@@ -339,10 +339,10 @@
                 </div>
                 <div class="flex flex-col sm:flex-row justify-between items-center mt-5 gap-3">
                     <button @click="tambahBarisBulan('pendapatan')" class="no-print w-full sm:w-auto px-6 py-3 bg-birunavy text-kuningemas rounded-xl text-sm font-bold shadow-lg transition hover:opacity-90 flex items-center justify-center gap-2">
-                        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg> Tambah Sumber Dana
+                        + Tambah Sumber Dana
                     </button>
                     <button @click="simpanKategoriData()" class="no-print w-full sm:w-auto px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-black shadow-lg transition flex items-center justify-center gap-2 active:scale-95">
-                        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg> Simpan Pendapatan Bulan Ini
+                        💾 Simpan Pendapatan Bulan Ini
                     </button>
                 </div>
             </div>
@@ -386,10 +386,10 @@
                 </div>
                 <div class="flex flex-col sm:flex-row justify-between items-center mt-5 gap-3">
                     <button @click="tambahBarisBulan('pengeluaran')" class="no-print w-full sm:w-auto px-6 py-3 bg-birunavy text-kuningemas rounded-xl text-sm font-bold shadow-lg transition hover:opacity-90 flex items-center justify-center gap-2">
-                        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg> Catat Pengeluaran
+                        + Catat Pengeluaran
                     </button>
                     <button @click="simpanKategoriData()" class="no-print w-full sm:w-auto px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-black shadow-lg transition flex items-center justify-center gap-2 active:scale-95">
-                        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg> Simpan Pengeluaran Bulan Ini
+                        💾 Simpan Pengeluaran Bulan Ini
                     </button>
                 </div>
             </div>
@@ -439,10 +439,10 @@
                 </div>
                 <div class="flex flex-col sm:flex-row justify-between items-center mt-5 gap-3">
                     <button @click="tambahBarisBulan('gaji')" class="no-print w-full sm:w-auto px-6 py-3 bg-birunavy text-kuningemas rounded-xl text-sm font-bold shadow-lg transition hover:opacity-90 flex items-center justify-center gap-2">
-                        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg> Hitung Gaji Baru
+                        + Hitung Gaji Baru
                     </button>
                     <button @click="simpanKategoriData()" class="no-print w-full sm:w-auto px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-black shadow-lg transition flex items-center justify-center gap-2 active:scale-95">
-                        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg> Simpan Distribusi Gaji
+                        💾 Simpan Distribusi Gaji
                     </button>
                 </div>
             </div>
@@ -519,7 +519,7 @@
                 
                 <div class="mt-6 flex justify-end no-print">
                     <button @click="downloadPDF('current')" class="glass rounded-xl !bg-birunavy hover:opacity-90 text-kuningemas px-6 py-3 text-sm font-black shadow-xl border border-kuningemas/50 hover:scale-105 transition flex items-center gap-2">
-                        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg> CETAK LAPORAN TAHUNAN
+                        CETAK LAPORAN TAHUNAN
                     </button>
                 </div>
             </div>
@@ -527,7 +527,7 @@
         </div> <!-- End Print Area -->
     </div>
 
-    <!-- DOCK MENU NAVIGASI BAWAH (KECIL, ESTETIK, VEKTOR SOLID) -->
+    <!-- DOCK MENU NAVIGASI BAWAH -->
     <nav x-show="!isSplash && isLoggedIn" x-transition class="fixed bottom-3 left-3 right-3 sm:left-auto sm:right-auto sm:left-1/2 sm:-translate-x-1/2 z-40 glass px-2 py-1.5 rounded-full flex items-center justify-around sm:justify-center gap-1 sm:gap-2 shadow-2xl no-print border border-birunavy/10 dark:border-kuningemas/30 backdrop-blur-xl">
         <template x-for="tab in tabs" :key="tab.id">
             <button @click="activeTab = tab.id; saveState()" 
@@ -581,7 +581,7 @@
                 months: ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'],
                 
                 activeYear: 2026,
-                activeMonth: new Date().getMonth() + 1,
+                activeMonth: new Date().getMonth() + 1, // Otomatis September (9)
                 availableYears: [2026, 2027, 2028, 2029, 2030, 2031],
 
                 tabs: [
@@ -608,14 +608,12 @@
                     this.updateClock();
                     setInterval(() => this.updateClock(), 1000);
 
-                    // Memuat kembali tab terakhir yang diakses pengguna
+                    // Memuat memori sesi tab terakhir, tapi BULAN dan TAHUN dipaksa ke waktu live (September 2026)
                     const lastState = localStorage.getItem('sistemKeuanganMTM_ActiveTab');
                     if (lastState) {
                         try {
                             const parsed = JSON.parse(lastState);
                             if (parsed.tab) this.activeTab = parsed.tab;
-                            if (parsed.month) this.activeMonth = parsed.month;
-                            if (parsed.year) this.activeYear = parsed.year;
                         } catch(e) {}
                     }
 
@@ -623,7 +621,7 @@
                         this.isSplash = false;
                         this.checkAuthStatus();
                         this.scrollToActiveMonth();
-                    }, 1200);
+                    }, 1000);
                 },
 
                 saveState() {
@@ -722,7 +720,7 @@
                     this.isGlobalLoading = true;
                     this.initYear(this.activeYear);
 
-                    // Simpan instan ke LocalStorage agar abadi
+                    // Simpan instan ke LocalStorage
                     localStorage.setItem('sistemKeuanganMTM_Storage', JSON.stringify(this.data));
 
                     setTimeout(() => {
@@ -738,7 +736,7 @@
                             this.isGlobalLoading = false;
                             this.triggerToast("Data Berhasil Disimpan secara Lokal!");
                         }
-                    }, 800);
+                    }, 600);
                 },
 
                 triggerToast(msg) {
@@ -888,7 +886,7 @@
                             this.activeTab = originalTab;
                             this.isGlobalLoading = false;
                         });
-                    }, 800);
+                    }, 600);
                 },
 
                 downloadPDF(mode) {
@@ -901,7 +899,7 @@
                     }
 
                     if (mode === 'all') this.printAll = true;
-                    document.getElementById('pdf-header').classList.remove('hidden');
+                    document.getElementById('pdf-header').classList.add('hidden');
 
                     setTimeout(() => {
                         const element = document.getElementById('print-area');
@@ -927,11 +925,10 @@
                             if (mode === 'all') this.printAll = false;
                             this.isGlobalLoading = false;
                         });
-                    }, 800);
+                    }, 600);
                 }
             }));
         });
     </script>
 </body>
 </html>
-
