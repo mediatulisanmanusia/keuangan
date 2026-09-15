@@ -37,7 +37,6 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     
     <style>
-        /* Efek Kaca */
         .glass {
             background: rgba(255, 255, 255, 0.75);
             backdrop-filter: blur(16px);
@@ -63,36 +62,21 @@
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* PERBAIKAN MUTLAK PDF MODE - Teks Presisi & Auto Page Break */
+        /* PERBAIKAN MUTLAK PDF MODE BUKU BESAR */
         .pdf-mode { 
-            background: white !important; 
-            color: black !important; 
-            padding: 20px !important; 
-            font-size: 11px !important; 
-            width: 1000px !important; 
-            max-width: none !important; 
-            margin: 0 auto !important; 
+            background: white !important; color: black !important; padding: 20px !important; 
+            font-size: 11px !important; width: 1000px !important; max-width: none !important; margin: 0 auto !important; 
         }
         .pdf-mode .no-print { display: none !important; }
         .pdf-mode .print-logo { display: block !important; margin: 0 auto 20px auto !important; }
         .pdf-mode .glass, .pdf-mode .bg-birunavy, .pdf-mode .bg-kuningemas { 
-            background: transparent !important; 
-            backdrop-filter: none !important; 
-            box-shadow: none !important; 
-            border: none !important; 
-            border-radius: 0 !important; 
-            color: black !important; 
+            background: transparent !important; backdrop-filter: none !important; box-shadow: none !important; 
+            border: none !important; border-radius: 0 !important; color: black !important; 
         }
         .pdf-mode *, .pdf-mode th, .pdf-mode td, .pdf-mode span { color: black !important; border-color: #333 !important; }
-        
-        /* Auto Page Break untuk mencegah tabel terpotong setengah */
         .pdf-mode table { 
-            width: 100% !important; 
-            border-collapse: collapse !important; 
-            margin-bottom: 20px !important; 
-            font-size: 11px !important; 
-            table-layout: auto !important;
-            page-break-inside: avoid !important; /* Jangan potong tabel */
+            width: 100% !important; border-collapse: collapse !important; margin-bottom: 20px !important; 
+            font-size: 11px !important; table-layout: auto !important; page-break-inside: avoid !important; 
         }
         .pdf-mode th, .pdf-mode td { border: 1px solid #000 !important; padding: 10px !important; word-wrap: break-word !important; }
         .pdf-mode th { background-color: #f3f4f6 !important; font-weight: bold !important; -webkit-print-color-adjust: exact; text-align: left !important; }
@@ -101,7 +85,6 @@
         .pdf-text { display: none; }
         .pdf-mode .pdf-text { display: inline-block; font-weight: 600; }
         .pdf-mode input, .pdf-mode select { display: none !important; }
-
         input, select { transition: all 0.2s; }
     </style>
 </head>
@@ -109,7 +92,111 @@
       x-data="keuanganApp()" 
       x-init="initApp()">
 
-    <!-- SPLASH SCREEN CEPAT -->
+    <!-- TEMPLATE SLIP GAJI (Disembunyikan, Dipanggil saat cetak) -->
+    <div id="slip-gaji-print" class="bg-white text-black p-10 fixed top-0 left-0 w-[800px] opacity-0 pointer-events-none -z-50">
+        <div class="flex items-center justify-between border-b-4 border-birunavy pb-4 mb-6">
+            <div>
+                <h1 class="text-3xl font-black text-birunavy tracking-widest uppercase">SLIP GAJI</h1>
+                <p class="text-sm font-bold text-gray-600 uppercase mt-1">Periode: <span x-text="months[activeMonth-1]"></span> <span x-text="activeYear"></span></p>
+            </div>
+            <img src="logopt.webp" class="h-16 object-contain">
+        </div>
+        
+        <div class="mb-8">
+            <table class="w-full text-sm font-bold">
+                <tr><td class="py-2 w-48 text-gray-500 uppercase">Nama Staff / Freelance</td><td class="py-2 text-xl uppercase" x-text="printData.nama"></td></tr>
+                <tr><td class="py-2 w-48 text-gray-500 uppercase">Jabatan / Posisi</td><td class="py-2 text-lg uppercase" x-text="getJabatan(printData.nama)"></td></tr>
+            </table>
+        </div>
+
+        <table class="w-full mb-8 border-collapse border border-gray-400">
+            <thead>
+                <tr class="bg-gray-200">
+                    <th class="p-4 border border-gray-400 text-left uppercase font-black text-sm">Deskripsi Pendapatan</th>
+                    <th class="p-4 border border-gray-400 text-right uppercase font-black text-sm w-56">Nominal</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="p-4 border border-gray-400 font-bold uppercase text-sm">Nilai Jasa Project Utama</td>
+                    <td class="p-4 border border-gray-400 font-bold text-right text-sm" x-text="formatRp(printData.jasa)"></td>
+                </tr>
+                <tr>
+                    <td class="p-4 border border-gray-400 font-bold uppercase text-sm">Persentase Bagi Hasil (<span x-text="printData.keuntungan"></span>%)</td>
+                    <td class="p-4 border border-gray-400 font-bold text-right text-sm text-gray-500">Termasuk</td>
+                </tr>
+            </tbody>
+            <tfoot>
+                <tr class="bg-birunavy text-kuningemas" style="background-color: #081c34 !important; color: #D4AF37 !important; -webkit-print-color-adjust: exact;">
+                    <td class="p-5 border border-birunavy font-black uppercase text-right text-sm">TOTAL DITERIMA (TAKE HOME PAY)</td>
+                    <td class="p-5 border border-birunavy font-black text-2xl text-right" x-text="formatRp(hitungGaji(printData))"></td>
+                </tr>
+            </tfoot>
+        </table>
+
+        <div class="flex justify-end mt-20 text-center">
+            <div class="w-64">
+                <p class="mb-20 font-bold uppercase text-sm">Pasuruan, <span x-text="currentDateFormatted()"></span><br>Direktur Utama</p>
+                <p class="font-black uppercase text-base underline decoration-2 underline-offset-4">Ach. Sufyan Wahyudi</p>
+                <p class="font-bold text-xs mt-1 text-gray-500 uppercase">PT Media Tulisan Manusia</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- TEMPLATE INVOICE (Disembunyikan, Dipanggil saat cetak) -->
+    <div id="invoice-print" class="bg-white text-black p-10 fixed top-0 left-0 w-[800px] opacity-0 pointer-events-none -z-50">
+        <div class="flex items-center justify-between border-b-4 border-birunavy pb-4 mb-8">
+            <img src="logopt.webp" class="h-16 object-contain">
+            <div class="text-right">
+                <h1 class="text-4xl font-black text-birunavy tracking-widest uppercase">INVOICE</h1>
+                <p class="text-sm font-bold text-gray-500 uppercase mt-1">INV/MTM/<span x-text="activeYear"></span>/<span x-text="months[activeMonth-1].substring(0,3).toUpperCase()"></span>/<span x-text="printData.index || 1"></span></p>
+            </div>
+        </div>
+
+        <div class="flex justify-between mb-10">
+            <div>
+                <p class="text-xs text-gray-500 font-black uppercase mb-1 tracking-wider">Ditagihkan Kepada:</p>
+                <h2 class="text-2xl font-black uppercase text-birunavy" x-text="printData.klien"></h2>
+            </div>
+            <div class="text-right">
+                <p class="text-xs text-gray-500 font-black uppercase mb-1 tracking-wider">Tanggal Terbit:</p>
+                <p class="font-bold uppercase text-lg" x-text="formatTanggalIndo(printData.tanggal)"></p>
+            </div>
+        </div>
+
+        <table class="w-full mb-10 border-collapse border border-gray-400">
+            <thead>
+                <tr class="bg-gray-200">
+                    <th class="p-4 border border-gray-400 text-left uppercase font-black text-sm">Deskripsi Layanan / Produk</th>
+                    <th class="p-4 border border-gray-400 text-center uppercase font-black text-sm w-24">QTY</th>
+                    <th class="p-4 border border-gray-400 text-right uppercase font-black text-sm w-40">Harga Satuan</th>
+                    <th class="p-4 border border-gray-400 text-right uppercase font-black text-sm w-40">Total Tagihan</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="p-4 border border-gray-400 font-bold uppercase text-sm" x-text="printData.nama"></td>
+                    <td class="p-4 border border-gray-400 font-bold text-center text-sm" x-text="printData.jumlah"></td>
+                    <td class="p-4 border border-gray-400 font-bold text-right text-sm" x-text="formatRp(printData.biaya)"></td>
+                    <td class="p-4 border border-gray-400 font-black text-right text-sm text-birunavy" x-text="formatRp(printData.biaya * printData.jumlah)"></td>
+                </tr>
+            </tbody>
+            <tfoot>
+                <tr class="bg-birunavy text-kuningemas" style="background-color: #081c34 !important; color: #D4AF37 !important; -webkit-print-color-adjust: exact;">
+                    <td colspan="3" class="p-5 border border-birunavy font-black uppercase text-right text-sm">GRAND TOTAL DIBAYARKAN</td>
+                    <td class="p-5 border border-birunavy font-black text-2xl text-right" x-text="formatRp(printData.biaya * printData.jumlah)"></td>
+                </tr>
+            </tfoot>
+        </table>
+
+        <div class="mt-24 text-center w-72 ml-auto">
+            <p class="mb-20 font-bold uppercase text-sm">Pasuruan, <span x-text="currentDateFormatted()"></span><br>PT Media Tulisan Manusia</p>
+            <p class="font-black uppercase text-base underline decoration-2 underline-offset-4">Ach. Sufyan Wahyudi</p>
+            <p class="font-bold text-xs mt-1 text-gray-500 uppercase">Direktur Utama</p>
+        </div>
+    </div>
+
+    <!-- SPLASH SCREEN CEPAT (Hanya Logo) -->
     <div x-show="isSplash" x-transition.opacity.duration.500ms class="fixed inset-0 z-[1000] bg-light-theme flex flex-col items-center justify-center">
         <div class="glass p-6 rounded-3xl flex items-center justify-center border border-white/50 dark:border-kuningemas/30 shadow-2xl">
             <img src="logopt.webp" class="h-16 w-auto object-contain animate-bounce block dark:hidden">
@@ -117,9 +204,9 @@
         </div>
     </div>
 
-    <!-- OVERLAY LOADING GLOBAL CEPAT (Tanpa Teks) -->
-    <div x-show="isGlobalLoading" x-transition.opacity.duration.200ms class="fixed inset-0 z-[999] bg-slate-900/30 dark:bg-black/50 backdrop-blur-sm flex flex-col items-center justify-center pointer-events-none">
-        <div class="glass p-6 rounded-3xl flex items-center justify-center border border-white/50 dark:border-kuningemas/30 shadow-2xl">
+    <!-- OVERLAY LOADING GLOBAL (Loading PDF & Save - Super Cepat) -->
+    <div x-show="isGlobalLoading" x-transition.opacity.duration.100ms class="fixed inset-0 z-[999] bg-slate-900/40 dark:bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center pointer-events-none">
+        <div class="glass p-6 rounded-3xl flex items-center justify-center border border-white/50 dark:border-kuningemas/30 shadow-2xl scale-110">
             <img src="logopt.webp" class="h-14 w-auto object-contain animate-pulse block dark:hidden">
             <img src="logopt2.webp" class="h-14 w-auto object-contain animate-pulse hidden dark:block">
         </div>
@@ -131,7 +218,7 @@
         <span x-text="toastMessage"></span>
     </div>
 
-    <!-- HALAMAN LOGIN (Popup Cepat) -->
+    <!-- HALAMAN LOGIN -->
     <div x-show="!isLoggedIn && !authChecking && !isSplash" x-transition class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="glass w-full max-w-sm sm:max-w-md p-8 sm:p-10 rounded-[2rem] text-center shadow-glass dark:shadow-glass-dark border border-white/60 dark:border-kuningemas/20 relative overflow-hidden">
             <img src="logopt.webp" class="h-16 sm:h-20 mx-auto mb-6 block dark:hidden drop-shadow-md">
@@ -291,7 +378,7 @@
                                         <span class="pdf-text uppercase" x-text="st.jabatan || '-'"></span>
                                     </td>
                                     <td class="p-2 sm:p-3 text-center no-print">
-                                        <button @click="hapusBarisGlobal('staffList', index)" class="text-red-500/70 hover:text-red-600 font-black p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition active:scale-90">
+                                        <button @click="hapusBarisGlobal('staffList', index)" class="text-red-500/70 hover:text-red-600 font-black p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition active:scale-90" title="Hapus">
                                             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
                                         </button>
                                     </td>
@@ -342,7 +429,7 @@
                                     </td>
                                     <td class="p-3 sm:p-4 font-black text-birunavy dark:text-kuningemas text-xs sm:text-sm" x-text="formatRp(item.biaya * item.jumlah)"></td>
                                     <td class="p-2 sm:p-3 text-center no-print">
-                                        <button @click="hapusBarisGlobal('rab', index)" class="text-red-500/70 hover:text-red-600 font-black p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition active:scale-90">
+                                        <button @click="hapusBarisGlobal('rab', index)" class="text-red-500/70 hover:text-red-600 font-black p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition active:scale-90" title="Hapus">
                                             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
                                         </button>
                                     </td>
@@ -382,15 +469,15 @@
                                 <th class="p-3 w-1/4">Klien / Sumber</th>
                                 <th class="p-3 w-32">Harga (Rp)</th>
                                 <th class="p-3 w-16 text-center">Jml</th>
-                                <th class="p-3 w-36">Total Omset</th>
-                                <th class="p-3 w-16 text-center no-print">Opsi</th>
+                                <th class="p-3 w-32">Total Omset</th>
+                                <th class="p-3 w-28 text-center no-print">Opsi</th>
                             </tr>
                         </thead>
                         <tbody>
                             <template x-for="(item, index) in getDataBulanan('pendapatan')" :key="index">
                                 <tr class="border-b border-birunavy/5 dark:border-kuningemas/5 hover:bg-white/60 dark:hover:bg-white/5 transition">
                                     <td class="p-2">
-                                        <input type="date" x-model="item.tanggal" @input="debouncedSave()" class="w-full p-2.5 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas text-xs font-semibold">
+                                        <input type="date" x-model="item.tanggal" @input="debouncedSave()" class="w-full p-2.5 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas text-xs font-semibold uppercase">
                                         <span class="pdf-text uppercase" x-text="item.tanggal || '-'"></span>
                                     </td>
                                     <td class="p-2">
@@ -410,8 +497,12 @@
                                         <span class="pdf-text text-center w-full" x-text="item.jumlah"></span>
                                     </td>
                                     <td class="p-2 sm:p-3 font-black text-green-700 dark:text-green-400 text-xs sm:text-sm" x-text="formatRp(item.biaya * item.jumlah)"></td>
-                                    <td class="p-2 text-center no-print">
-                                        <button @click="hapusBarisBulan('pendapatan', index)" class="text-red-500/70 hover:text-red-600 font-black p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition active:scale-90">
+                                    <td class="p-2 text-center no-print flex items-center justify-center gap-1 mt-1">
+                                        <!-- TOMBOL CETAK INVOICE -->
+                                        <button @click="cetakInvoice(item, index)" class="text-birunavy hover:text-kuningemas dark:text-white p-2 bg-slate-200 hover:bg-slate-300 dark:bg-white/10 dark:hover:bg-white/20 rounded-lg transition active:scale-90" title="Cetak Invoice">
+                                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/></svg>
+                                        </button>
+                                        <button @click="hapusBarisBulan('pendapatan', index)" class="text-red-500/70 hover:text-red-600 font-black p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition active:scale-90" title="Hapus">
                                             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
                                         </button>
                                     </td>
@@ -457,7 +548,7 @@
                             <template x-for="(item, index) in getDataBulanan('pengeluaran')" :key="index">
                                 <tr class="border-b border-birunavy/5 dark:border-kuningemas/5 hover:bg-white/60 dark:hover:bg-white/5 transition">
                                     <td class="p-2">
-                                        <input type="date" x-model="item.tanggal" @input="debouncedSave()" class="w-full p-2.5 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas text-xs font-semibold">
+                                        <input type="date" x-model="item.tanggal" @input="debouncedSave()" class="w-full p-2.5 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas text-xs font-semibold uppercase">
                                         <span class="pdf-text uppercase" x-text="item.tanggal || '-'"></span>
                                     </td>
                                     <td class="p-2">
@@ -515,7 +606,7 @@
                                 <th class="p-4 w-1/4">Nilai Jasa (Rp)</th>
                                 <th class="p-4 w-1/6 text-center">Bagi Hasil (%)</th>
                                 <th class="p-4 w-1/4">Gaji Dibayarkan</th>
-                                <th class="p-4 w-16 text-center no-print">Opsi</th>
+                                <th class="p-4 w-28 text-center no-print">Opsi</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -540,8 +631,12 @@
                                         <span class="pdf-text text-center w-full" x-text="item.keuntungan + '%'"></span>
                                     </td>
                                     <td class="p-3 sm:p-4 font-black text-orange-600 dark:text-orange-400 text-xs sm:text-sm" x-text="formatRp(hitungGaji(item))"></td>
-                                    <td class="p-3 text-center no-print">
-                                        <button @click="hapusBarisBulan('gaji', index)" class="text-red-500/70 hover:text-red-600 font-black p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition active:scale-90">
+                                    <td class="p-3 text-center no-print flex items-center justify-center gap-1 mt-1">
+                                        <!-- TOMBOL CETAK SLIP GAJI -->
+                                        <button @click="cetakSlipGaji(item)" class="text-birunavy hover:text-kuningemas dark:text-white p-2 bg-slate-200 hover:bg-slate-300 dark:bg-white/10 dark:hover:bg-white/20 rounded-lg transition active:scale-90" title="Cetak Slip Gaji">
+                                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/></svg>
+                                        </button>
+                                        <button @click="hapusBarisBulan('gaji', index)" class="text-red-500/70 hover:text-red-600 font-black p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition active:scale-90" title="Hapus">
                                             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
                                         </button>
                                     </td>
@@ -570,7 +665,7 @@
             <div x-show="activeTab === 'neraca'" x-transition class="glass rounded-[2rem] p-5 md:p-10 mb-6">
                 
                 <h2 class="text-xl md:text-3xl font-black mb-8 text-center text-birunavy dark:text-kuningemas uppercase tracking-tight border-b-2 border-kuningemas/30 pb-4">
-                    Papan Neraca <span class="text-kuningemas" x-text="months[activeMonth-1]"></span>
+                    Papan Neraca <span class="text-kuningemas uppercase" x-text="months[activeMonth-1]"></span>
                 </h2>
                 
                 <div class="max-w-4xl mx-auto space-y-4 mb-12 text-sm md:text-base font-semibold">
@@ -595,7 +690,7 @@
                         <div class="flex flex-col md:flex-row justify-between items-center gap-4 relative z-10">
                             <span class="text-xl md:text-3xl font-black uppercase tracking-widest text-center md:text-left" 
                                   :class="labaBersihBulan(activeMonth) >= 0 ? 'text-green-900 dark:text-green-300' : 'text-red-900 dark:text-red-300'">
-                                Laba Bersih <br class="hidden md:block"/><span class="text-sm opacity-80" x-text="'Bulan ' + months[activeMonth-1]"></span>
+                                Laba Bersih <br class="hidden md:block"/><span class="text-sm opacity-80 uppercase" x-text="'Bulan ' + months[activeMonth-1]"></span>
                             </span>
                             <span class="text-3xl md:text-5xl font-black tracking-tighter drop-shadow-md" 
                                   :class="labaBersihBulan(activeMonth) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'" 
@@ -702,6 +797,8 @@
                 toastMessage: '',
                 isGlobalLoading: false,
                 saveTimeout: null,
+                isReadyToWatch: false, 
+                isSyncing: false,
                 realtimeClock: '',
                 
                 months: ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'],
@@ -710,12 +807,8 @@
                 activeMonth: new Date().getMonth() + 1, 
                 availableYears: [2026, 2027, 2028, 2029, 2030, 2031],
                 
-                // MENGEMBALIKAN FUNGSI AWAL AGAR ALPINE TIDAK MATI TOTAL
-                data: {
-                    staffList: [{ nama: '', jabatan: '' }],
-                    rab: [{ nama: 'Modal Proyek', biaya: 0, jumlah: 1 }],
-                    years: {}
-                },
+                data: null, 
+                printData: {}, // Data khusus untuk template PDF Invoice/Slip
 
                 initApp() {
                     if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -735,11 +828,36 @@
                         } catch(e) {}
                     }
 
-                    this.checkAuthStatus();
+                    // MUAT LOKAL SECARA SINKRON AGAR TIDAK HILANG DITIMPA WATCHER
+                    const localRaw = localStorage.getItem('sistemKeuangan_Data');
+                    if (localRaw) {
+                        try { this.data = JSON.parse(localRaw); } catch(e) { this.initEmptyData(); }
+                    } else {
+                        this.initEmptyData();
+                    }
+                    this.initYear(this.activeYear);
+
+                    // Jeda agar load pertama tidak men-trigger Auto Save yang bikin data terhapus
+                    setTimeout(() => {
+                        this.isReadyToWatch = true;
+                    }, 800);
 
                     this.$watch('data', (value) => {
-                        this.debouncedSave();
+                        if(this.isReadyToWatch && !this.isSyncing) {
+                            this.debouncedSave();
+                        }
                     }, { deep: true });
+
+                    this.checkAuthStatus();
+                },
+
+                initEmptyData() {
+                    this.data = {
+                        staffList: [{ nama: '', jabatan: '' }],
+                        rab: [{ nama: 'Modal Proyek', biaya: 0, jumlah: 1 }],
+                        years: {},
+                        lastUpdate: Date.now()
+                    };
                 },
 
                 saveState() {
@@ -764,6 +882,15 @@
                     this.realtimeClock = now.toLocaleDateString('id-ID', options) + ' WIB';
                 },
 
+                currentDateFormatted() {
+                    return new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
+                },
+
+                formatTanggalIndo(tgl) {
+                    if(!tgl) return '-';
+                    return new Date(tgl).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
+                },
+
                 gantiTahun(year) {
                     this.activeYear = year;
                     this.initYear(year);
@@ -775,18 +902,56 @@
                         this.authChecking = false;
                         if (user) {
                             this.isLoggedIn = true;
+                            this.syncWithFirebase();
                         } else {
                             this.isLoggedIn = false;
                         }
                         
-                        this.loadData();
-
                         setTimeout(() => {
                             this.isSplash = false;
                             if(this.isLoggedIn) {
                                 this.scrollToActiveMonth();
                             }
                         }, 800); 
+                    });
+                },
+
+                // SISTEM ANTI BENTROK FIREBASE VS LOCAL STORAGE
+                syncWithFirebase() {
+                    dbRef.once('value').then((snapshot) => {
+                        let remoteData = snapshot.exists() ? snapshot.val() : null;
+                        
+                        let localTime = this.data && this.data.lastUpdate ? this.data.lastUpdate : 0;
+                        let remoteTime = remoteData && remoteData.lastUpdate ? remoteData.lastUpdate : 0;
+
+                        // Adu Waktu: Jika Lokal HP lebih baru, paksa Cloud agar update!
+                        if (localTime > remoteTime) {
+                            dbRef.set(this.data);
+                        } 
+                        // Jika Cloud lebih baru (atau HP dipindah/dihapus memori browsernya), tarik dari Cloud!
+                        else if (remoteTime >= localTime && remoteData) {
+                            this.isSyncing = true; // Blokir fungsi ngetik sementara
+                            this.data = remoteData;
+                            localStorage.setItem('sistemKeuangan_Data', JSON.stringify(this.data));
+                            setTimeout(() => { this.isSyncing = false; }, 500);
+                        }
+                        this.initYear(this.activeYear);
+
+                        // Dengarkan kalau ada update dari HP lain / Cloud
+                        dbRef.on('value', (snap) => {
+                            if (snap.exists()) {
+                                let liveData = snap.val();
+                                if(liveData.lastUpdate && this.data && liveData.lastUpdate > (this.data.lastUpdate || 0)) {
+                                    this.isSyncing = true;
+                                    this.data = liveData;
+                                    localStorage.setItem('sistemKeuangan_Data', JSON.stringify(this.data));
+                                    setTimeout(() => { this.isSyncing = false; }, 500);
+                                }
+                            }
+                        });
+
+                    }).catch(() => {
+                        // Kalau offline, ya sudah tenang aja pakai data lokal
                     });
                 },
                 
@@ -808,7 +973,6 @@
 
                 loginOffline() {
                     this.isLoggedIn = true;
-                    this.loadData();
                     setTimeout(() => { this.scrollToActiveMonth(); this.isSplash = false; }, 300);
                 },
 
@@ -816,56 +980,6 @@
                     firebase.auth().signOut().then(() => { 
                         this.isLoggedIn = false; 
                     });
-                },
-
-                // FUNGSI PEMBERSIH DATA (Memastikan tidak ada tabel yg error)
-                sanitizeData(d) {
-                    if (!d) return { staffList: [{ nama: '', jabatan: '' }], rab: [{ nama: 'Modal Proyek', biaya: 0, jumlah: 1 }], years: {}, lastUpdate: Date.now() };
-                    if (!d.staffList || d.staffList.length === 0) d.staffList = [{ nama: '', jabatan: '' }];
-                    if (!d.rab || d.rab.length === 0) d.rab = [{ nama: 'Modal Proyek', biaya: 0, jumlah: 1 }];
-                    if (!d.years) d.years = {};
-                    return d;
-                },
-
-                // SISTEM LOAD PINTAR ANTI-HILANG DATA (Adu Stempel Waktu lastUpdate)
-                loadData() {
-                    const localRaw = localStorage.getItem('sistemKeuangan_Data');
-                    let localData = null;
-                    try { if(localRaw) localData = JSON.parse(localRaw); } catch(e) {}
-
-                    if (this.isLoggedIn) {
-                        dbRef.once('value').then((snapshot) => {
-                            let remoteData = snapshot.exists() ? snapshot.val() : null;
-                            
-                            let localTime = localData && localData.lastUpdate ? localData.lastUpdate : 0;
-                            let remoteTime = remoteData && remoteData.lastUpdate ? remoteData.lastUpdate : 0;
-
-                            // Jika data HP lebih baru, paksa simpan ke awan
-                            if (localTime > remoteTime && localData) {
-                                this.data = this.sanitizeData(localData);
-                                dbRef.set(this.data);
-                            } 
-                            // Jika data awan lebih baru, tarik ke HP
-                            else if (remoteTime >= localTime && remoteData) {
-                                this.data = this.sanitizeData(remoteData);
-                                localStorage.setItem('sistemKeuangan_Data', JSON.stringify(this.data));
-                            } 
-                            // Jika awan kosong, pakai lokal HP
-                            else if (localData) {
-                                this.data = this.sanitizeData(localData);
-                                dbRef.set(this.data);
-                            } else {
-                                this.data = this.sanitizeData(null);
-                            }
-                            this.initYear(this.activeYear);
-                        }).catch(() => {
-                            if(localData) this.data = this.sanitizeData(localData);
-                            this.initYear(this.activeYear);
-                        });
-                    } else {
-                        if(localData) this.data = this.sanitizeData(localData);
-                        this.initYear(this.activeYear);
-                    }
                 },
 
                 debouncedSave() {
@@ -881,10 +995,11 @@
                 },
 
                 executeSave(showAnimation) {
+                    if(!this.data) return;
                     this.initYear(this.activeYear);
-                    this.data.lastUpdate = Date.now(); // SET STEMPEL WAKTU BARU!
+                    this.data.lastUpdate = Date.now(); // Beri cap waktu saat ini
                     
-                    // 1. Simpan Lokal Instan (SUPER AMAN ANTI HILANG)
+                    // 1. Simpan Instan ke Lokal
                     localStorage.setItem('sistemKeuangan_Data', JSON.stringify(this.data)); 
 
                     if (this.isLoggedIn && firebase.auth().currentUser) {
@@ -892,7 +1007,7 @@
                         
                         let failsafe = setTimeout(() => {
                             this.isGlobalLoading = false;
-                            if(showAnimation) this.triggerToast("Disimpan Lokal (Koneksi Lambat)");
+                            if(showAnimation) this.triggerToast("Disimpan Lokal (Menunggu Sinyal)");
                         }, 2000); 
 
                         dbRef.set(this.data).then(() => {
@@ -924,7 +1039,7 @@
                 },
 
                 initYear(year) {
-                    if (!this.data) this.data = {};
+                    if (!this.data) this.initEmptyData();
                     if (!this.data.staffList) this.data.staffList = [{ nama: '', jabatan: '' }];
                     if (!this.data.rab) this.data.rab = [{ nama: 'Modal Proyek', biaya: 0, jumlah: 1 }];
                     if (!this.data.years) this.data.years = {};
@@ -960,13 +1075,13 @@
                     } else {
                         this.data.rab.push({ nama: '', biaya: 0, jumlah: 1 });
                     }
-                    this.debouncedSave(); // Simpan paksa saat baris bertambah
+                    if(this.isReadyToWatch) this.debouncedSave();
                 },
 
                 hapusBarisGlobal(kategori, index) {
                     if(this.data[kategori].length > 1 || kategori === 'staffList') {
                         this.data[kategori].splice(index, 1);
-                        this.debouncedSave();
+                        if(this.isReadyToWatch) this.debouncedSave();
                     }
                 },
 
@@ -990,14 +1105,14 @@
                     } else {
                         target.push({ tanggal: '', nama: '', pic: '', biaya: 0, jumlah: 1 });
                     }
-                    this.debouncedSave(); // Simpan paksa saat baris bertambah
+                    if(this.isReadyToWatch) this.debouncedSave();
                 },
 
                 hapusBarisBulan(kategori, index) {
                     let arr = this.getDataBulanan(kategori);
                     if(arr && arr.length > 1) {
                         arr.splice(index, 1);
-                        this.debouncedSave();
+                        if(this.isReadyToWatch) this.debouncedSave();
                     }
                 },
 
@@ -1039,6 +1154,60 @@
                     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
                 },
 
+                getJabatan(nama) {
+                    if(!this.data || !this.data.staffList) return '-';
+                    const st = this.data.staffList.find(s => s.nama === nama);
+                    return st && st.jabatan ? st.jabatan : '-';
+                },
+
+                // PDF INVOICE TRANSAKSI
+                cetakInvoice(item, index) {
+                    this.printData = { ...item, index: index + 1 };
+                    this.isGlobalLoading = true;
+                    this.$nextTick(() => {
+                        const el = document.getElementById('invoice-print');
+                        el.classList.remove('opacity-0', 'pointer-events-none', '-z-50');
+                        el.classList.add('z-50');
+                        
+                        const opt = {
+                            margin: 0.5,
+                            filename: `Invoice_MTM_${item.klien}_${item.tanggal}.pdf`,
+                            image: { type: 'jpeg', quality: 1 },
+                            html2canvas: { scale: 2, useCORS: true, logging: false },
+                            jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } 
+                        };
+                        html2pdf().set(opt).from(el).save().then(() => {
+                            el.classList.add('opacity-0', 'pointer-events-none', '-z-50');
+                            el.classList.remove('z-50');
+                            this.isGlobalLoading = false;
+                        });
+                    });
+                },
+
+                // PDF SLIP GAJI TRANSAKSI
+                cetakSlipGaji(item) {
+                    this.printData = item;
+                    this.isGlobalLoading = true;
+                    this.$nextTick(() => {
+                        const el = document.getElementById('slip-gaji-print');
+                        el.classList.remove('opacity-0', 'pointer-events-none', '-z-50');
+                        el.classList.add('z-50');
+                        
+                        const opt = {
+                            margin: 0.5,
+                            filename: `Slip_Gaji_${item.nama}_${this.months[this.activeMonth-1]}.pdf`,
+                            image: { type: 'jpeg', quality: 1 },
+                            html2canvas: { scale: 2, useCORS: true, logging: false },
+                            jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } 
+                        };
+                        html2pdf().set(opt).from(el).save().then(() => {
+                            el.classList.add('opacity-0', 'pointer-events-none', '-z-50');
+                            el.classList.remove('z-50');
+                            this.isGlobalLoading = false;
+                        });
+                    });
+                },
+
                 downloadRABPDF() {
                     this.isGlobalLoading = true;
                     const originalTab = this.activeTab;
@@ -1061,12 +1230,6 @@
                             document.getElementById('pdf-header').classList.add('hidden');
                             this.activeTab = originalTab;
                             this.isGlobalLoading = false;
-                        }).catch(err => {
-                            element.classList.remove('pdf-mode');
-                            document.getElementById('pdf-header').classList.add('hidden');
-                            this.activeTab = originalTab;
-                            this.isGlobalLoading = false;
-                            alert("Gagal cetak PDF");
                         });
                     }, 100); 
                 },
@@ -1091,7 +1254,6 @@
                             filename: filename,
                             image: { type: 'jpeg', quality: 1 },
                             html2canvas: { scale: 2, useCORS: true, logging: false },
-                            // Laporan bulanan/tahunan pakai Landscape agar tabel panjang muat
                             jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' } 
                         };
 
@@ -1100,12 +1262,6 @@
                             document.getElementById('pdf-header').classList.add('hidden');
                             if (mode === 'all') this.printAll = false;
                             this.isGlobalLoading = false;
-                        }).catch(err => {
-                            element.classList.remove('pdf-mode');
-                            document.getElementById('pdf-header').classList.add('hidden');
-                            if (mode === 'all') this.printAll = false;
-                            this.isGlobalLoading = false;
-                            alert("Gagal cetak PDF");
                         });
                     }, 100); 
                 }
