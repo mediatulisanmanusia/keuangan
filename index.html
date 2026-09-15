@@ -34,16 +34,16 @@
     
     <style>
         .glass {
-            background: rgba(255, 255, 255, 0.85);
+            background: rgba(255, 255, 255, 0.88);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.5);
-            box-shadow: 0 10px 40px rgba(10, 37, 64, 0.15);
+            box-shadow: 0 10px 30px rgba(10, 37, 64, 0.12);
         }
         .dark .glass {
-            background: rgba(10, 37, 64, 0.85);
+            background: rgba(10, 37, 64, 0.88);
             border: 1px solid rgba(212, 175, 55, 0.25);
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
         }
 
         body { 
@@ -61,32 +61,30 @@
         .pdf-mode .print-logo { display: block !important; }
         .pdf-mode .no-print-logo { display: none !important; }
 
-        .pdf-mode { background: white !important; color: black !important; padding: 5px !important; font-size: 10px !important; }
+        .pdf-mode { background: white !important; color: black !important; padding: 10px !important; font-size: 11px !important; }
         .pdf-mode .glass { background: transparent !important; backdrop-filter: none !important; box-shadow: none !important; border: none !important; border-radius: 0 !important; }
-        .pdf-mode * { color: black !important; border-color: #333 !important; }
-        .pdf-mode table { width: 100% !important; border-collapse: collapse !important; margin-bottom: 12px !important; font-size: 9px !important; table-layout: auto !important; }
-        .pdf-mode th, .pdf-mode td { border: 1px solid #000 !important; padding: 4px 6px !important; word-wrap: break-word !important; }
+        .pdf-mode * { color: black !important; border-color: #444 !important; }
+        .pdf-mode table { width: 100% !important; border-collapse: collapse !important; margin-bottom: 15px !important; font-size: 10px !important; }
+        .pdf-mode th, .pdf-mode td { border: 1px solid #000 !important; padding: 6px 8px !important; }
         .pdf-mode th { background-color: #e5e7eb !important; font-weight: bold !important; -webkit-print-color-adjust: exact; }
         .pdf-mode input, .pdf-mode select { border: none !important; background: transparent !important; appearance: none !important; padding: 0 !important; font-weight: inherit !important; color: black !important; }
     </style>
 </head>
-<body class="bg-light-theme text-slate-800 dark:text-slate-200 font-sans min-h-screen flex flex-col pb-28" 
+<body class="bg-light-theme text-slate-800 dark:text-slate-200 font-sans min-h-screen flex flex-col pb-36" 
       x-data="keuanganApp()" 
-      x-init="initApp()" 
-      @input="autoSave()" 
-      @change="autoSave()">
+      x-init="initApp()">
 
     <!-- 1. SPLASH SCREEN -->
     <div x-show="isSplash" x-transition.opacity.duration.1000ms class="fixed inset-0 z-[100] bg-light-theme flex flex-col items-center justify-center">
-        <img src="logopt.webp" class="h-36 md:h-48 object-contain animate-pulse block dark:hidden">
-        <img src="logopt2.webp" class="h-36 md:h-48 object-contain animate-pulse hidden dark:block">
+        <img src="logopt1.webp" class="h-20 md:h-28 object-contain animate-pulse block dark:hidden">
+        <img src="logopt2.webp" class="h-20 md:h-28 object-contain animate-pulse hidden dark:block">
     </div>
 
     <!-- 2. HALAMAN LOGIN -->
     <div x-show="!isSplash && !isLoggedIn" x-transition class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="glass w-full max-w-md p-8 rounded-3xl text-center shadow-2xl border-t-4 border-kuningemas relative overflow-hidden">
-            <img src="logopt.webp" class="h-20 mx-auto mb-6 block dark:hidden">
-            <img src="logopt2.webp" class="h-20 mx-auto mb-6 hidden dark:block">
+            <img src="logopt1.webp" class="h-14 mx-auto mb-6 block dark:hidden">
+            <img src="logopt2.webp" class="h-14 mx-auto mb-6 hidden dark:block">
             
             <h2 class="text-2xl font-black text-birunavy dark:text-kuningemas uppercase mb-2">Portal Keuangan</h2>
             <p class="text-sm opacity-70 mb-8 font-semibold">Silakan masuk untuk mengakses sistem.</p>
@@ -114,7 +112,7 @@
             </button>
 
             <button @click="loginOffline" class="text-xs font-bold underline opacity-70 hover:opacity-100 text-birunavy dark:text-kuningemas">
-                Masuk Mode Lokal (Offline / Tanpa Sinkron)
+                Masuk Mode Lokal (Offline)
             </button>
         </div>
     </div>
@@ -122,38 +120,49 @@
     <!-- 3. SISTEM APLIKASI UTAMA -->
     <div x-show="!isSplash && isLoggedIn" x-transition class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 flex-grow w-full relative">
         
-        <!-- Tombol Logout di Kiri & Mode Tema di Kanan -->
-        <button @click="logout" class="fixed top-4 left-4 z-50 glass rounded-full p-3 text-red-500 hover:bg-red-50 transition shadow-lg no-print flex items-center justify-center" title="Keluar Akun">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
-        </button>
-        <button @click="toggleTheme()" class="fixed top-4 right-4 z-50 glass rounded-full p-3 text-kuningemas hover:opacity-80 transition shadow-lg no-print flex items-center justify-center" title="Ubah Tema">
-            <svg x-show="!isDark" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
-            <svg x-show="isDark" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-        </button>
+        <!-- GELEMBUNG MELAYANG (FLOATING PILL) DI ATAS -->
+        <!-- Logo di Sisi Kiri, Tombol Keluar & Tema di Sisi Kanan -->
+        <div class="fixed top-3 left-4 right-4 md:left-8 md:right-8 z-50 glass px-4 py-2.5 rounded-full flex items-center justify-between shadow-xl no-print border border-birunavy/15 dark:border-kuningemas/30 backdrop-blur-md">
+            <!-- Sisi Kiri: Logo logopt1.webp / logopt2.webp ukuran kecil proporsional -->
+            <div class="flex items-center gap-2">
+                <img src="logopt1.webp" class="h-7 w-auto object-contain block dark:hidden">
+                <img src="logopt2.webp" class="h-7 w-auto object-contain hidden dark:block">
+                <span class="font-black text-xs md:text-sm tracking-widest text-birunavy dark:text-kuningemas uppercase hidden sm:inline">MTM System</span>
+            </div>
 
-        <div class="text-center mb-8 pt-4">
-            <img src="logopt.webp" class="h-28 w-28 md:h-36 md:w-36 object-contain mx-auto mb-6 block dark:hidden print-logo">
-            <img src="logopt2.webp" class="h-28 w-28 md:h-36 md:w-36 object-contain mx-auto mb-6 hidden dark:block no-print-logo">
-            
-            <div class="inline-block glass rounded-2xl px-8 md:px-12 py-3 no-print">
-                <h1 class="text-xl md:text-3xl font-black text-birunavy dark:text-kuningemas tracking-widest uppercase">SISTEM KEUANGAN</h1>
+            <!-- Sisi Kanan: Tombol Keluar & Tema dalam satu gelembung -->
+            <div class="flex items-center gap-2">
+                <button @click="logout" class="px-3 py-1.5 rounded-full bg-red-500/10 text-red-600 hover:bg-red-500 hover:text-white transition flex items-center gap-1 text-xs font-bold" title="Keluar Akun">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                    <span class="hidden md:inline">Keluar</span>
+                </button>
+                <div class="w-[1px] h-4 bg-birunavy/20 dark:bg-kuningemas/30"></div>
+                <button @click="toggleTheme()" class="w-8 h-8 rounded-full bg-birunavy/5 dark:bg-white/10 text-birunavy dark:text-kuningemas hover:bg-birunavy/15 transition flex items-center justify-center" title="Ubah Tema">
+                    <svg x-show="!isDark" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+                    <svg x-show="isDark" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                </button>
+            </div>
+        </div>
+
+        <div class="text-center mb-8 pt-16">
+            <div class="inline-block glass rounded-2xl px-6 md:px-10 py-2.5 no-print">
+                <h1 class="text-lg md:text-2xl font-black text-birunavy dark:text-kuningemas tracking-widest uppercase">SISTEM KEUANGAN MTM</h1>
             </div>
             
-            <!-- Jam & Tanggal Realtime di Atas -->
-            <div class="mt-2 text-xs font-bold opacity-70 tracking-widest no-print uppercase text-birunavy dark:text-kuningemas" x-text="realtimeClock"></div>
+            <div class="mt-2 text-xs font-bold opacity-75 tracking-wider no-print uppercase text-birunavy dark:text-kuningemas" x-text="realtimeClock"></div>
 
             <div class="hidden print-only-header mb-6 text-center">
                 <h1 class="text-2xl font-bold uppercase border-b-2 border-black pb-2">Laporan Keuangan <span x-text="months[activeMonth-1]"></span> <span x-text="activeYear"></span></h1>
             </div>
         </div>
 
-        <div x-show="showSaveToast" x-transition class="no-print fixed top-5 left-1/2 -translate-x-1/2 glass rounded-full !bg-green-600/90 !text-white px-6 py-2 font-bold shadow-2xl z-50 text-sm">
-            ✓ Data Disimpan
+        <div x-show="showSaveToast" x-transition class="no-print fixed top-16 left-1/2 -translate-x-1/2 glass rounded-full !bg-emerald-600 !text-white px-6 py-2 font-bold shadow-lg text-xs tracking-wider z-50">
+            ✓ Baris Berhasil Disimpan!
         </div>
 
         <!-- Pemilihan Tahun & Tombol Unduh -->
         <div class="glass rounded-2xl p-4 mb-8 mx-auto max-w-4xl no-print flex flex-col md:flex-row items-center justify-between gap-4">
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-3 w-full md:w-auto justify-center">
                 <label class="font-bold text-sm md:text-base text-birunavy dark:text-kuningemas uppercase whitespace-nowrap">Tahun:</label>
                 <select x-model.number="activeYear" @change="gantiTahun(activeYear)" class="p-2.5 px-4 rounded-xl font-bold bg-white dark:bg-birunavy border-2 border-kuningemas/50 focus:border-kuningemas text-sm md:text-base focus:outline-none cursor-pointer">
                     <template x-for="year in availableYears" :key="year">
@@ -192,12 +201,12 @@
             <div x-show="activeTab === 'staff' && !printAll" class="glass rounded-3xl p-5 md:p-8 mb-6">
                 <h2 class="text-xl md:text-2xl font-black mb-6 text-birunavy dark:text-kuningemas uppercase border-b-2 border-kuningemas/30 pb-3">Daftar Staff Internal</h2>
                 <div class="overflow-x-auto rounded-xl border border-birunavy/10 dark:border-kuningemas/20">
-                    <table class="w-full text-left min-w-[600px]">
+                    <table class="w-full text-left min-w-[650px]">
                         <thead class="bg-birunavy/5 dark:bg-birunavy text-birunavy dark:text-kuningemas">
                             <tr class="text-xs md:text-sm uppercase tracking-wider border-b border-birunavy/10 dark:border-kuningemas/20">
                                 <th class="p-4">Nama Lengkap / Freelance</th>
                                 <th class="p-4">Jabatan Posisi</th>
-                                <th class="p-4 w-20 text-center no-print">Opsi</th>
+                                <th class="p-4 w-32 text-center no-print">Aksi Baris</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -205,7 +214,10 @@
                                 <tr class="border-b border-birunavy/5 dark:border-kuningemas/10">
                                     <td class="p-3"><input type="text" x-model="st.nama" class="w-full p-2.5 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold" placeholder="Ketik nama..."></td>
                                     <td class="p-3"><input type="text" x-model="st.jabatan" class="w-full p-2.5 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold" placeholder="Jabatan"></td>
-                                    <td class="p-3 text-center no-print"><button @click="hapusBarisGlobal('staffList', index)" class="text-red-500 font-black text-xl hover:scale-125 transition">✕</button></td>
+                                    <td class="p-3 text-center no-print flex items-center justify-center gap-2">
+                                        <button @click="simpanBarisData()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow" title="Simpan Baris">Simpan</button>
+                                        <button @click="hapusBarisGlobal('staffList', index)" class="text-red-500 font-black text-xl hover:scale-125 transition" title="Hapus Baris">✕</button>
+                                    </td>
                                 </tr>
                             </template>
                         </tbody>
@@ -218,14 +230,14 @@
             <div x-show="activeTab === 'rab' || (printAll && false)" class="glass rounded-3xl p-5 md:p-8 mb-6">
                 <h2 class="text-xl md:text-2xl font-black mb-6 text-birunavy dark:text-kuningemas uppercase border-b-2 border-kuningemas/30 pb-3">Rencana Anggaran Modal (RAB)</h2>
                 <div class="overflow-x-auto rounded-xl border border-birunavy/10 dark:border-kuningemas/20">
-                    <table class="w-full text-left min-w-[700px]">
+                    <table class="w-full text-left min-w-[750px]">
                         <thead class="bg-birunavy/5 dark:bg-birunavy text-birunavy dark:text-kuningemas">
                             <tr class="text-xs md:text-sm uppercase tracking-wider border-b border-birunavy/10 dark:border-kuningemas/20">
                                 <th class="p-4">Deskripsi Keperluan</th>
-                                <th class="p-4 w-40">Biaya Satuan</th>
-                                <th class="p-4 w-24">Jumlah</th>
-                                <th class="p-4 w-40">Total</th>
-                                <th class="p-4 w-16 text-center no-print">Opsi</th>
+                                <th class="p-4 w-36">Biaya Satuan</th>
+                                <th class="p-4 w-20">Jumlah</th>
+                                <th class="p-4 w-36">Total</th>
+                                <th class="p-4 w-32 text-center no-print">Aksi Baris</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -235,7 +247,10 @@
                                     <td class="p-3"><input type="number" x-model.number="item.biaya" class="w-full p-2.5 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold"></td>
                                     <td class="p-3"><input type="number" x-model.number="item.jumlah" class="w-full p-2.5 bg-transparent border-none rounded-lg text-center font-semibold"></td>
                                     <td class="p-4 font-black text-birunavy dark:text-kuningemas" x-text="formatRp(item.biaya * item.jumlah)"></td>
-                                    <td class="p-3 text-center no-print"><button @click="hapusBarisGlobal('rab', index)" class="text-red-500 font-black text-xl hover:scale-125 transition">✕</button></td>
+                                    <td class="p-3 text-center no-print flex items-center justify-center gap-2">
+                                        <button @click="simpanBarisData()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow" title="Simpan Baris">Simpan</button>
+                                        <button @click="hapusBarisGlobal('rab', index)" class="text-red-500 font-black text-xl hover:scale-125 transition" title="Hapus Baris">✕</button>
+                                    </td>
                                 </tr>
                             </template>
                         </tbody>
@@ -247,27 +262,30 @@
                         </tfoot>
                     </table>
                 </div>
-                <button @click="tambahBarisGlobal('rab')" class="no-print mt-5 px-6 py-3 bg-birunavy text-kuningemas rounded-xl text-sm font-bold shadow-lg transition hover:opacity-90">+ Tambah Baris RAB</button>
+                <div class="flex justify-between items-center mt-5">
+                    <button @click="tambahBarisGlobal('rab')" class="no-print px-6 py-3 bg-birunavy text-kuningemas rounded-xl text-sm font-bold shadow-lg transition hover:opacity-90">+ Tambah Baris RAB</button>
+                    <button @click="downloadRABPDF()" class="no-print px-6 py-3 bg-kuningemas text-birunavy rounded-xl text-sm font-black shadow-lg transition hover:opacity-90">Unduh PDF RAB</button>
+                </div>
             </div>
 
-            <!-- Tab: Pendapatan (Dilengkapi Tanggal, Barang/Uraian, Klien, Harga, Jumlah, Total) -->
+            <!-- Tab: Pendapatan -->
             <div x-show="activeTab === 'pendapatan' || printAll" class="glass rounded-3xl p-5 md:p-8 mb-6">
                 <h2 class="text-xl md:text-2xl font-black mb-6 text-birunavy dark:text-kuningemas uppercase border-b-2 border-kuningemas/30 pb-3">Pendapatan - <span x-text="months[activeMonth-1]"></span></h2>
                 <div class="overflow-x-auto rounded-xl border border-birunavy/10 dark:border-kuningemas/20">
-                    <table class="w-full text-left min-w-[850px]">
+                    <table class="w-full text-left min-w-[900px]">
                         <thead class="bg-birunavy/5 dark:bg-birunavy text-birunavy dark:text-kuningemas">
                             <tr class="text-xs md:text-sm uppercase tracking-wider border-b border-birunavy/10 dark:border-kuningemas/20">
                                 <th class="p-3 w-32">Tanggal</th>
                                 <th class="p-3">Uraian / Barang</th>
                                 <th class="p-3">Klien / Sumber</th>
-                                <th class="p-3 w-36">Harga (Rp)</th>
-                                <th class="p-3 w-20 text-center">Jml</th>
-                                <th class="p-3 w-36">Total Omset</th>
-                                <th class="p-3 w-16 text-center no-print">Opsi</th>
+                                <th class="p-3 w-32">Harga (Rp)</th>
+                                <th class="p-3 w-16 text-center">Jml</th>
+                                <th class="p-3 w-32">Total Omset</th>
+                                <th class="p-3 w-32 text-center no-print">Aksi Baris</th>
                             </tr>
                         </thead>
-                        <tbody x-data="{ items: getDataBulanan('pendapatan') }">
-                            <template x-for="(item, index) in items" :key="index">
+                        <tbody>
+                            <template x-for="(item, index) in getDataBulanan('pendapatan')" :key="index">
                                 <tr class="border-b border-birunavy/5 dark:border-kuningemas/10">
                                     <td class="p-2"><input type="date" x-model="item.tanggal" class="w-full p-2 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas text-xs font-semibold"></td>
                                     <td class="p-2"><input type="text" x-model="item.nama" class="w-full p-2 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold" placeholder="Nama barang/jasa..."></td>
@@ -275,7 +293,10 @@
                                     <td class="p-2"><input type="number" x-model.number="item.biaya" class="w-full p-2 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold"></td>
                                     <td class="p-2"><input type="number" x-model.number="item.jumlah" class="w-full p-2 bg-transparent border-none text-center font-semibold"></td>
                                     <td class="p-3 font-black text-green-700 dark:text-green-400" x-text="formatRp(item.biaya * item.jumlah)"></td>
-                                    <td class="p-2 text-center no-print"><button @click="hapusBarisBulan('pendapatan', index)" class="text-red-500 font-black text-xl hover:scale-125 transition">✕</button></td>
+                                    <td class="p-2 text-center no-print flex items-center justify-center gap-2">
+                                        <button @click="simpanBarisData()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow" title="Simpan Baris">Simpan</button>
+                                        <button @click="hapusBarisBulan('pendapatan', index)" class="text-red-500 font-black text-xl hover:scale-125 transition" title="Hapus Baris">✕</button>
+                                    </td>
                                 </tr>
                             </template>
                         </tbody>
@@ -290,24 +311,24 @@
                 <button @click="tambahBarisBulan('pendapatan')" class="no-print mt-5 px-6 py-3 bg-birunavy text-kuningemas rounded-xl text-sm font-bold shadow-lg transition hover:opacity-90">+ Tambah Sumber Dana</button>
             </div>
 
-            <!-- Tab: Pengeluaran (Dilengkapi Tanggal, Nama Barang, Penanggung Jawab, Harga, Jumlah, Total) -->
+            <!-- Tab: Pengeluaran -->
             <div x-show="activeTab === 'pengeluaran' || printAll" class="glass rounded-3xl p-5 md:p-8 mb-6">
                 <h2 class="text-xl md:text-2xl font-black mb-6 text-birunavy dark:text-kuningemas uppercase border-b-2 border-kuningemas/30 pb-3">Pengeluaran - <span x-text="months[activeMonth-1]"></span></h2>
                 <div class="overflow-x-auto rounded-xl border border-birunavy/10 dark:border-kuningemas/20">
-                    <table class="w-full text-left min-w-[850px]">
+                    <table class="w-full text-left min-w-[900px]">
                         <thead class="bg-birunavy/5 dark:bg-birunavy text-birunavy dark:text-kuningemas">
                             <tr class="text-xs md:text-sm uppercase tracking-wider border-b border-birunavy/10 dark:border-kuningemas/20">
                                 <th class="p-3 w-32">Tanggal</th>
                                 <th class="p-3">Nama Barang / Keperluan</th>
                                 <th class="p-3">Penanggung Jawab</th>
-                                <th class="p-3 w-36">Harga (Rp)</th>
-                                <th class="p-3 w-20 text-center">Jml</th>
-                                <th class="p-3 w-36">Total Keluaran</th>
-                                <th class="p-3 w-16 text-center no-print">Opsi</th>
+                                <th class="p-3 w-32">Harga (Rp)</th>
+                                <th class="p-3 w-16 text-center">Jml</th>
+                                <th class="p-3 w-32">Total Keluaran</th>
+                                <th class="p-3 w-32 text-center no-print">Aksi Baris</th>
                             </tr>
                         </thead>
-                        <tbody x-data="{ items: getDataBulanan('pengeluaran') }">
-                            <template x-for="(item, index) in items" :key="index">
+                        <tbody>
+                            <template x-for="(item, index) in getDataBulanan('pengeluaran')" :key="index">
                                 <tr class="border-b border-birunavy/5 dark:border-kuningemas/10">
                                     <td class="p-2"><input type="date" x-model="item.tanggal" class="w-full p-2 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas text-xs font-semibold"></td>
                                     <td class="p-2"><input type="text" x-model="item.nama" class="w-full p-2 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold" placeholder="Nama barang..."></td>
@@ -315,7 +336,10 @@
                                     <td class="p-2"><input type="number" x-model.number="item.biaya" class="w-full p-2 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold"></td>
                                     <td class="p-2"><input type="number" x-model.number="item.jumlah" class="w-full p-2 bg-transparent border-none text-center font-semibold"></td>
                                     <td class="p-3 font-black text-red-600 dark:text-red-400" x-text="formatRp(item.biaya * item.jumlah)"></td>
-                                    <td class="p-2 text-center no-print"><button @click="hapusBarisBulan('pengeluaran', index)" class="text-red-500 font-black text-xl hover:scale-125 transition">✕</button></td>
+                                    <td class="p-2 text-center no-print flex items-center justify-center gap-2">
+                                        <button @click="simpanBarisData()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow" title="Simpan Baris">Simpan</button>
+                                        <button @click="hapusBarisBulan('pengeluaran', index)" class="text-red-500 font-black text-xl hover:scale-125 transition" title="Hapus Baris">✕</button>
+                                    </td>
                                 </tr>
                             </template>
                         </tbody>
@@ -334,18 +358,18 @@
             <div x-show="activeTab === 'gaji' || printAll" class="glass rounded-3xl p-5 md:p-8 mb-6">
                 <h2 class="text-xl md:text-2xl font-black mb-6 text-birunavy dark:text-kuningemas uppercase border-b-2 border-kuningemas/30 pb-3">Distribusi Gaji - <span x-text="months[activeMonth-1]"></span></h2>
                 <div class="overflow-x-auto rounded-xl border border-birunavy/10 dark:border-kuningemas/20">
-                    <table class="w-full text-left min-w-[750px]">
+                    <table class="w-full text-left min-w-[800px]">
                         <thead class="bg-birunavy/5 dark:bg-birunavy text-birunavy dark:text-kuningemas">
                             <tr class="text-xs md:text-sm uppercase tracking-wider border-b border-birunavy/10 dark:border-kuningemas/20">
                                 <th class="p-4 min-w-[200px]">Pilih Staff Pengerja</th>
-                                <th class="p-4 w-40">Nilai Jasa (Rp)</th>
-                                <th class="p-4 w-32">Bagi Hasil (%)</th>
-                                <th class="p-4 w-48">Gaji Dibayarkan</th>
-                                <th class="p-4 w-16 text-center no-print">Opsi</th>
+                                <th class="p-4 w-36">Nilai Jasa (Rp)</th>
+                                <th class="p-4 w-28">Bagi Hasil (%)</th>
+                                <th class="p-4 w-40">Gaji Dibayarkan</th>
+                                <th class="p-4 w-32 text-center no-print">Aksi Baris</th>
                             </tr>
                         </thead>
-                        <tbody x-data="{ items: getDataBulanan('gaji') }">
-                            <template x-for="(item, index) in items" :key="index">
+                        <tbody>
+                            <template x-for="(item, index) in getDataBulanan('gaji')" :key="index">
                                 <tr class="border-b border-birunavy/5 dark:border-kuningemas/10">
                                     <td class="p-3">
                                         <select x-model="item.nama" class="w-full p-2.5 bg-white/50 dark:bg-birunavy border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-bold text-birunavy dark:text-kuningemas">
@@ -361,7 +385,10 @@
                                         <span class="absolute right-6 top-1/2 -translate-y-1/2 opacity-70">%</span>
                                     </td>
                                     <td class="p-4 font-black text-orange-600 dark:text-orange-400" x-text="formatRp(hitungGaji(item))"></td>
-                                    <td class="p-3 text-center no-print"><button @click="hapusBarisBulan('gaji', index)" class="text-red-500 font-black text-xl hover:scale-125 transition">✕</button></td>
+                                    <td class="p-3 text-center no-print flex items-center justify-center gap-2">
+                                        <button @click="simpanBarisData()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow" title="Simpan Baris">Simpan</button>
+                                        <button @click="hapusBarisBulan('gaji', index)" class="text-red-500 font-black text-xl hover:scale-125 transition" title="Hapus Baris">✕</button>
+                                    </td>
                                 </tr>
                             </template>
                         </tbody>
@@ -456,7 +483,7 @@
         </div> <!-- End Print Area -->
     </div>
 
-    <!-- DOCK MENU NAVIGASI BAWAH (Menggunakan Ikon Vektor SVG Solid yang Dijamin Muncul) -->
+    <!-- DOCK MENU NAVIGASI BAWAH -->
     <nav x-show="!isSplash && isLoggedIn" x-transition class="fixed bottom-3 md:bottom-6 left-1/2 -translate-x-1/2 z-50 glass px-1.5 py-1.5 rounded-full flex items-center gap-1 md:gap-2 shadow-2xl no-print border border-birunavy/10 dark:border-kuningemas/30 backdrop-blur-xl">
         <template x-for="tab in tabs" :key="tab.id">
             <button @click="activeTab = tab.id; saveState()" 
@@ -471,7 +498,7 @@
     </nav>
 
     <!-- Footer -->
-    <footer x-show="!isSplash && isLoggedIn" class="text-center mt-auto text-[10px] md:text-xs font-bold opacity-50 no-print text-birunavy dark:text-kuningemas tracking-widest pb-10">
+    <footer x-show="!isSplash && isLoggedIn" class="text-center mt-auto text-[10px] md:text-xs font-bold opacity-50 no-print text-birunavy dark:text-kuningemas tracking-widest pb-16">
         &copy; 2026 PT. MEDIA TULISAN MANUSIA
     </footer>
 
@@ -502,8 +529,6 @@
                 activeTab: 'neraca',
                 printAll: false,
                 showSaveToast: false,
-                saveTimeout: null,
-                isLoadedFromCloud: false,
                 realtimeClock: '',
                 
                 months: ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'],
@@ -512,7 +537,6 @@
                 activeMonth: new Date().getMonth() + 1,
                 availableYears: Array.from({length: 6}, (_, i) => 2025 + i),
 
-                // Ikon Vektor SVG Solid Berkualitas Tinggi
                 tabs: [
                     { id: 'staff', label: 'Staff', icon: '<svg fill="currentColor" viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>' },
                     { id: 'rab', label: 'RAB', icon: '<svg fill="currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>' },
@@ -534,7 +558,6 @@
                         document.documentElement.classList.add('dark');
                     }
 
-                    // Jam Realtime otomatis update setiap detik
                     this.updateClock();
                     setInterval(() => this.updateClock(), 1000);
 
@@ -551,7 +574,7 @@
                     setTimeout(() => {
                         this.isSplash = false;
                         this.checkAuthStatus();
-                    }, 3000);
+                    }, 2500);
                 },
 
                 updateClock() {
@@ -561,19 +584,16 @@
                 },
 
                 saveState() {
-                    const state = {
+                    localStorage.setItem('sistemKeuanganMTM_State', JSON.stringify({
                         year: this.activeYear,
                         month: this.activeMonth,
                         tab: this.activeTab
-                    };
-                    localStorage.setItem('sistemKeuanganMTM_State', JSON.stringify(state));
+                    }));
                 },
 
                 gantiTahun(year) {
                     this.activeYear = year;
-                    if (!this.data.years[year]) {
-                        this.initYear(year);
-                    }
+                    this.initYear(year);
                     this.saveState();
                 },
 
@@ -600,71 +620,70 @@
                     this.loadLocalData();
                 },
                 logout() {
-                    firebase.auth().signOut().catch(() => {
-                        this.isLoggedIn = false;
-                    });
+                    firebase.auth().signOut().catch(() => { this.isLoggedIn = false; });
                 },
 
                 loadLocalData() {
-                    const saved = localStorage.getItem('sistemKeuanganMTM_V8');
+                    const saved = localStorage.getItem('sistemKeuanganMTM_V11');
                     if (saved) {
                         this.data = JSON.parse(saved);
                     }
-                    if (!this.data.years || !this.data.years[this.activeYear]) {
-                        this.initYear(this.activeYear);
-                    }
+                    this.initYear(this.activeYear);
                 },
                 loadDataFromFirebase() {
                     dbRef.once('value').then((snapshot) => {
                         if (snapshot.exists()) {
                             this.data = snapshot.val();
-                        } else {
-                            this.initYear(this.activeYear);
                         }
-                        this.isLoadedFromCloud = true;
+                        this.initYear(this.activeYear);
                         
                         dbRef.on('value', (snap) => {
-                            if (snap.exists() && this.isLoadedFromCloud) {
+                            if (snap.exists()) {
                                 let remoteData = snap.val();
                                 if (JSON.stringify(remoteData) !== JSON.stringify(this.data)) {
                                     this.data = remoteData;
                                 }
                             }
                         });
+                    }).catch(() => {
+                        this.loadLocalData();
                     });
                 },
-                autoSave() {
-                    if (!this.isLoadedFromCloud && this.isLoggedIn) return;
 
-                    clearTimeout(this.saveTimeout);
-                    this.saveTimeout = setTimeout(() => {
-                        if(this.isLoggedIn && firebase.auth().currentUser) {
-                            dbRef.set(this.data).then(() => this.tampilNotif());
-                        } else {
-                            localStorage.setItem('sistemKeuanganMTM_V8', JSON.stringify(this.data));
+                simpanBarisData() {
+                    if (this.isLoggedIn && firebase.auth().currentUser) {
+                        dbRef.set(this.data).then(() => {
                             this.tampilNotif();
-                        }
-                    }, 500);
+                        }).catch(err => {
+                            alert("Gagal menyimpan ke cloud: " + err.message);
+                        });
+                    } else {
+                        localStorage.setItem('sistemKeuanganMTM_V11', JSON.stringify(this.data));
+                        this.tampilNotif();
+                    }
                 },
+
                 tampilNotif() {
                     this.showSaveToast = true;
-                    setTimeout(() => this.showSaveToast = false, 1500);
+                    setTimeout(() => this.showSaveToast = false, 2000);
                 },
 
                 initYear(year) {
                     if (!this.data.years) this.data.years = {};
                     if (!this.data.years[year]) {
                         this.data.years[year] = {};
-                        for(let i=1; i<=12; i++) {
+                    }
+                    for(let i=1; i<=12; i++) {
+                        if (!this.data.years[year][i]) {
                             this.data.years[year][i] = {
                                 pendapatan: [{ tanggal: '', nama: '', klien: '', biaya: 0, jumlah: 1 }],
                                 pengeluaran: [{ tanggal: '', nama: '', pic: '', biaya: 0, jumlah: 1 }],
                                 gaji: [{ nama: '', jasa: 0, keuntungan: 20 }]
                             };
                         }
-                        this.autoSave();
                     }
                 },
+
                 toggleTheme() {
                     this.isDark = !this.isDark;
                     if (this.isDark) {
@@ -675,80 +694,112 @@
                         localStorage.setItem('theme', 'light');
                     }
                 },
+
                 tambahBarisGlobal(kategori) {
                     if(!this.data[kategori]) this.data[kategori] = [];
-                    if(kategori === 'staffList') this.data.staffList.push({ nama: '', jabatan: '' });
-                    else this.data.rab.push({ nama: '', biaya: 0, jumlah: 1 });
-                    this.autoSave();
+                    if(kategori === 'staffList') {
+                        this.data.staffList.push({ nama: '', jabatan: '' });
+                    } else {
+                        this.data.rab.push({ nama: '', biaya: 0, jumlah: 1 });
+                    }
                 },
+
                 hapusBarisGlobal(kategori, index) {
                     if(this.data[kategori].length > 1 || kategori === 'staffList') {
                         this.data[kategori].splice(index, 1);
-                        this.autoSave();
                     }
                 },
-                hitungTotalRAB() {
-                    return (this.data.rab || []).reduce((sum, item) => sum + ((item.biaya || 0) * (item.jumlah || 0)), 0);
-                },
+
                 getDataBulanan(kategori, m = this.activeMonth, y = this.activeYear) {
-                    if(!this.data.years || !this.data.years[y] || !this.data.years[y][m]) return [];
-                    return this.data.years[y][m][kategori] || [];
+                    if(!this.data.years || !this.data.years[y] || !this.data.years[y][m]) {
+                        this.initYear(y);
+                    }
+                    return this.data.years[y][m][kategori];
                 },
+
                 tambahBarisBulan(kategori) {
-                    if (!this.data.years[this.activeYear]) this.initYear(this.activeYear);
-                    if (!this.data.years[this.activeYear][this.activeMonth]) {
+                    if(!this.data.years[this.activeYear]) this.initYear(this.activeYear);
+                    if(!this.data.years[this.activeYear][this.activeMonth]) {
                         this.data.years[this.activeYear][this.activeMonth] = { pendapatan: [], pengeluaran: [], gaji: [] };
                     }
-                    if (kategori === 'gaji') {
-                        this.data.years[this.activeYear][this.activeMonth][kategori].push({ nama: '', jasa: 0, keuntungan: 20 });
-                    } else if (kategori === 'pendapatan') {
-                        this.data.years[this.activeYear][this.activeMonth][kategori].push({ tanggal: '', nama: '', klien: '', biaya: 0, jumlah: 1 });
+                    let target = this.data.years[this.activeYear][this.activeMonth][kategori];
+                    if(kategori === 'gaji') {
+                        target.push({ nama: '', jasa: 0, keuntungan: 20 });
+                    } else if(kategori === 'pendapatan') {
+                        target.push({ tanggal: '', nama: '', klien: '', biaya: 0, jumlah: 1 });
                     } else {
-                        this.data.years[this.activeYear][this.activeMonth][kategori].push({ tanggal: '', nama: '', pic: '', biaya: 0, jumlah: 1 });
+                        target.push({ tanggal: '', nama: '', pic: '', biaya: 0, jumlah: 1 });
                     }
-                    this.autoSave();
                 },
+
                 hapusBarisBulan(kategori, index) {
-                    let arr = this.data.years?.[this.activeYear]?.[this.activeMonth]?.[kategori];
+                    let arr = this.getDataBulanan(kategori);
                     if(arr && arr.length > 1) {
                         arr.splice(index, 1);
-                        this.autoSave();
                     }
                 },
+
                 hitungTotalBulan(kategori, m = this.activeMonth, y = this.activeYear) {
-                    let arr = this.data.years?.[y]?.[m]?.[kategori] || [];
+                    let arr = this.getDataBulanan(kategori, m, y);
                     return arr.reduce((sum, item) => sum + ((item.biaya || 0) * (item.jumlah || 0)), 0);
                 },
+
                 hitungGaji(item) {
                     return (item.jasa || 0) * ((item.keuntungan || 0) / 100);
                 },
+
                 hitungTotalGajiBulan(m = this.activeMonth, y = this.activeYear) {
-                    let arr = this.data.years?.[y]?.[m]?.gaji || [];
+                    let arr = this.getDataBulanan('gaji', m, y);
                     return arr.reduce((sum, item) => sum + this.hitungGaji(item), 0);
                 },
+
                 labaBersihBulan(m = this.activeMonth, y = this.activeYear) {
                     return this.hitungTotalBulan('pendapatan', m, y) - this.hitungTotalBulan('pengeluaran', m, y) - this.hitungTotalGajiBulan(m, y);
                 },
+
                 totalSetahun(kategori) {
                     let total = 0;
                     for(let i=1; i<=12; i++) total += this.hitungTotalBulan(kategori, i);
                     return total;
                 },
+
                 totalSetahunGaji() {
                     let total = 0;
                     for(let i=1; i<=12; i++) total += this.hitungTotalGajiBulan(i);
                     return total;
                 },
+
                 get labaBersihSetahun() {
                     return this.totalSetahun('pendapatan') - this.totalSetahun('pengeluaran') - this.totalSetahunGaji();
                 },
+
                 formatRp(angka) {
                     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
                 },
 
+                downloadRABPDF() {
+                    const originalTab = this.activeTab;
+                    this.activeTab = 'rab';
+                    setTimeout(() => {
+                        const element = document.getElementById('print-area');
+                        element.classList.add('pdf-mode');
+                        const opt = {
+                            margin: 0.4,
+                            filename: `RAB_PT_Media_Tulisan_Manusia_${this.activeYear}.pdf`,
+                            image: { type: 'jpeg', quality: 0.98 },
+                            html2canvas: { scale: 2, useCORS: true },
+                            jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+                        };
+                        html2pdf().set(opt).from(element).save().then(() => {
+                            element.classList.remove('pdf-mode');
+                            this.activeTab = originalTab;
+                        });
+                    }, 400);
+                },
+
                 downloadPDF(mode) {
                     let filename = mode === 'all' ? `Laporan_CFO_Tahunan_${this.activeYear}.pdf` : `Laporan_${this.activeTab.toUpperCase()}_${this.months[this.activeMonth-1]}_${this.activeYear}.pdf`;
-                    if (mode !== 'all' && (this.activeTab === 'staff' || this.activeTab === 'rab')) return alert('Gunakan tab lain untuk unduh laporan bulanan.');
+                    if (mode !== 'all' && this.activeTab === 'staff') return alert('Gunakan tab laporan atau RAB untuk mengunduh PDF.');
 
                     if (mode === 'all') this.printAll = true;
                     document.querySelector('.print-only-header').classList.remove('hidden');
@@ -758,11 +809,11 @@
                         element.classList.add('pdf-mode');
                         
                         const opt = {
-                            margin:       0.3,
-                            filename:     filename,
-                            image:        { type: 'jpeg', quality: 0.98 },
-                            html2canvas:  { scale: 2, useCORS: true, windowWidth: 900 }, 
-                            jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+                            margin: 0.4,
+                            filename: filename,
+                            image: { type: 'jpeg', quality: 0.98 },
+                            html2canvas: { scale: 2, useCORS: true },
+                            jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
                         };
 
                         html2pdf().set(opt).from(element).save().then(() => {
