@@ -33,7 +33,6 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     
     <style>
-        /* Efek Glassmorphism Mewah */
         .glass {
             background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(20px);
@@ -47,7 +46,6 @@
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7);
         }
 
-        /* Latar Belakang Gradasi FIXED (Anti Runcing/Patah) */
         body { 
             background-attachment: fixed !important;
             transition: background 0.5s ease; 
@@ -58,18 +56,18 @@
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* Setup Mode Cetak PDF */
+        /* Setup Mode Cetak PDF (Format Potrait A4, Kolom Fleksibel, Rapi) */
         .no-print { display: block; }
         .pdf-mode .no-print { display: none !important; }
         .pdf-mode .print-logo { display: block !important; }
         .pdf-mode .no-print-logo { display: none !important; }
 
-        .pdf-mode { background: white !important; color: black !important; padding: 0 !important; }
+        .pdf-mode { background: white !important; color: black !important; padding: 5px !important; font-size: 11px !important; }
         .pdf-mode .glass { background: transparent !important; backdrop-filter: none !important; box-shadow: none !important; border: none !important; border-radius: 0 !important; }
-        .pdf-mode * { color: black !important; border-color: #aaa !important; }
-        .pdf-mode table { width: 100% !important; border-collapse: collapse !important; margin-bottom: 20px !important; }
-        .pdf-mode th, .pdf-mode td { border: 1px solid #000 !important; padding: 8px !important; }
-        .pdf-mode th { background-color: #f3f4f6 !important; font-weight: bold !important; -webkit-print-color-adjust: exact; }
+        .pdf-mode * { color: black !important; border-color: #333 !important; }
+        .pdf-mode table { width: 100% !important; border-collapse: collapse !important; margin-bottom: 15px !important; font-size: 10px !important; table-layout: auto !important; }
+        .pdf-mode th, .pdf-mode td { border: 1px solid #000 !important; padding: 5px 8px !important; word-wrap: break-word !important; }
+        .pdf-mode th { background-color: #e5e7eb !important; font-weight: bold !important; -webkit-print-color-adjust: exact; }
         .pdf-mode input, .pdf-mode select { border: none !important; background: transparent !important; appearance: none !important; padding: 0 !important; font-weight: inherit !important; color: black !important; }
     </style>
 </head>
@@ -79,30 +77,24 @@
       @input="autoSave()" 
       @change="autoSave()">
 
-    <!-- 1. SPLASH SCREEN (LOADING 3 DETIK) -->
+    <!-- 1. SPLASH SCREEN (Hanya Logo Lebih Besar & Berdenyut) -->
     <div x-show="isSplash" x-transition.opacity.duration.1000ms class="fixed inset-0 z-[100] bg-light-theme flex flex-col items-center justify-center">
-        <img src="logopt.webp" class="h-24 md:h-32 object-contain animate-pulse block dark:hidden">
-        <img src="logopt2.webp" class="h-24 md:h-32 object-contain animate-pulse hidden dark:block">
-        <div class="mt-8 flex gap-2">
-            <div class="w-3 h-3 rounded-full bg-birunavy dark:bg-kuningemas animate-bounce" style="animation-delay: 0s"></div>
-            <div class="w-3 h-3 rounded-full bg-birunavy dark:bg-kuningemas animate-bounce" style="animation-delay: 0.2s"></div>
-            <div class="w-3 h-3 rounded-full bg-birunavy dark:bg-kuningemas animate-bounce" style="animation-delay: 0.4s"></div>
-        </div>
-        <p class="mt-4 font-bold text-birunavy dark:text-kuningemas tracking-widest text-sm uppercase opacity-70">Menghubungkan Database...</p>
+        <img src="logopt.webp" class="h-36 md:h-48 object-contain animate-pulse block dark:hidden">
+        <img src="logopt2.webp" class="h-36 md:h-48 object-contain animate-pulse hidden dark:block">
     </div>
 
     <!-- 2. HALAMAN LOGIN -->
     <div x-show="!isSplash && !isLoggedIn" x-transition class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="glass w-full max-w-md p-8 rounded-3xl text-center shadow-2xl border-t-4 border-kuningemas relative overflow-hidden">
-            <img src="logopt.webp" class="h-16 mx-auto mb-6 block dark:hidden">
-            <img src="logopt2.webp" class="h-16 mx-auto mb-6 hidden dark:block">
+            <img src="logopt.webp" class="h-20 mx-auto mb-6 block dark:hidden">
+            <img src="logopt2.webp" class="h-20 mx-auto mb-6 hidden dark:block">
             
             <h2 class="text-2xl font-black text-birunavy dark:text-kuningemas uppercase mb-2">Portal Keuangan</h2>
-            <p class="text-sm opacity-70 mb-8 font-semibold">Silakan masuk untuk mengakses database.</p>
+            <p class="text-sm opacity-70 mb-8 font-semibold">Silakan masuk untuk mengakses sistem.</p>
 
             <form @submit.prevent="loginEmailPassword" class="space-y-4">
-                <input type="email" x-model="loginEmail" placeholder="Email Perusahaan" required class="w-full p-3.5 rounded-xl bg-white/50 dark:bg-birunavy/50 border border-birunavy/20 dark:border-kuningemas/30 focus:ring-2 focus:ring-kuningemas outline-none font-bold text-center">
-                <input type="password" x-model="loginPass" placeholder="Kata Sandi" required class="w-full p-3.5 rounded-xl bg-white/50 dark:bg-birunavy/50 border border-birunavy/20 dark:border-kuningemas/30 focus:ring-2 focus:ring-kuningemas outline-none font-bold text-center">
+                <input type="email" x-model="loginEmail" placeholder="Email Perusahaan" required class="w-full p-3.5 rounded-xl bg-white/50 dark:bg-birunavy/50 border border-birunavy/25 dark:border-kuningemas/30 focus:ring-2 focus:ring-kuningemas outline-none font-bold text-center">
+                <input type="password" x-model="loginPass" placeholder="Kata Sandi" required class="w-full p-3.5 rounded-xl bg-white/50 dark:bg-birunavy/50 border border-birunavy/25 dark:border-kuningemas/30 focus:ring-2 focus:ring-kuningemas outline-none font-bold text-center">
                 
                 <p x-show="loginError" class="text-red-500 font-bold text-sm" x-text="loginError"></p>
 
@@ -111,15 +103,20 @@
                 </button>
             </form>
 
-            <div class="my-6 flex items-center gap-3">
+            <div class="my-5 flex items-center gap-3">
                 <hr class="w-full border-birunavy/20 dark:border-kuningemas/20">
                 <span class="text-xs font-bold opacity-50 uppercase">ATAU</span>
                 <hr class="w-full border-birunavy/20 dark:border-kuningemas/20">
             </div>
 
-            <button @click="loginGoogle" class="w-full py-3.5 bg-white dark:bg-birunavy text-birunavy dark:text-white border-2 border-birunavy/20 dark:border-kuningemas/50 rounded-xl font-bold flex items-center justify-center gap-3 hover:bg-gray-50 dark:hover:bg-birunavy/80 transition shadow-sm">
+            <button @click="loginGoogle" class="w-full py-3.5 bg-white dark:bg-birunavy text-birunavy dark:text-white border-2 border-birunavy/20 dark:border-kuningemas/50 rounded-xl font-bold flex items-center justify-center gap-3 hover:bg-gray-50 dark:hover:bg-birunavy/80 transition shadow-sm mb-3">
                 <svg class="w-5 h-5" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
                 Masuk dengan Google
+            </button>
+
+            <!-- Opsi Tambahan Mode Offline agar tidak nyangkut -->
+            <button @click="loginOffline" class="text-xs font-bold underline opacity-70 hover:opacity-100 text-birunavy dark:text-kuningemas">
+                Masuk Mode Lokal (Offline)
             </button>
         </div>
     </div>
@@ -127,16 +124,14 @@
     <!-- 3. SISTEM APLIKASI UTAMA -->
     <div x-show="!isSplash && isLoggedIn" x-transition class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 flex-grow w-full relative">
         
-        <!-- Tombol Logout & Mode Tema -->
-        <div class="fixed top-4 right-4 z-50 flex gap-2 no-print">
-            <button @click="logout" class="glass rounded-full p-3 text-red-500 hover:bg-red-50 transition shadow-lg" title="Keluar Akun">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
-            </button>
-            <button @click="toggleTheme()" class="glass rounded-full p-3 text-kuningemas hover:opacity-80 transition shadow-lg" title="Ubah Tema">
-                <svg x-show="!isDark" class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
-                <svg x-show="isDark" class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-            </button>
-        </div>
+        <!-- Tombol Logout di Pojok Kiri Atas & Mode Tema di Pojok Kanan Atas -->
+        <button @click="logout" class="fixed top-4 left-4 z-50 glass rounded-full p-3 text-red-500 hover:bg-red-50 transition shadow-lg no-print" title="Keluar Akun">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+        </button>
+        <button @click="toggleTheme()" class="fixed top-4 right-4 z-50 glass rounded-full p-3 text-kuningemas hover:opacity-80 transition shadow-lg no-print" title="Ubah Tema">
+            <svg x-show="!isDark" class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+            <svg x-show="isDark" class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+        </button>
 
         <div class="text-center mb-8 pt-4">
             <img src="logopt.webp" class="h-28 w-28 md:h-36 md:w-36 object-contain mx-auto mb-6 block dark:hidden print-logo">
@@ -147,12 +142,12 @@
             </div>
             
             <div class="hidden print-only-header mb-6 text-center">
-                <h1 class="text-3xl font-bold uppercase border-b-2 border-black pb-2">Laporan Keuangan <span x-text="months[activeMonth-1]"></span> <span x-text="activeYear"></span></h1>
+                <h1 class="text-2xl font-bold uppercase border-b-2 border-black pb-2">Laporan Keuangan <span x-text="months[activeMonth-1]"></span> <span x-text="activeYear"></span></h1>
             </div>
         </div>
 
         <div x-show="showSaveToast" x-transition class="no-print fixed top-5 left-1/2 -translate-x-1/2 glass rounded-full !bg-green-600/90 !text-white px-6 py-2 font-bold shadow-2xl z-50 text-sm">
-            ✓ Disinkronkan ke Database
+            ✓ Data Disimpan
         </div>
 
         <!-- Pemilihan Tahun & Tombol Unduh -->
@@ -452,13 +447,13 @@
         </div> <!-- End Print Area -->
     </div>
 
-    <!-- DOCK MENU NAVIGASI BAWAH -->
+    <!-- DOCK MENU NAVIGASI BAWAH (Menggunakan Emoji Vektor Aman) -->
     <nav x-show="!isSplash && isLoggedIn" x-transition class="fixed bottom-3 md:bottom-6 left-1/2 -translate-x-1/2 z-50 glass px-1.5 py-1.5 rounded-full flex items-center gap-1 md:gap-2 shadow-2xl no-print border border-birunavy/10 dark:border-kuningemas/30 backdrop-blur-xl">
         <template x-for="tab in tabs" :key="tab.id">
             <button @click="activeTab = tab.id" 
                     class="group flex items-center justify-center rounded-full transition-all duration-300 ease-out h-10 md:h-12 overflow-hidden outline-none"
                     :class="activeTab === tab.id ? 'bg-kuningemas text-birunavy dark:bg-birunavy dark:text-kuningemas px-4 md:px-5 shadow border border-birunavy/20' : 'w-10 md:w-12 text-birunavy dark:text-kuningemas hover:bg-birunavy/10 dark:hover:bg-white/10'">
-                <div class="shrink-0 w-5 h-5" x-html="tab.icon"></div>
+                <span class="text-base" x-text="tab.icon"></span>
                 <span x-show="activeTab === tab.id" class="ml-2 font-black text-[10px] md:text-xs tracking-widest uppercase whitespace-nowrap">
                     <span x-text="tab.label"></span>
                 </span>
@@ -472,9 +467,6 @@
     </footer>
 
     <script>
-        // ==========================================
-        // KONFIGURASI FIREBASE ANDA (SUDAH DIPASANG)
-        // ==========================================
         const firebaseConfig = {
             apiKey: "AIzaSyCtRNfx_hNUEXY8t_xCXVWRrZPc4SaBTZY",
             authDomain: "keuanganmediatulisanmanusia.firebaseapp.com",
@@ -485,7 +477,6 @@
             appId: "1:738725988435:web:1141daa4224d54ace65ea6",
             measurementId: "G-WGSC4V934H"
         };
-        // ==========================================
 
         firebase.initializeApp(firebaseConfig);
         const dbRef = firebase.database().ref('sistemKeuanganMTM');
@@ -509,13 +500,14 @@
                 activeMonth: new Date().getMonth() + 1,
                 availableYears: Array.from({length: 6}, (_, i) => 2025 + i),
 
+                // Menggunakan Simbol Emoji Berkualitas Tinggi sebagai Icon Menu Bawah
                 tabs: [
-                    { id: 'staff', label: 'Staff', icon: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 8a3 3 0 1 1 6 0 3 3 0 0 1-6 0Zm-4.5 9a5.5 5.5 0 0 1 11 0h-11Zm12.5 0a5.5 5.5 0 0 1-2.023-4.225A5.474 5.474 0 0 0 16 8.5h.5a3.5 3.5 0 0 1 0 7h-.5Z"/></svg>' },
-                    { id: 'rab', label: 'RAB', icon: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5a3 3 0 0 1 3-3h9a3 3 0 0 1 3 3v14a3 3 0 0 1-3 3H10a3 3 0 0 1-3-3V5Zm2.5-1A1.5 1.5 0 0 0 8 5.5V19a1.5 1.5 0 0 0 1.5 1.5h9A1.5 1.5 0 0 0 20 19V5.5A1.5 1.5 0 0 0 18.5 4h-9ZM2 6a3 3 0 0 1 3-3h1v2H5a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h1v2H5a3 3 0 0 1-3-3V6Z"/></svg>' },
-                    { id: 'pendapatan', label: 'Masuk', icon: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm-.53 14.03a.75.75 0 0 0 1.06 0l3-3a.75.75 0 1 0-1.06-1.06l-1.72 1.72V8.25a.75.75 0 0 0-1.5 0v5.69l-1.72-1.72a.75.75 0 0 0-1.06 1.06l3 3Z"/></svg>' },
-                    { id: 'pengeluaran', label: 'Keluar', icon: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm.53 5.47a.75.75 0 0 0-1.06 0l-3 3a.75.75 0 1 0 1.06 1.06l1.72-1.72v5.69a.75.75 0 0 0 1.5 0V10.06l1.72 1.72a.75.75 0 1 0 1.06-1.06l-3-3Z"/></svg>' },
-                    { id: 'gaji', label: 'Gaji', icon: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M10.464 8.746c.227-.18.497-.311.786-.394v2.795a2.252 2.252 0 0 1-.786-.393c-.394-.313-.546-.681-.546-1.004 0-.323.152-.691.546-1.004ZM12.75 15.662v-2.824c.347.085.664.228.921.421.427.32.579.686.579.991 0 .305-.152.671-.579.991a2.534 2.534 0 0 1-.921.42Z"/><path d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25ZM12.75 6a.75.75 0 0 0-1.5 0v.816a3.836 3.836 0 0 0-1.72.756c-.712.566-1.112 1.35-1.112 2.178 0 .829.4 1.612 1.113 2.178.502.4 1.102.647 1.719.756v2.978a2.536 2.536 0 0 1-.921-.421l-.879-.66a.75.75 0 0 0-.9 1.2l.879.66c.533.4 1.169.645 1.821.75V18a.75.75 0 0 0 1.5 0v-.81a4.124 4.124 0 0 0 1.821-.749c.745-.559 1.179-1.344 1.179-2.191 0-.847-.434-1.632-1.179-2.191a4.122 4.122 0 0 0-1.821-.75V8.354c.29.082.559.213.786.393l.415.33a.75.75 0 0 0 .933-1.175l-.415-.33a3.836 3.836 0 0 0-1.719-.755V6Z"/></svg>' },
-                    { id: 'neraca', label: 'Neraca', icon: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.375 2.25c-1.035 0-1.875.84-1.875 1.875v15.75c0 1.035.84 1.875 1.875 1.875h.75c1.035 0 1.875-.84 1.875-1.875V4.125c0-1.036-.84-1.875-1.875-1.875h-.75ZM9.75 8.625c0-1.036.84-1.875 1.875-1.875h.75c1.036 0 1.875.84 1.875 1.875v11.25c0 1.035-.84 1.875-1.875 1.875h-.75a1.875 1.875 0 0 1-1.875-1.875V8.625ZM3 13.125c0-1.036.84-1.875 1.875-1.875h.75c1.036 0 1.875.84 1.875 1.875v6.75c0 1.035-.84 1.875-1.875 1.875h-.75A1.875 1.875 0 0 1 3 19.875v-6.75Z"/></svg>' }
+                    { id: 'staff', label: 'Staff', icon: '👥' },
+                    { id: 'rab', label: 'RAB', icon: '📋' },
+                    { id: 'pendapatan', label: 'Masuk', icon: '📥' },
+                    { id: 'pengeluaran', label: 'Keluar', icon: '📤' },
+                    { id: 'gaji', label: 'Gaji', icon: '💵' },
+                    { id: 'neraca', label: 'Neraca', icon: '📊' }
                 ],
                 
                 data: {
@@ -552,12 +544,23 @@
                 },
                 loginGoogle() {
                     let provider = new firebase.auth.GoogleAuthProvider();
-                    firebase.auth().signInWithPopup(provider).catch(err => alert("Gagal login Google"));
+                    firebase.auth().signInWithRedirect(provider); // Menggunakan Redirect agar tidak diblokir popup browser
+                },
+                loginOffline() {
+                    this.isLoggedIn = true;
+                    this.loadLocalData();
                 },
                 logout() {
-                    firebase.auth().signOut();
+                    firebase.auth().signOut().catch(() => {
+                        this.isLoggedIn = false;
+                    });
                 },
 
+                loadLocalData() {
+                    const saved = localStorage.getItem('sistemKeuanganMTM_V6');
+                    if (saved) this.data = JSON.parse(saved);
+                    this.initYear(this.activeYear);
+                },
                 loadDataFromFirebase() {
                     dbRef.on('value', (snapshot) => {
                         if (snapshot.exists()) {
@@ -570,8 +573,11 @@
                 autoSave() {
                     clearTimeout(this.saveTimeout);
                     this.saveTimeout = setTimeout(() => {
-                        if(this.isLoggedIn) {
+                        if(this.isLoggedIn && firebase.auth().currentUser) {
                             dbRef.set(this.data).then(() => this.tampilNotif());
+                        } else {
+                            localStorage.setItem('sistemKeuanganMTM_V6', JSON.stringify(this.data));
+                            this.tampilNotif();
                         }
                     }, 800);
                 },
@@ -666,6 +672,7 @@
                     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
                 },
 
+                // PDF DIUBAH MENJADI POTRAIT A4 DENGAN KERTAS TEGAK DAN LEBAR KOLOM FLEKSIBEL
                 downloadPDF(mode) {
                     let filename = mode === 'all' ? `Laporan_CFO_Tahunan_${this.activeYear}.pdf` : `Laporan_${this.activeTab.toUpperCase()}_${this.months[this.activeMonth-1]}_${this.activeYear}.pdf`;
                     if (mode !== 'all' && (this.activeTab === 'staff' || this.activeTab === 'rab')) return alert('Gunakan tab lain untuk unduh laporan bulanan.');
@@ -678,11 +685,11 @@
                         element.classList.add('pdf-mode');
                         
                         const opt = {
-                            margin:       [0.5, 0.5, 0.5, 0.5],
+                            margin:       0.4,
                             filename:     filename,
                             image:        { type: 'jpeg', quality: 0.98 },
-                            html2canvas:  { scale: 2, useCORS: true, windowWidth: 1200 }, 
-                            jsPDF:        { unit: 'in', format: 'letter', orientation: 'landscape' }
+                            html2canvas:  { scale: 2, useCORS: true, windowWidth: 800 }, 
+                            jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' } // Format diubah ke Potrait A4
                         };
 
                         html2pdf().set(opt).from(element).save().then(() => {
