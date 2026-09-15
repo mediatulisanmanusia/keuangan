@@ -74,17 +74,17 @@
       x-data="keuanganApp()" 
       x-init="initApp()">
 
-    <!-- 1. SPLASH SCREEN -->
+    <!-- 1. SPLASH SCREEN (Menggunakan logopt.webp & logopt2.webp) -->
     <div x-show="isSplash" x-transition.opacity.duration.1000ms class="fixed inset-0 z-[100] bg-light-theme flex flex-col items-center justify-center">
-        <img src="logopt1.webp" class="h-20 md:h-28 object-contain animate-pulse block dark:hidden">
-        <img src="logopt2.webp" class="h-20 md:h-28 object-contain animate-pulse hidden dark:block">
+        <img src="logopt.webp" class="h-24 md:h-32 object-contain animate-pulse block dark:hidden">
+        <img src="logopt2.webp" class="h-24 md:h-32 object-contain animate-pulse hidden dark:block">
     </div>
 
-    <!-- 2. HALAMAN LOGIN -->
+    <!-- 2. HALAMAN LOGIN (Menggunakan logopt.webp & logopt2.webp) -->
     <div x-show="!isSplash && !isLoggedIn" x-transition class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="glass w-full max-w-md p-8 rounded-3xl text-center shadow-2xl border-t-4 border-kuningemas relative overflow-hidden">
-            <img src="logopt1.webp" class="h-14 mx-auto mb-6 block dark:hidden">
-            <img src="logopt2.webp" class="h-14 mx-auto mb-6 hidden dark:block">
+            <img src="logopt.webp" class="h-16 mx-auto mb-6 block dark:hidden">
+            <img src="logopt2.webp" class="h-16 mx-auto mb-6 hidden dark:block">
             
             <h2 class="text-2xl font-black text-birunavy dark:text-kuningemas uppercase mb-2">Portal Keuangan</h2>
             <p class="text-sm opacity-70 mb-8 font-semibold">Silakan masuk untuk mengakses sistem.</p>
@@ -120,17 +120,14 @@
     <!-- 3. SISTEM APLIKASI UTAMA -->
     <div x-show="!isSplash && isLoggedIn" x-transition class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 flex-grow w-full relative">
         
-        <!-- GELEMBUNG MELAYANG (FLOATING PILL) DI ATAS -->
-        <!-- Logo di Sisi Kiri, Tombol Keluar & Tema di Sisi Kanan -->
+        <!-- GELEMBUNG MELAYANG DI ATAS (Menggunakan rev1.webp & rev2.webp) -->
         <div class="fixed top-3 left-4 right-4 md:left-8 md:right-8 z-50 glass px-4 py-2.5 rounded-full flex items-center justify-between shadow-xl no-print border border-birunavy/15 dark:border-kuningemas/30 backdrop-blur-md">
-            <!-- Sisi Kiri: Logo logopt1.webp / logopt2.webp ukuran kecil proporsional -->
             <div class="flex items-center gap-2">
-                <img src="logopt1.webp" class="h-7 w-auto object-contain block dark:hidden">
-                <img src="logopt2.webp" class="h-7 w-auto object-contain hidden dark:block">
+                <img src="rev1.webp" class="h-7 w-auto object-contain block dark:hidden">
+                <img src="rev2.webp" class="h-7 w-auto object-contain hidden dark:block">
                 <span class="font-black text-xs md:text-sm tracking-widest text-birunavy dark:text-kuningemas uppercase hidden sm:inline">MTM System</span>
             </div>
 
-            <!-- Sisi Kanan: Tombol Keluar & Tema dalam satu gelembung -->
             <div class="flex items-center gap-2">
                 <button @click="logout" class="px-3 py-1.5 rounded-full bg-red-500/10 text-red-600 hover:bg-red-500 hover:text-white transition flex items-center gap-1 text-xs font-bold" title="Keluar Akun">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
@@ -157,7 +154,7 @@
         </div>
 
         <div x-show="showSaveToast" x-transition class="no-print fixed top-16 left-1/2 -translate-x-1/2 glass rounded-full !bg-emerald-600 !text-white px-6 py-2 font-bold shadow-lg text-xs tracking-wider z-50">
-            ✓ Baris Berhasil Disimpan!
+            ✓ Kategori Berhasil Disimpan!
         </div>
 
         <!-- Pemilihan Tahun & Tombol Unduh -->
@@ -201,12 +198,12 @@
             <div x-show="activeTab === 'staff' && !printAll" class="glass rounded-3xl p-5 md:p-8 mb-6">
                 <h2 class="text-xl md:text-2xl font-black mb-6 text-birunavy dark:text-kuningemas uppercase border-b-2 border-kuningemas/30 pb-3">Daftar Staff Internal</h2>
                 <div class="overflow-x-auto rounded-xl border border-birunavy/10 dark:border-kuningemas/20">
-                    <table class="w-full text-left min-w-[650px]">
+                    <table class="w-full text-left min-w-[600px]">
                         <thead class="bg-birunavy/5 dark:bg-birunavy text-birunavy dark:text-kuningemas">
                             <tr class="text-xs md:text-sm uppercase tracking-wider border-b border-birunavy/10 dark:border-kuningemas/20">
                                 <th class="p-4">Nama Lengkap / Freelance</th>
                                 <th class="p-4">Jabatan Posisi</th>
-                                <th class="p-4 w-32 text-center no-print">Aksi Baris</th>
+                                <th class="p-4 w-20 text-center no-print">Opsi</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -214,30 +211,30 @@
                                 <tr class="border-b border-birunavy/5 dark:border-kuningemas/10">
                                     <td class="p-3"><input type="text" x-model="st.nama" class="w-full p-2.5 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold" placeholder="Ketik nama..."></td>
                                     <td class="p-3"><input type="text" x-model="st.jabatan" class="w-full p-2.5 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold" placeholder="Jabatan"></td>
-                                    <td class="p-3 text-center no-print flex items-center justify-center gap-2">
-                                        <button @click="simpanBarisData()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow" title="Simpan Baris">Simpan</button>
-                                        <button @click="hapusBarisGlobal('staffList', index)" class="text-red-500 font-black text-xl hover:scale-125 transition" title="Hapus Baris">✕</button>
-                                    </td>
+                                    <td class="p-3 text-center no-print"><button @click="hapusBarisGlobal('staffList', index)" class="text-red-500 font-black text-xl hover:scale-125 transition">✕</button></td>
                                 </tr>
                             </template>
                         </tbody>
                     </table>
                 </div>
-                <button @click="tambahBarisGlobal('staffList')" class="no-print mt-5 px-6 py-3 bg-birunavy text-kuningemas rounded-xl text-sm font-bold shadow-lg transition hover:opacity-90">+ Tambah Staff</button>
+                <div class="flex flex-col sm:flex-row justify-between items-center mt-5 gap-3">
+                    <button @click="tambahBarisGlobal('staffList')" class="no-print w-full sm:w-auto px-6 py-3 bg-birunavy text-kuningemas rounded-xl text-sm font-bold shadow-lg transition hover:opacity-90">+ Tambah Staff</button>
+                    <button @click="simpanKategoriData()" class="no-print w-full sm:w-auto px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-black shadow-lg transition">💾 Simpan Data Staff</button>
+                </div>
             </div>
 
             <!-- Tab: RAB -->
             <div x-show="activeTab === 'rab' || (printAll && false)" class="glass rounded-3xl p-5 md:p-8 mb-6">
                 <h2 class="text-xl md:text-2xl font-black mb-6 text-birunavy dark:text-kuningemas uppercase border-b-2 border-kuningemas/30 pb-3">Rencana Anggaran Modal (RAB)</h2>
                 <div class="overflow-x-auto rounded-xl border border-birunavy/10 dark:border-kuningemas/20">
-                    <table class="w-full text-left min-w-[750px]">
+                    <table class="w-full text-left min-w-[700px]">
                         <thead class="bg-birunavy/5 dark:bg-birunavy text-birunavy dark:text-kuningemas">
                             <tr class="text-xs md:text-sm uppercase tracking-wider border-b border-birunavy/10 dark:border-kuningemas/20">
                                 <th class="p-4">Deskripsi Keperluan</th>
-                                <th class="p-4 w-36">Biaya Satuan</th>
-                                <th class="p-4 w-20">Jumlah</th>
-                                <th class="p-4 w-36">Total</th>
-                                <th class="p-4 w-32 text-center no-print">Aksi Baris</th>
+                                <th class="p-4 w-40">Biaya Satuan</th>
+                                <th class="p-4 w-24">Jumlah</th>
+                                <th class="p-4 w-40">Total</th>
+                                <th class="p-4 w-16 text-center no-print">Opsi</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -247,10 +244,7 @@
                                     <td class="p-3"><input type="number" x-model.number="item.biaya" class="w-full p-2.5 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold"></td>
                                     <td class="p-3"><input type="number" x-model.number="item.jumlah" class="w-full p-2.5 bg-transparent border-none rounded-lg text-center font-semibold"></td>
                                     <td class="p-4 font-black text-birunavy dark:text-kuningemas" x-text="formatRp(item.biaya * item.jumlah)"></td>
-                                    <td class="p-3 text-center no-print flex items-center justify-center gap-2">
-                                        <button @click="simpanBarisData()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow" title="Simpan Baris">Simpan</button>
-                                        <button @click="hapusBarisGlobal('rab', index)" class="text-red-500 font-black text-xl hover:scale-125 transition" title="Hapus Baris">✕</button>
-                                    </td>
+                                    <td class="p-3 text-center no-print"><button @click="hapusBarisGlobal('rab', index)" class="text-red-500 font-black text-xl hover:scale-125 transition">✕</button></td>
                                 </tr>
                             </template>
                         </tbody>
@@ -262,9 +256,12 @@
                         </tfoot>
                     </table>
                 </div>
-                <div class="flex justify-between items-center mt-5">
-                    <button @click="tambahBarisGlobal('rab')" class="no-print px-6 py-3 bg-birunavy text-kuningemas rounded-xl text-sm font-bold shadow-lg transition hover:opacity-90">+ Tambah Baris RAB</button>
-                    <button @click="downloadRABPDF()" class="no-print px-6 py-3 bg-kuningemas text-birunavy rounded-xl text-sm font-black shadow-lg transition hover:opacity-90">Unduh PDF RAB</button>
+                <div class="flex flex-col sm:flex-row justify-between items-center mt-5 gap-3">
+                    <div class="flex gap-2 w-full sm:w-auto">
+                        <button @click="tambahBarisGlobal('rab')" class="no-print flex-1 sm:flex-none px-6 py-3 bg-birunavy text-kuningemas rounded-xl text-sm font-bold shadow-lg transition hover:opacity-90">+ Tambah Baris</button>
+                        <button @click="downloadRABPDF()" class="no-print flex-1 sm:flex-none px-6 py-3 bg-kuningemas text-birunavy rounded-xl text-sm font-black shadow-lg transition hover:opacity-90">Unduh PDF</button>
+                    </div>
+                    <button @click="simpanKategoriData()" class="no-print w-full sm:w-auto px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-black shadow-lg transition">💾 Simpan Kategori RAB</button>
                 </div>
             </div>
 
@@ -272,16 +269,16 @@
             <div x-show="activeTab === 'pendapatan' || printAll" class="glass rounded-3xl p-5 md:p-8 mb-6">
                 <h2 class="text-xl md:text-2xl font-black mb-6 text-birunavy dark:text-kuningemas uppercase border-b-2 border-kuningemas/30 pb-3">Pendapatan - <span x-text="months[activeMonth-1]"></span></h2>
                 <div class="overflow-x-auto rounded-xl border border-birunavy/10 dark:border-kuningemas/20">
-                    <table class="w-full text-left min-w-[900px]">
+                    <table class="w-full text-left min-w-[850px]">
                         <thead class="bg-birunavy/5 dark:bg-birunavy text-birunavy dark:text-kuningemas">
                             <tr class="text-xs md:text-sm uppercase tracking-wider border-b border-birunavy/10 dark:border-kuningemas/20">
                                 <th class="p-3 w-32">Tanggal</th>
                                 <th class="p-3">Uraian / Barang</th>
                                 <th class="p-3">Klien / Sumber</th>
-                                <th class="p-3 w-32">Harga (Rp)</th>
-                                <th class="p-3 w-16 text-center">Jml</th>
-                                <th class="p-3 w-32">Total Omset</th>
-                                <th class="p-3 w-32 text-center no-print">Aksi Baris</th>
+                                <th class="p-3 w-36">Harga (Rp)</th>
+                                <th class="p-3 w-20 text-center">Jml</th>
+                                <th class="p-3 w-36">Total Omset</th>
+                                <th class="p-3 w-16 text-center no-print">Opsi</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -293,10 +290,7 @@
                                     <td class="p-2"><input type="number" x-model.number="item.biaya" class="w-full p-2 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold"></td>
                                     <td class="p-2"><input type="number" x-model.number="item.jumlah" class="w-full p-2 bg-transparent border-none text-center font-semibold"></td>
                                     <td class="p-3 font-black text-green-700 dark:text-green-400" x-text="formatRp(item.biaya * item.jumlah)"></td>
-                                    <td class="p-2 text-center no-print flex items-center justify-center gap-2">
-                                        <button @click="simpanBarisData()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow" title="Simpan Baris">Simpan</button>
-                                        <button @click="hapusBarisBulan('pendapatan', index)" class="text-red-500 font-black text-xl hover:scale-125 transition" title="Hapus Baris">✕</button>
-                                    </td>
+                                    <td class="p-2 text-center no-print"><button @click="hapusBarisBulan('pendapatan', index)" class="text-red-500 font-black text-xl hover:scale-125 transition">✕</button></td>
                                 </tr>
                             </template>
                         </tbody>
@@ -308,23 +302,26 @@
                         </tfoot>
                     </table>
                 </div>
-                <button @click="tambahBarisBulan('pendapatan')" class="no-print mt-5 px-6 py-3 bg-birunavy text-kuningemas rounded-xl text-sm font-bold shadow-lg transition hover:opacity-90">+ Tambah Sumber Dana</button>
+                <div class="flex flex-col sm:flex-row justify-between items-center mt-5 gap-3">
+                    <button @click="tambahBarisBulan('pendapatan')" class="no-print w-full sm:w-auto px-6 py-3 bg-birunavy text-kuningemas rounded-xl text-sm font-bold shadow-lg transition hover:opacity-90">+ Tambah Sumber Dana</button>
+                    <button @click="simpanKategoriData()" class="no-print w-full sm:w-auto px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-black shadow-lg transition">💾 Simpan Pendapatan Bulan Ini</button>
+                </div>
             </div>
 
             <!-- Tab: Pengeluaran -->
             <div x-show="activeTab === 'pengeluaran' || printAll" class="glass rounded-3xl p-5 md:p-8 mb-6">
                 <h2 class="text-xl md:text-2xl font-black mb-6 text-birunavy dark:text-kuningemas uppercase border-b-2 border-kuningemas/30 pb-3">Pengeluaran - <span x-text="months[activeMonth-1]"></span></h2>
                 <div class="overflow-x-auto rounded-xl border border-birunavy/10 dark:border-kuningemas/20">
-                    <table class="w-full text-left min-w-[900px]">
+                    <table class="w-full text-left min-w-[850px]">
                         <thead class="bg-birunavy/5 dark:bg-birunavy text-birunavy dark:text-kuningemas">
                             <tr class="text-xs md:text-sm uppercase tracking-wider border-b border-birunavy/10 dark:border-kuningemas/20">
                                 <th class="p-3 w-32">Tanggal</th>
                                 <th class="p-3">Nama Barang / Keperluan</th>
                                 <th class="p-3">Penanggung Jawab</th>
-                                <th class="p-3 w-32">Harga (Rp)</th>
-                                <th class="p-3 w-16 text-center">Jml</th>
-                                <th class="p-3 w-32">Total Keluaran</th>
-                                <th class="p-3 w-32 text-center no-print">Aksi Baris</th>
+                                <th class="p-3 w-36">Harga (Rp)</th>
+                                <th class="p-3 w-20 text-center">Jml</th>
+                                <th class="p-3 w-36">Total Keluaran</th>
+                                <th class="p-3 w-16 text-center no-print">Opsi</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -336,10 +333,7 @@
                                     <td class="p-2"><input type="number" x-model.number="item.biaya" class="w-full p-2 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold"></td>
                                     <td class="p-2"><input type="number" x-model.number="item.jumlah" class="w-full p-2 bg-transparent border-none text-center font-semibold"></td>
                                     <td class="p-3 font-black text-red-600 dark:text-red-400" x-text="formatRp(item.biaya * item.jumlah)"></td>
-                                    <td class="p-2 text-center no-print flex items-center justify-center gap-2">
-                                        <button @click="simpanBarisData()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow" title="Simpan Baris">Simpan</button>
-                                        <button @click="hapusBarisBulan('pengeluaran', index)" class="text-red-500 font-black text-xl hover:scale-125 transition" title="Hapus Baris">✕</button>
-                                    </td>
+                                    <td class="p-2 text-center no-print"><button @click="hapusBarisBulan('pengeluaran', index)" class="text-red-500 font-black text-xl hover:scale-125 transition" title="Hapus Baris">✕</button></td>
                                 </tr>
                             </template>
                         </tbody>
@@ -351,21 +345,24 @@
                         </tfoot>
                     </table>
                 </div>
-                <button @click="tambahBarisBulan('pengeluaran')" class="no-print mt-5 px-6 py-3 bg-birunavy text-kuningemas rounded-xl text-sm font-bold shadow-lg transition hover:opacity-90">+ Catat Pengeluaran</button>
+                <div class="flex flex-col sm:flex-row justify-between items-center mt-5 gap-3">
+                    <button @click="tambahBarisBulan('pengeluaran')" class="no-print w-full sm:w-auto px-6 py-3 bg-birunavy text-kuningemas rounded-xl text-sm font-bold shadow-lg transition hover:opacity-90">+ Catat Pengeluaran</button>
+                    <button @click="simpanKategoriData()" class="no-print w-full sm:w-auto px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-black shadow-lg transition">💾 Simpan Pengeluaran Bulan Ini</button>
+                </div>
             </div>
 
             <!-- Tab: Gaji Staff -->
             <div x-show="activeTab === 'gaji' || printAll" class="glass rounded-3xl p-5 md:p-8 mb-6">
                 <h2 class="text-xl md:text-2xl font-black mb-6 text-birunavy dark:text-kuningemas uppercase border-b-2 border-kuningemas/30 pb-3">Distribusi Gaji - <span x-text="months[activeMonth-1]"></span></h2>
                 <div class="overflow-x-auto rounded-xl border border-birunavy/10 dark:border-kuningemas/20">
-                    <table class="w-full text-left min-w-[800px]">
+                    <table class="w-full text-left min-w-[750px]">
                         <thead class="bg-birunavy/5 dark:bg-birunavy text-birunavy dark:text-kuningemas">
                             <tr class="text-xs md:text-sm uppercase tracking-wider border-b border-birunavy/10 dark:border-kuningemas/20">
                                 <th class="p-4 min-w-[200px]">Pilih Staff Pengerja</th>
-                                <th class="p-4 w-36">Nilai Jasa (Rp)</th>
-                                <th class="p-4 w-28">Bagi Hasil (%)</th>
-                                <th class="p-4 w-40">Gaji Dibayarkan</th>
-                                <th class="p-4 w-32 text-center no-print">Aksi Baris</th>
+                                <th class="p-4 w-40">Nilai Jasa (Rp)</th>
+                                <th class="p-4 w-32">Bagi Hasil (%)</th>
+                                <th class="p-4 w-48">Gaji Dibayarkan</th>
+                                <th class="p-4 w-16 text-center no-print">Opsi</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -385,10 +382,7 @@
                                         <span class="absolute right-6 top-1/2 -translate-y-1/2 opacity-70">%</span>
                                     </td>
                                     <td class="p-4 font-black text-orange-600 dark:text-orange-400" x-text="formatRp(hitungGaji(item))"></td>
-                                    <td class="p-3 text-center no-print flex items-center justify-center gap-2">
-                                        <button @click="simpanBarisData()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow" title="Simpan Baris">Simpan</button>
-                                        <button @click="hapusBarisBulan('gaji', index)" class="text-red-500 font-black text-xl hover:scale-125 transition" title="Hapus Baris">✕</button>
-                                    </td>
+                                    <td class="p-3 text-center no-print"><button @click="hapusBarisBulan('gaji', index)" class="text-red-500 font-black text-xl hover:scale-125 transition">✕</button></td>
                                 </tr>
                             </template>
                         </tbody>
@@ -400,7 +394,10 @@
                         </tfoot>
                     </table>
                 </div>
-                <button @click="tambahBarisBulan('gaji')" class="no-print mt-5 px-6 py-3 bg-birunavy text-kuningemas rounded-xl text-sm font-bold shadow-lg transition hover:opacity-90">+ Hitung Gaji Baru</button>
+                <div class="flex flex-col sm:flex-row justify-between items-center mt-5 gap-3">
+                    <button @click="tambahBarisBulan('gaji')" class="no-print w-full sm:w-auto px-6 py-3 bg-birunavy text-kuningemas rounded-xl text-sm font-bold shadow-lg transition hover:opacity-90">+ Hitung Gaji Baru</button>
+                    <button @click="simpanKategoriData()" class="no-print w-full sm:w-auto px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-black shadow-lg transition">💾 Simpan Distribusi Gaji</button>
+                </div>
             </div>
 
             <!-- Tab: Neraca & Laba Bersih -->
@@ -624,7 +621,7 @@
                 },
 
                 loadLocalData() {
-                    const saved = localStorage.getItem('sistemKeuanganMTM_V11');
+                    const saved = localStorage.getItem('sistemKeuanganMTM_V13');
                     if (saved) {
                         this.data = JSON.parse(saved);
                     }
@@ -650,7 +647,7 @@
                     });
                 },
 
-                simpanBarisData() {
+                simpanKategoriData() {
                     if (this.isLoggedIn && firebase.auth().currentUser) {
                         dbRef.set(this.data).then(() => {
                             this.tampilNotif();
@@ -658,7 +655,7 @@
                             alert("Gagal menyimpan ke cloud: " + err.message);
                         });
                     } else {
-                        localStorage.setItem('sistemKeuanganMTM_V11', JSON.stringify(this.data));
+                        localStorage.setItem('sistemKeuanganMTM_V13', JSON.stringify(this.data));
                         this.tampilNotif();
                     }
                 },
@@ -669,6 +666,8 @@
                 },
 
                 initYear(year) {
+                    if (!this.data.staffList) this.data.staffList = [{ nama: '', jabatan: '' }];
+                    if (!this.data.rab) this.data.rab = [{ nama: 'Modal Proyek', biaya: 0, jumlah: 1 }];
                     if (!this.data.years) this.data.years = {};
                     if (!this.data.years[year]) {
                         this.data.years[year] = {};
@@ -828,3 +827,4 @@
     </script>
 </body>
 </html>
+
