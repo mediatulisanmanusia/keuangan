@@ -56,7 +56,6 @@
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* Setup Mode Cetak PDF (Format Potrait A4, Kolom Fleksibel, Rapi) */
         .no-print { display: block; }
         .pdf-mode .no-print { display: none !important; }
         .pdf-mode .print-logo { display: block !important; }
@@ -77,7 +76,7 @@
       @input="autoSave()" 
       @change="autoSave()">
 
-    <!-- 1. SPLASH SCREEN (Hanya Logo Lebih Besar & Berdenyut) -->
+    <!-- 1. SPLASH SCREEN -->
     <div x-show="isSplash" x-transition.opacity.duration.1000ms class="fixed inset-0 z-[100] bg-light-theme flex flex-col items-center justify-center">
         <img src="logopt.webp" class="h-36 md:h-48 object-contain animate-pulse block dark:hidden">
         <img src="logopt2.webp" class="h-36 md:h-48 object-contain animate-pulse hidden dark:block">
@@ -114,9 +113,8 @@
                 Masuk dengan Google
             </button>
 
-            <!-- Opsi Tambahan Mode Offline agar tidak nyangkut -->
             <button @click="loginOffline" class="text-xs font-bold underline opacity-70 hover:opacity-100 text-birunavy dark:text-kuningemas">
-                Masuk Mode Lokal (Offline)
+                Masuk Mode Lokal (Offline / Tanpa Sinkron)
             </button>
         </div>
     </div>
@@ -124,7 +122,6 @@
     <!-- 3. SISTEM APLIKASI UTAMA -->
     <div x-show="!isSplash && isLoggedIn" x-transition class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 flex-grow w-full relative">
         
-        <!-- Tombol Logout di Pojok Kiri Atas & Mode Tema di Pojok Kanan Atas -->
         <button @click="logout" class="fixed top-4 left-4 z-50 glass rounded-full p-3 text-red-500 hover:bg-red-50 transition shadow-lg no-print" title="Keluar Akun">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
         </button>
@@ -154,7 +151,7 @@
         <div class="glass rounded-2xl p-4 mb-8 mx-auto max-w-4xl no-print flex flex-col md:flex-row items-center justify-between gap-4">
             <div class="flex items-center gap-3">
                 <label class="font-bold text-sm md:text-base text-birunavy dark:text-kuningemas uppercase whitespace-nowrap">Tahun:</label>
-                <select x-model.number="activeYear" @change="initYear(activeYear)" class="p-2.5 px-4 rounded-xl font-bold bg-white dark:bg-birunavy border-2 border-kuningemas/50 focus:border-kuningemas text-sm md:text-base focus:outline-none cursor-pointer">
+                <select x-model.number="activeYear" @change="gantiTahun(activeYear)" class="p-2.5 px-4 rounded-xl font-bold bg-white dark:bg-birunavy border-2 border-kuningemas/50 focus:border-kuningemas text-sm md:text-base focus:outline-none cursor-pointer">
                     <template x-for="year in availableYears" :key="year">
                         <option :value="year" x-text="year"></option>
                     </template>
@@ -178,7 +175,7 @@
             <div x-show="['pendapatan', 'pengeluaran', 'gaji', 'neraca'].includes(activeTab) && !printAll" class="mb-6 no-print">
                 <div class="flex overflow-x-auto gap-2 pb-4 snap-x hide-scrollbar px-1">
                     <template x-for="(bulan, index) in months" :key="index">
-                        <button @click="activeMonth = index + 1" 
+                        <button @click="activeMonth = index + 1; saveState()" 
                                 class="snap-center shrink-0 min-w-[100px] md:min-w-[120px] p-3 rounded-2xl border-2 transition-all duration-300 flex justify-center glass"
                                 :class="activeMonth === index + 1 ? 'border-kuningemas bg-birunavy text-kuningemas font-black scale-105 shadow-xl' : 'border-transparent text-birunavy/80 dark:text-kuningemas/80 font-bold'">
                             <span class="text-xs md:text-sm uppercase tracking-wider" x-text="bulan"></span>
@@ -447,10 +444,10 @@
         </div> <!-- End Print Area -->
     </div>
 
-    <!-- DOCK MENU NAVIGASI BAWAH (Menggunakan Emoji Vektor Aman) -->
+    <!-- DOCK MENU NAVIGASI BAWAH -->
     <nav x-show="!isSplash && isLoggedIn" x-transition class="fixed bottom-3 md:bottom-6 left-1/2 -translate-x-1/2 z-50 glass px-1.5 py-1.5 rounded-full flex items-center gap-1 md:gap-2 shadow-2xl no-print border border-birunavy/10 dark:border-kuningemas/30 backdrop-blur-xl">
         <template x-for="tab in tabs" :key="tab.id">
-            <button @click="activeTab = tab.id" 
+            <button @click="activeTab = tab.id; saveState()" 
                     class="group flex items-center justify-center rounded-full transition-all duration-300 ease-out h-10 md:h-12 overflow-hidden outline-none"
                     :class="activeTab === tab.id ? 'bg-kuningemas text-birunavy dark:bg-birunavy dark:text-kuningemas px-4 md:px-5 shadow border border-birunavy/20' : 'w-10 md:w-12 text-birunavy dark:text-kuningemas hover:bg-birunavy/10 dark:hover:bg-white/10'">
                 <span class="text-base" x-text="tab.icon"></span>
@@ -494,13 +491,14 @@
                 printAll: false,
                 showSaveToast: false,
                 saveTimeout: null,
+                isLoadedFromCloud: false,
                 
                 months: ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'],
+                
                 activeYear: new Date().getFullYear(),
                 activeMonth: new Date().getMonth() + 1,
                 availableYears: Array.from({length: 6}, (_, i) => 2025 + i),
 
-                // Menggunakan Simbol Emoji Berkualitas Tinggi sebagai Icon Menu Bawah
                 tabs: [
                     { id: 'staff', label: 'Staff', icon: '👥' },
                     { id: 'rab', label: 'RAB', icon: '📋' },
@@ -522,10 +520,37 @@
                         document.documentElement.classList.add('dark');
                     }
 
+                    const lastState = localStorage.getItem('sistemKeuanganMTM_State');
+                    if (lastState) {
+                        try {
+                            const parsed = JSON.parse(lastState);
+                            if (parsed.year) this.activeYear = parsed.year;
+                            if (parsed.month) this.activeMonth = parsed.month;
+                            if (parsed.tab) this.activeTab = parsed.tab;
+                        } catch(e) {}
+                    }
+
                     setTimeout(() => {
                         this.isSplash = false;
                         this.checkAuthStatus();
                     }, 3000);
+                },
+
+                saveState() {
+                    const state = {
+                        year: this.activeYear,
+                        month: this.activeMonth,
+                        tab: this.activeTab
+                    };
+                    localStorage.setItem('sistemKeuanganMTM_State', JSON.stringify(state));
+                },
+
+                gantiTahun(year) {
+                    this.activeYear = year;
+                    if (!this.data.years[year]) {
+                        this.initYear(year);
+                    }
+                    this.saveState();
                 },
 
                 checkAuthStatus() {
@@ -544,7 +569,7 @@
                 },
                 loginGoogle() {
                     let provider = new firebase.auth.GoogleAuthProvider();
-                    firebase.auth().signInWithRedirect(provider); // Menggunakan Redirect agar tidak diblokir popup browser
+                    firebase.auth().signInWithRedirect(provider);
                 },
                 loginOffline() {
                     this.isLoggedIn = true;
@@ -557,33 +582,52 @@
                 },
 
                 loadLocalData() {
-                    const saved = localStorage.getItem('sistemKeuanganMTM_V6');
-                    if (saved) this.data = JSON.parse(saved);
-                    this.initYear(this.activeYear);
+                    const saved = localStorage.getItem('sistemKeuanganMTM_V7');
+                    if (saved) {
+                        this.data = JSON.parse(saved);
+                    }
+                    if (!this.data.years || !this.data.years[this.activeYear]) {
+                        this.initYear(this.activeYear);
+                    }
                 },
                 loadDataFromFirebase() {
-                    dbRef.on('value', (snapshot) => {
+                    dbRef.once('value').then((snapshot) => {
                         if (snapshot.exists()) {
                             this.data = snapshot.val();
                         } else {
                             this.initYear(this.activeYear);
                         }
+                        this.isLoadedFromCloud = true;
+                        
+                        // Setelah data dari cloud sukses ditarik, pasang listener live-sync
+                        dbRef.on('value', (snap) => {
+                            if (snap.exists() && this.isLoadedFromCloud) {
+                                // Hanya perbarui jika ada perubahan dari device lain
+                                let remoteData = snap.val();
+                                if (JSON.stringify(remoteData) !== JSON.stringify(this.data)) {
+                                    this.data = remoteData;
+                                }
+                            }
+                        });
                     });
                 },
                 autoSave() {
+                    // Jangan simpan otomatis jika data belum selesai dimuat dari cloud
+                    if (!this.isLoadedFromCloud && this.isLoggedIn) return;
+
                     clearTimeout(this.saveTimeout);
                     this.saveTimeout = setTimeout(() => {
                         if(this.isLoggedIn && firebase.auth().currentUser) {
                             dbRef.set(this.data).then(() => this.tampilNotif());
                         } else {
-                            localStorage.setItem('sistemKeuanganMTM_V6', JSON.stringify(this.data));
+                            localStorage.setItem('sistemKeuanganMTM_V7', JSON.stringify(this.data));
                             this.tampilNotif();
                         }
-                    }, 800);
+                    }, 500);
                 },
                 tampilNotif() {
                     this.showSaveToast = true;
-                    setTimeout(() => this.showSaveToast = false, 2000);
+                    setTimeout(() => this.showSaveToast = false, 1500);
                 },
 
                 initYear(year) {
@@ -626,17 +670,24 @@
                     return (this.data.rab || []).reduce((sum, item) => sum + ((item.biaya || 0) * (item.jumlah || 0)), 0);
                 },
                 getDataBulanan(kategori, m = this.activeMonth, y = this.activeYear) {
-                    if(!this.data.years) return [];
-                    return this.data.years[y]?.[m]?.[kategori] || [];
+                    if(!this.data.years || !this.data.years[y] || !this.data.years[y][m]) return [];
+                    return this.data.years[y][m][kategori] || [];
                 },
                 tambahBarisBulan(kategori) {
-                    if (kategori === 'gaji') this.data.years[this.activeYear][this.activeMonth][kategori].push({ nama: '', jasa: 0, keuntungan: 20 });
-                    else this.data.years[this.activeYear][this.activeMonth][kategori].push({ nama: '', biaya: 0, jumlah: 1 });
+                    if (!this.data.years[this.activeYear]) this.initYear(this.activeYear);
+                    if (!this.data.years[this.activeYear][this.activeMonth]) {
+                        this.data.years[this.activeYear][this.activeMonth] = { pendapatan: [], pengeluaran: [], gaji: [] };
+                    }
+                    if (kategori === 'gaji') {
+                        this.data.years[this.activeYear][this.activeMonth][kategori].push({ nama: '', jasa: 0, keuntungan: 20 });
+                    } else {
+                        this.data.years[this.activeYear][this.activeMonth][kategori].push({ nama: '', biaya: 0, jumlah: 1 });
+                    }
                     this.autoSave();
                 },
                 hapusBarisBulan(kategori, index) {
-                    let arr = this.data.years[this.activeYear][this.activeMonth][kategori];
-                    if(arr.length > 1) {
+                    let arr = this.data.years?.[this.activeYear]?.[this.activeMonth]?.[kategori];
+                    if(arr && arr.length > 1) {
                         arr.splice(index, 1);
                         this.autoSave();
                     }
@@ -672,7 +723,6 @@
                     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
                 },
 
-                // PDF DIUBAH MENJADI POTRAIT A4 DENGAN KERTAS TEGAK DAN LEBAR KOLOM FLEKSIBEL
                 downloadPDF(mode) {
                     let filename = mode === 'all' ? `Laporan_CFO_Tahunan_${this.activeYear}.pdf` : `Laporan_${this.activeTab.toUpperCase()}_${this.months[this.activeMonth-1]}_${this.activeYear}.pdf`;
                     if (mode !== 'all' && (this.activeTab === 'staff' || this.activeTab === 'rab')) return alert('Gunakan tab lain untuk unduh laporan bulanan.');
@@ -689,7 +739,7 @@
                             filename:     filename,
                             image:        { type: 'jpeg', quality: 0.98 },
                             html2canvas:  { scale: 2, useCORS: true, windowWidth: 800 }, 
-                            jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' } // Format diubah ke Potrait A4
+                            jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
                         };
 
                         html2pdf().set(opt).from(element).save().then(() => {
