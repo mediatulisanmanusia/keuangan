@@ -15,8 +15,13 @@
             theme: {
                 extend: {
                     colors: {
-                        birunavy: '#0A2540',
+                        birunavy: '#081c34', /* Disesuaikan sedikit lebih pekat mirip coretax */
                         kuningemas: '#D4AF37',
+                        kuningsoft: '#f5d76e',
+                    },
+                    boxShadow: {
+                        'glass': '0 10px 40px -10px rgba(0,0,0,0.1)',
+                        'glass-dark': '0 10px 40px -10px rgba(0,0,0,0.7)',
                     }
                 }
             }
@@ -33,128 +38,158 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     
     <style>
+        /* Efek Kaca (Glassmorphism) yang disempurnakan */
         .glass {
-            background: rgba(255, 255, 255, 0.90);
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
             border: 1px solid rgba(255, 255, 255, 0.6);
-            box-shadow: 0 15px 35px rgba(10, 37, 64, 0.1);
+            box-shadow: 0 10px 30px rgba(8, 28, 52, 0.08);
         }
         .dark .glass {
-            background: rgba(10, 37, 64, 0.90);
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            border: 1px solid rgba(212, 175, 55, 0.25);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.8);
+            background: rgba(8, 28, 52, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(212, 175, 55, 0.15);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
         }
 
+        /* Gradasi Background smoot */
         body { 
             background-attachment: fixed !important;
-            transition: background 0.5s ease; 
+            transition: background-color 0.5s ease; 
         }
-        .bg-light-theme { background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%) fixed; }
-        .dark .bg-light-theme { background: linear-gradient(135deg, #020b14 0%, #0A2540 100%) fixed; }
+        .bg-light-theme { background: linear-gradient(145deg, #f0f4f8 0%, #e2e8f0 50%, #cbd5e1 100%) fixed; }
+        .dark .bg-light-theme { background: linear-gradient(145deg, #040d17 0%, #081c34 50%, #03080f 100%) fixed; }
 
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* PDF Styling Bersih & Presisi */
-        .pdf-mode { background: white !important; color: black !important; padding: 20px !important; font-size: 11px !important; width: 100% !important; }
+        /* PDF Styling Presisi Mutlak */
+        .pdf-mode { background: white !important; color: black !important; padding: 25px !important; font-size: 11px !important; width: 1000px !important; max-width: none !important; }
         .pdf-mode .no-print { display: none !important; }
         .pdf-mode .print-logo { display: block !important; }
         .pdf-mode .glass { background: transparent !important; backdrop-filter: none !important; box-shadow: none !important; border: none !important; border-radius: 0 !important; }
-        .pdf-mode *, .pdf-mode th, .pdf-mode td { color: black !important; border-color: #333 !important; }
+        .pdf-mode *, .pdf-mode th, .pdf-mode td { color: black !important; border-color: #000 !important; }
         .pdf-mode table { width: 100% !important; border-collapse: collapse !important; margin-bottom: 15px !important; font-size: 10px !important; }
-        .pdf-mode th, .pdf-mode td { border: 1px solid #000 !important; padding: 6px 8px !important; }
-        .pdf-mode th { background-color: #e5e7eb !important; font-weight: bold !important; -webkit-print-color-adjust: exact; }
-        .pdf-mode input, .pdf-mode select { border: none !important; background: transparent !important; appearance: none !important; padding: 0 !important; font-weight: bold !important; color: black !important; }
+        .pdf-mode th, .pdf-mode td { border: 1px solid #000 !important; padding: 8px !important; }
+        .pdf-mode th { background-color: #e5e7eb !important; font-weight: bold !important; -webkit-print-color-adjust: exact; color-adjust: exact; }
+        /* Teks statis untuk PDF agar tidak kosong */
+        .pdf-text { display: none; }
+        .pdf-mode .pdf-text { display: inline-block; font-weight: bold; }
+        .pdf-mode input, .pdf-mode select { display: none !important; }
+
+        input, select { transition: all 0.2s; }
     </style>
 </head>
-<body class="bg-light-theme text-slate-800 dark:text-slate-200 font-sans min-h-screen flex flex-col pb-36" 
+<body class="bg-light-theme text-slate-800 dark:text-slate-200 font-sans min-h-screen flex flex-col pb-32" 
       x-data="keuanganApp()" 
       x-init="initApp()">
 
-    <!-- 1. SPLASH SCREEN -->
-    <div x-show="isSplash" x-transition.opacity.duration.800ms class="fixed inset-0 z-[100] bg-light-theme flex flex-col items-center justify-center">
-        <div class="relative flex flex-col items-center">
-            <img src="logopt.webp" class="h-20 md:h-28 object-contain animate-bounce block dark:hidden">
-            <img src="logopt2.webp" class="h-20 md:h-28 object-contain animate-bounce hidden dark:block">
-            <div class="w-8 h-8 border-4 border-kuningemas border-t-transparent rounded-full animate-spin mt-4"></div>
-            <span class="text-xs font-black tracking-widest mt-3 opacity-80 uppercase text-birunavy dark:text-kuningemas">Memuat Sistem...</span>
+    <!-- OVERLAY ANIMASI (Hanya Logo Transparan) -->
+    <div x-show="isGlobalLoading" x-transition.opacity.duration.300ms class="fixed inset-0 z-[999] bg-slate-900/30 dark:bg-black/50 backdrop-blur-sm flex flex-col items-center justify-center pointer-events-none">
+        <div class="glass p-5 rounded-3xl flex items-center justify-center border border-white/50 dark:border-kuningemas/30 shadow-2xl">
+            <img src="logopt.webp" class="h-12 w-auto object-contain animate-bounce block dark:hidden">
+            <img src="logopt2.webp" class="h-12 w-auto object-contain animate-bounce hidden dark:block">
         </div>
     </div>
 
-    <!-- 2. HALAMAN LOGIN -->
-    <div x-show="!isSplash && !isLoggedIn" x-transition class="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="glass w-full max-w-md p-8 rounded-3xl text-center shadow-2xl border-t-4 border-kuningemas relative overflow-hidden">
-            <img src="logopt.webp" class="h-16 mx-auto mb-6 block dark:hidden">
-            <img src="logopt2.webp" class="h-16 mx-auto mb-6 hidden dark:block">
+    <!-- NOTIFIKASI TOAST SUKSES (Muncul dari atas) -->
+    <div x-show="showToast" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 -translate-y-10" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 -translate-y-10" class="no-print fixed top-6 left-1/2 -translate-x-1/2 z-[1000] bg-emerald-500/90 backdrop-blur-md text-white font-black px-5 py-2.5 rounded-full shadow-lg text-[10px] sm:text-xs tracking-wider uppercase border border-emerald-300 flex items-center gap-2">
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+        <span x-text="toastMessage"></span>
+    </div>
+
+    <!-- HALAMAN LOGIN (Terinspirasi Coretax) -->
+    <div x-show="!isLoggedIn && !authChecking" x-transition class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="glass w-full max-w-sm sm:max-w-md p-8 sm:p-10 rounded-[2rem] text-center shadow-glass dark:shadow-glass-dark border border-white/60 dark:border-kuningemas/20 relative overflow-hidden">
+            <img src="logopt.webp" class="h-16 sm:h-20 mx-auto mb-6 block dark:hidden drop-shadow-md">
+            <img src="logopt2.webp" class="h-16 sm:h-20 mx-auto mb-6 hidden dark:block drop-shadow-md">
             
-            <h2 class="text-2xl font-black text-birunavy dark:text-kuningemas uppercase mb-2">Portal Keuangan</h2>
-            <p class="text-sm opacity-70 mb-8 font-semibold">Silakan masuk untuk mengakses sistem.</p>
+            <h2 class="text-xl sm:text-2xl font-black text-birunavy dark:text-kuningemas uppercase tracking-tight mb-2">Selamat Datang!</h2>
+            <p class="text-xs sm:text-sm opacity-60 mb-8 font-semibold">Masuk untuk mengakses sistem keuangan.</p>
 
             <form @submit.prevent="loginEmailPassword" class="space-y-4">
-                <input type="email" x-model="loginEmail" placeholder="Email Perusahaan" required class="w-full p-3.5 rounded-xl bg-white/50 dark:bg-birunavy/50 border border-birunavy/25 dark:border-kuningemas/30 focus:ring-2 focus:ring-kuningemas outline-none font-bold text-center">
-                <input type="password" x-model="loginPass" placeholder="Kata Sandi" required class="w-full p-3.5 rounded-xl bg-white/50 dark:bg-birunavy/50 border border-birunavy/25 dark:border-kuningemas/30 focus:ring-2 focus:ring-kuningemas outline-none font-bold text-center">
-                
-                <p x-show="loginError" class="text-red-500 font-bold text-sm" x-text="loginError"></p>
+                <div class="relative text-left">
+                    <label class="text-[10px] font-bold uppercase tracking-wider opacity-70 ml-1">Email Perusahaan</label>
+                    <div class="relative mt-1">
+                        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                            <svg class="w-5 h-5 opacity-40" fill="currentColor" viewBox="0 0 20 20"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/></svg>
+                        </div>
+                        <input type="email" x-model="loginEmail" required class="w-full pl-11 pr-4 py-3.5 rounded-2xl bg-white/70 dark:bg-birunavy/70 border border-birunavy/10 dark:border-kuningemas/20 focus:ring-2 focus:ring-kuningemas outline-none font-bold text-sm shadow-inner text-birunavy dark:text-white">
+                    </div>
+                </div>
 
-                <button type="submit" class="w-full py-3.5 bg-birunavy text-kuningemas rounded-xl font-black uppercase tracking-widest hover:opacity-90 transition shadow-lg">
-                    MASUK
+                <div class="relative text-left">
+                    <label class="text-[10px] font-bold uppercase tracking-wider opacity-70 ml-1">Kata Sandi</label>
+                    <div class="relative mt-1">
+                        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                            <svg class="w-5 h-5 opacity-40" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/></svg>
+                        </div>
+                        <input type="password" x-model="loginPass" required class="w-full pl-11 pr-4 py-3.5 rounded-2xl bg-white/70 dark:bg-birunavy/70 border border-birunavy/10 dark:border-kuningemas/20 focus:ring-2 focus:ring-kuningemas outline-none font-bold text-sm shadow-inner text-birunavy dark:text-white">
+                    </div>
+                </div>
+                
+                <p x-show="loginError" class="text-red-500 font-bold text-xs" x-text="loginError"></p>
+
+                <button type="submit" class="w-full mt-2 py-3.5 bg-birunavy text-white dark:text-kuningemas rounded-2xl font-black uppercase tracking-widest hover:opacity-90 transition active:scale-[0.98] shadow-lg flex items-center justify-center gap-2">
+                    Masuk Sistem
                 </button>
             </form>
 
-            <div class="my-5 flex items-center gap-3">
-                <hr class="w-full border-birunavy/20 dark:border-kuningemas/20">
-                <span class="text-xs font-bold opacity-50 uppercase">ATAU</span>
-                <hr class="w-full border-birunavy/20 dark:border-kuningemas/20">
+            <div class="my-6 flex items-center gap-3">
+                <hr class="w-full border-birunavy/10 dark:border-kuningemas/20">
+                <span class="text-[10px] font-bold opacity-40 uppercase">ATAU</span>
+                <hr class="w-full border-birunavy/10 dark:border-kuningemas/20">
             </div>
 
-            <button @click="loginGoogle" class="w-full py-3.5 bg-white dark:bg-birunavy text-birunavy dark:text-white border-2 border-birunavy/20 dark:border-kuningemas/50 rounded-xl font-bold flex items-center justify-center gap-3 hover:bg-gray-50 dark:hover:bg-birunavy/80 transition shadow-sm mb-3">
+            <button @click="loginGoogle" class="w-full py-3 bg-white dark:bg-birunavy text-birunavy dark:text-white border border-birunavy/10 dark:border-kuningemas/30 rounded-2xl font-bold text-sm flex items-center justify-center gap-3 hover:bg-slate-50 dark:hover:bg-birunavy/80 transition active:scale-[0.98] shadow-sm mb-4">
                 <svg class="w-5 h-5" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
                 Masuk dengan Google
             </button>
 
-            <button @click="loginOffline" class="text-xs font-bold underline opacity-70 hover:opacity-100 text-birunavy dark:text-kuningemas">
-                Masuk Mode Lokal (Offline)
+            <button @click="loginOffline" class="text-[10px] font-bold opacity-60 hover:opacity-100 text-birunavy dark:text-kuningemas uppercase tracking-widest transition">
+                Akses Mode Lokal
             </button>
         </div>
     </div>
 
     <!-- 3. SISTEM APLIKASI UTAMA -->
-    <div x-show="!isSplash && isLoggedIn" x-transition class="max-w-7xl mx-auto p-3 sm:p-6 lg:p-8 flex-grow w-full relative">
+    <div x-show="isLoggedIn && !authChecking" x-transition class="max-w-7xl mx-auto p-3 sm:p-6 lg:p-8 flex-grow w-full relative">
         
-        <!-- GELEMBUNG ATAS -->
-        <div class="fixed top-3 left-3 right-3 sm:left-6 sm:right-6 md:left-12 md:right-12 z-40 glass px-4 py-2.5 rounded-full flex items-center justify-between shadow-xl no-print border border-birunavy/15 dark:border-kuningemas/30 backdrop-blur-xl">
+        <!-- HEADER ATAS (Rapi, tidak mepet layar, tanpa teks bertumpuk) -->
+        <div class="fixed top-4 left-4 right-4 sm:left-6 sm:right-6 md:left-12 md:right-12 z-40 glass px-4 sm:px-6 py-3 rounded-full flex items-center justify-between no-print">
             <div class="flex items-center gap-2">
-                <img src="rev1.webp" class="h-6 sm:h-7 w-auto object-contain block dark:hidden">
-                <img src="rev2.webp" class="h-6 sm:h-7 w-auto object-contain hidden dark:block">
-                <span class="font-black text-[10px] sm:text-xs tracking-widest text-birunavy dark:text-kuningemas uppercase">MTM System</span>
+                <img src="rev1.webp" class="h-6 sm:h-8 w-auto object-contain block dark:hidden drop-shadow-sm">
+                <img src="rev2.webp" class="h-6 sm:h-8 w-auto object-contain hidden dark:block drop-shadow-sm">
             </div>
 
-            <div class="flex items-center gap-2">
-                <button @click="logout" class="px-3 py-1.5 rounded-full bg-red-500/10 text-red-600 hover:bg-red-500 hover:text-white transition flex items-center gap-1 text-xs font-bold" title="Keluar Akun">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
-                    <span class="hidden sm:inline">Keluar</span>
+            <div class="flex items-center gap-2 sm:gap-4">
+                <!-- Tombol Mode Gelap (Vektor Solid Matahari/Bulan) -->
+                <button @click="toggleTheme()" class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-slate-200/50 dark:bg-white/10 text-birunavy dark:text-kuningemas hover:bg-slate-300/50 transition flex items-center justify-center shadow-inner" title="Ubah Tema">
+                    <!-- Ikon Matahari (Light Mode) -->
+                    <svg x-show="!isDark" class="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.59a.75.75 0 101.06 1.061l1.591-1.59zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM12 18.75a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-1.5a.75.75 0 01.75-.75zM6.166 17.834a.75.75 0 00-1.06 1.06l1.59 1.591a.75.75 0 101.06-1.061l-1.59-1.59zM4.5 12a.75.75 0 01-.75.75H1.5a.75.75 0 010-1.5h2.25a.75.75 0 01.75.75zM6.166 6.166a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 00-1.061 1.06l1.59 1.591z" /></svg>
+                    <!-- Ikon Bulan (Dark Mode) -->
+                    <svg x-show="isDark" class="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M9.528 1.718a.75.75 0 01.162.819A8.97 8.97 0 009 6a9 9 0 009 9 8.97 8.97 0 003.463-.69.75.75 0 01.981.98 10.503 10.503 0 01-9.694 6.46c-5.799 0-10.5-4.701-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 01.818.162z" clip-rule="evenodd" /></svg>
                 </button>
-                <div class="w-[1px] h-4 bg-birunavy/20 dark:bg-kuningemas/30"></div>
-                <button @click="toggleTheme()" class="w-8 h-8 rounded-full bg-birunavy/5 dark:bg-white/10 text-birunavy dark:text-kuningemas hover:bg-birunavy/15 transition flex items-center justify-center shadow-inner" title="Ubah Tema">
-                    <svg x-show="!isDark" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0 .39-.39.39-1.03 0-1.41l-1.06-1.06zm1.06-10.96c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z"/></svg>
-                    <svg x-show="isDark" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12.3 2.01C7.58 1.96 3.82 5.72 3.82 10.45c0 4.26 3.16 7.79 7.3 8.32.55.07.9-.47.66-.96-.65-1.34-.98-2.82-.98-4.31 0-5.52 4.48-10 10-10 .33 0 .66.02.99.06.51.07.9-.43.76-.92C21.14 3.73 17.06 2.06 12.3 2.01z"/></svg>
+                <div class="w-[1px] h-5 bg-birunavy/20 dark:bg-kuningemas/30"></div>
+                <button @click="logout" class="px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-red-500/10 text-red-600 hover:bg-red-500 hover:text-white transition flex items-center gap-1.5 text-[10px] sm:text-xs font-bold active:scale-95" title="Keluar Akun">
+                    <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clip-rule="evenodd"/></svg>
+                    <span class="hidden sm:inline tracking-wider uppercase">Keluar</span>
                 </button>
             </div>
         </div>
 
-        <div class="text-center mb-8 pt-16">
-            <div class="inline-block glass rounded-2xl px-6 md:px-10 py-2.5 no-print mb-2 shadow-sm">
-                <h1 class="text-base md:text-2xl font-black text-birunavy dark:text-kuningemas tracking-widest uppercase">SISTEM KEUANGAN MTM</h1>
+        <div class="text-center mb-8 pt-20 sm:pt-24">
+            <div class="inline-block glass rounded-2xl px-6 md:px-10 py-3 no-print mb-3">
+                <h1 class="text-sm md:text-xl font-black text-birunavy dark:text-kuningemas tracking-widest uppercase">Sistem Keuangan Perusahaan</h1>
             </div>
             
-            <!-- GELEMBUNG TANGGAL & JAM LIVE -->
+            <!-- Tanggal & Jam melayang -->
             <div class="flex justify-center no-print">
-                <div class="inline-flex items-center gap-2 glass px-4 py-1.5 rounded-full shadow-sm border border-birunavy/10 dark:border-kuningemas/20">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span class="text-[10px] md:text-xs font-bold tracking-wider uppercase text-birunavy dark:text-kuningemas" x-text="realtimeClock"></span>
+                <div class="inline-flex items-center gap-2 glass px-4 py-1.5 sm:py-2 rounded-full border border-birunavy/10 dark:border-kuningemas/20">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]"></span>
+                    <span class="text-[9px] sm:text-xs font-bold tracking-widest uppercase text-birunavy dark:text-kuningemas opacity-80" x-text="realtimeClock"></span>
                 </div>
             </div>
 
@@ -164,29 +199,24 @@
             </div>
         </div>
 
-        <!-- NOTIFIKASI TOAST -->
-        <div x-show="showToast" x-transition class="no-print fixed top-20 left-1/2 -translate-x-1/2 z-[250] bg-emerald-600 text-white font-black px-6 py-3 rounded-2xl shadow-2xl text-xs tracking-wider uppercase border border-emerald-400 flex items-center gap-2">
-            <span>✅</span> <span x-text="toastMessage"></span>
-        </div>
-
-        <!-- Tahun & Tombol Unduh -->
-        <div class="glass rounded-2xl p-4 mb-8 mx-auto max-w-4xl no-print flex flex-col md:flex-row items-center justify-between gap-4">
-            <div class="flex items-center gap-3 w-full md:w-auto justify-center">
-                <label class="font-bold text-sm md:text-base text-birunavy dark:text-kuningemas uppercase whitespace-nowrap">Tahun:</label>
-                <select x-model.number="activeYear" @change="gantiTahun(activeYear)" class="p-2.5 px-4 rounded-xl font-bold bg-white dark:bg-birunavy border-2 border-kuningemas/50 focus:border-kuningemas text-sm md:text-base focus:outline-none cursor-pointer">
+        <!-- Pemilihan Tahun & Tombol Unduh -->
+        <div class="glass rounded-[2rem] p-4 sm:p-5 mb-8 mx-auto max-w-4xl no-print flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-3 w-full sm:w-auto justify-center">
+                <label class="font-black text-xs sm:text-sm text-birunavy dark:text-kuningemas uppercase tracking-widest whitespace-nowrap">Tahun Aktif</label>
+                <select x-model.number="activeYear" @change="gantiTahun(activeYear)" class="p-2 sm:p-2.5 px-4 sm:px-6 rounded-xl font-black bg-slate-100 dark:bg-birunavy border-none focus:ring-2 focus:ring-kuningemas text-sm sm:text-base cursor-pointer shadow-inner text-birunavy dark:text-kuningemas">
                     <template x-for="year in availableYears" :key="year">
                         <option :value="year" x-text="year"></option>
                     </template>
                 </select>
             </div>
             
-            <div class="flex flex-row gap-2 w-full md:w-auto justify-center">
-                <button @click="downloadPDF('current')" class="glass rounded-xl !bg-birunavy hover:opacity-90 text-kuningemas px-4 py-2.5 text-xs md:text-sm font-bold flex flex-1 md:flex-none justify-center items-center gap-2 border border-kuningemas/30 shadow-lg transition active:scale-95">
-                    <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
-                    Unduh (Aktif)
+            <div class="flex flex-row gap-2 w-full sm:w-auto justify-center">
+                <button @click="downloadPDF('current')" class="glass rounded-xl !bg-birunavy hover:bg-birunavy/90 text-white dark:text-kuningemas px-4 py-2.5 text-[10px] sm:text-xs font-black flex flex-1 sm:flex-none justify-center items-center gap-2 shadow-lg transition active:scale-95 uppercase tracking-wider">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+                    Unduh (Bulan)
                 </button>
-                <button @click="downloadPDF('all')" class="glass rounded-xl !bg-kuningemas hover:opacity-90 text-birunavy px-4 py-2.5 text-xs md:text-sm font-bold flex flex-1 md:flex-none justify-center items-center gap-2 border border-birunavy/30 shadow-lg transition active:scale-95">
-                    <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+                <button @click="downloadPDF('all')" class="glass rounded-xl !bg-kuningemas hover:bg-kuningemas/90 text-birunavy px-4 py-2.5 text-[10px] sm:text-xs font-black flex flex-1 sm:flex-none justify-center items-center gap-2 shadow-lg transition active:scale-95 uppercase tracking-wider">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
                     Unduh (Rekap)
                 </button>
             </div>
@@ -195,26 +225,27 @@
         <!-- AREA CETAK UTAMA -->
         <div id="print-area" class="w-full">
 
-            <!-- Sub-Menu 12 Bulan (Auto Scroll Otomatis ke Bulan Berjalan) -->
+            <!-- Sub-Menu 12 Bulan (Auto Scroll Aktif) -->
             <div x-show="['pendapatan', 'pengeluaran', 'gaji', 'neraca'].includes(activeTab)" class="mb-6 no-print">
-                <div id="month-scroll-container" class="flex overflow-x-auto gap-2 pb-4 snap-x hide-scrollbar px-1 scroll-smooth">
+                <div id="month-scroll-container" class="flex overflow-x-auto gap-3 pb-4 snap-x hide-scrollbar px-2 sm:px-4 scroll-smooth">
                     <template x-for="(bulan, index) in months" :key="index">
-                        <button :id="'month-btn-' + (index + 1)" @click="activeMonth = index + 1; saveState()" 
-                                class="snap-center shrink-0 min-w-[100px] md:min-w-[120px] p-3 rounded-2xl border-2 transition-all duration-300 flex justify-center glass active:scale-95"
-                                :class="activeMonth === index + 1 ? 'border-kuningemas bg-birunavy text-kuningemas font-black scale-105 shadow-xl' : 'border-transparent text-birunavy/80 dark:text-kuningemas/80 font-bold'">
-                            <span class="text-xs md:text-sm uppercase tracking-wider" x-text="bulan"></span>
+                        <button :id="'month-btn-' + (index + 1)" @click="activeMonth = index + 1; saveState(); scrollToActiveMonth()" 
+                                class="snap-center shrink-0 min-w-[110px] sm:min-w-[130px] p-3 sm:p-4 rounded-[1.5rem] border transition-all duration-300 flex justify-center glass active:scale-95"
+                                :class="activeMonth === index + 1 ? 'border-kuningemas bg-birunavy text-kuningemas font-black shadow-lg transform -translate-y-1' : 'border-transparent text-birunavy/60 dark:text-kuningemas/60 font-bold hover:bg-white/50 dark:hover:bg-birunavy/50'">
+                            <span class="text-[10px] sm:text-xs uppercase tracking-widest" x-text="bulan"></span>
                         </button>
                     </template>
                 </div>
             </div>
 
             <!-- Tab: Staff -->
-            <div x-show="activeTab === 'staff'" class="glass rounded-3xl p-5 md:p-8 mb-6">
-                <h2 class="text-xl md:text-2xl font-black mb-6 text-birunavy dark:text-kuningemas uppercase border-b-2 border-kuningemas/30 pb-3">Daftar Staff Internal</h2>
-                <div class="overflow-x-auto rounded-xl border border-birunavy/10 dark:border-kuningemas/20">
+            <div x-show="activeTab === 'staff'" x-transition class="glass rounded-[2rem] p-5 sm:p-8 mb-6 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-2 h-full bg-kuningemas"></div>
+                <h2 class="text-lg sm:text-2xl font-black mb-6 text-birunavy dark:text-kuningemas uppercase tracking-tight ml-2 border-b border-birunavy/10 dark:border-kuningemas/20 pb-4">Daftar Staff Internal</h2>
+                <div class="overflow-x-auto rounded-xl border border-birunavy/5 dark:border-kuningemas/10 bg-white/40 dark:bg-black/20">
                     <table class="w-full text-left min-w-[600px]">
-                        <thead class="bg-birunavy/5 dark:bg-birunavy text-birunavy dark:text-kuningemas">
-                            <tr class="text-xs md:text-sm uppercase tracking-wider border-b border-birunavy/10 dark:border-kuningemas/20">
+                        <thead class="bg-slate-100 dark:bg-birunavy text-birunavy dark:text-kuningemas">
+                            <tr class="text-[10px] sm:text-xs uppercase tracking-widest border-b border-birunavy/5 dark:border-kuningemas/20">
                                 <th class="p-4">Nama Lengkap / Freelance</th>
                                 <th class="p-4">Jabatan Posisi</th>
                                 <th class="p-4 w-20 text-center no-print">Opsi</th>
@@ -222,32 +253,43 @@
                         </thead>
                         <tbody>
                             <template x-for="(st, index) in data.staffList" :key="index">
-                                <tr class="border-b border-birunavy/5 dark:border-kuningemas/10">
-                                    <td class="p-3"><input type="text" x-model="st.nama" class="w-full p-2.5 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold" placeholder="Ketik nama..."></td>
-                                    <td class="p-3"><input type="text" x-model="st.jabatan" class="w-full p-2.5 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold" placeholder="Jabatan"></td>
-                                    <td class="p-3 text-center no-print"><button @click="hapusBarisGlobal('staffList', index)" class="text-red-500 font-black text-xl hover:scale-125 transition">✕</button></td>
+                                <tr class="border-b border-birunavy/5 dark:border-kuningemas/5 hover:bg-white/60 dark:hover:bg-white/5 transition">
+                                    <td class="p-2 sm:p-3">
+                                        <input type="text" x-model="st.nama" @input="debouncedSave()" class="w-full p-2.5 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold text-xs sm:text-sm" placeholder="Ketik nama...">
+                                        <span class="pdf-text" x-text="st.nama"></span>
+                                    </td>
+                                    <td class="p-2 sm:p-3">
+                                        <input type="text" x-model="st.jabatan" @input="debouncedSave()" class="w-full p-2.5 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold text-xs sm:text-sm" placeholder="Jabatan">
+                                        <span class="pdf-text" x-text="st.jabatan"></span>
+                                    </td>
+                                    <td class="p-2 sm:p-3 text-center no-print">
+                                        <button @click="hapusBarisGlobal('staffList', index)" class="text-red-500/70 hover:text-red-600 font-black p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition active:scale-90">
+                                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                                        </button>
+                                    </td>
                                 </tr>
                             </template>
                         </tbody>
                     </table>
                 </div>
-                <div class="flex flex-col sm:flex-row justify-between items-center mt-5 gap-3">
-                    <button @click="tambahBarisGlobal('staffList')" class="no-print w-full sm:w-auto px-6 py-3 bg-birunavy text-kuningemas rounded-xl text-sm font-bold shadow-lg transition hover:opacity-90 flex items-center justify-center gap-2">
-                        + Tambah Staff
+                <div class="flex flex-col sm:flex-row justify-between items-center mt-6 gap-3">
+                    <button @click="tambahBarisGlobal('staffList')" class="no-print w-full sm:w-auto px-5 py-3 bg-birunavy/10 dark:bg-white/10 text-birunavy dark:text-kuningemas rounded-xl text-xs font-bold transition hover:bg-birunavy/20 flex items-center justify-center gap-2">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd"/></svg> Tambah Baris
                     </button>
-                    <button @click="simpanKategoriData()" class="no-print w-full sm:w-auto px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-black shadow-lg transition flex items-center justify-center gap-2 active:scale-95">
-                        💾 Simpan Data Staff
+                    <button @click="manualSave()" class="no-print w-full sm:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black shadow-lg transition flex items-center justify-center gap-2 active:scale-95 uppercase tracking-wider">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6h5a2 2 0 012 2v7a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2h5v5.586l-1.293-1.293zM9 4a1 1 0 012 0v2H9V4z"/></svg> Simpan Staff
                     </button>
                 </div>
             </div>
 
             <!-- Tab: RAB -->
-            <div x-show="activeTab === 'rab'" class="glass rounded-3xl p-5 md:p-8 mb-6">
-                <h2 class="text-xl md:text-2xl font-black mb-6 text-birunavy dark:text-kuningemas uppercase border-b-2 border-kuningemas/30 pb-3">Rencana Anggaran Modal (RAB)</h2>
-                <div class="overflow-x-auto rounded-xl border border-birunavy/10 dark:border-kuningemas/20">
+            <div x-show="activeTab === 'rab'" x-transition class="glass rounded-[2rem] p-5 sm:p-8 mb-6 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-2 h-full bg-kuningemas"></div>
+                <h2 class="text-lg sm:text-2xl font-black mb-6 text-birunavy dark:text-kuningemas uppercase tracking-tight ml-2 border-b border-birunavy/10 dark:border-kuningemas/20 pb-4">Rencana Anggaran Modal (RAB)</h2>
+                <div class="overflow-x-auto rounded-xl border border-birunavy/5 dark:border-kuningemas/10 bg-white/40 dark:bg-black/20">
                     <table class="w-full text-left min-w-[700px]">
-                        <thead class="bg-birunavy/5 dark:bg-birunavy text-birunavy dark:text-kuningemas">
-                            <tr class="text-xs md:text-sm uppercase tracking-wider border-b border-birunavy/10 dark:border-kuningemas/20">
+                        <thead class="bg-slate-100 dark:bg-birunavy text-birunavy dark:text-kuningemas">
+                            <tr class="text-[10px] sm:text-xs uppercase tracking-widest border-b border-birunavy/5 dark:border-kuningemas/20">
                                 <th class="p-4">Deskripsi Keperluan</th>
                                 <th class="p-4 w-40">Biaya Satuan</th>
                                 <th class="p-4 w-24">Jumlah</th>
@@ -257,139 +299,190 @@
                         </thead>
                         <tbody>
                             <template x-for="(item, index) in data.rab" :key="index">
-                                <tr class="border-b border-birunavy/5 dark:border-kuningemas/10">
-                                    <td class="p-3"><input type="text" x-model="item.nama" class="w-full p-2.5 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold"></td>
-                                    <td class="p-3"><input type="number" x-model.number="item.biaya" class="w-full p-2.5 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold"></td>
-                                    <td class="p-3"><input type="number" x-model.number="item.jumlah" class="w-full p-2.5 bg-transparent border-none rounded-lg text-center font-semibold"></td>
-                                    <td class="p-4 font-black text-birunavy dark:text-kuningemas" x-text="formatRp(item.biaya * item.jumlah)"></td>
-                                    <td class="p-3 text-center no-print"><button @click="hapusBarisGlobal('rab', index)" class="text-red-500 font-black text-xl hover:scale-125 transition">✕</button></td>
+                                <tr class="border-b border-birunavy/5 dark:border-kuningemas/5 hover:bg-white/60 dark:hover:bg-white/5 transition">
+                                    <td class="p-2 sm:p-3">
+                                        <input type="text" x-model="item.nama" @input="debouncedSave()" class="w-full p-2.5 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold text-xs sm:text-sm">
+                                        <span class="pdf-text" x-text="item.nama"></span>
+                                    </td>
+                                    <td class="p-2 sm:p-3">
+                                        <input type="number" x-model.number="item.biaya" @input="debouncedSave()" class="w-full p-2.5 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold text-xs sm:text-sm">
+                                        <span class="pdf-text" x-text="formatRp(item.biaya)"></span>
+                                    </td>
+                                    <td class="p-2 sm:p-3">
+                                        <input type="number" x-model.number="item.jumlah" @input="debouncedSave()" class="w-full p-2.5 bg-transparent border-none rounded-lg text-center font-semibold text-xs sm:text-sm">
+                                        <span class="pdf-text" x-text="item.jumlah"></span>
+                                    </td>
+                                    <td class="p-3 sm:p-4 font-black text-birunavy dark:text-kuningemas text-xs sm:text-sm" x-text="formatRp(item.biaya * item.jumlah)"></td>
+                                    <td class="p-2 sm:p-3 text-center no-print">
+                                        <button @click="hapusBarisGlobal('rab', index)" class="text-red-500/70 hover:text-red-600 font-black p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition active:scale-90">
+                                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                                        </button>
+                                    </td>
                                 </tr>
                             </template>
                         </tbody>
                         <tfoot class="bg-birunavy text-kuningemas">
                             <tr>
-                                <td colspan="3" class="p-4 text-right font-black uppercase text-sm">Grand Total Modal:</td>
-                                <td colspan="2" class="p-4 font-black text-lg" x-text="formatRp(hitungTotalRAB())"></td>
+                                <td colspan="3" class="p-4 text-right font-black uppercase text-xs tracking-wider">Grand Total Modal:</td>
+                                <td colspan="2" class="p-4 font-black text-sm sm:text-base" x-text="formatRp(hitungTotalRAB())"></td>
                             </tr>
                         </tfoot>
                     </table>
                 </div>
-                <div class="flex flex-col sm:flex-row justify-between items-center mt-5 gap-3">
+                <div class="flex flex-col sm:flex-row justify-between items-center mt-6 gap-3">
                     <div class="flex gap-2 w-full sm:w-auto">
-                        <button @click="tambahBarisGlobal('rab')" class="no-print flex-1 sm:flex-none px-6 py-3 bg-birunavy text-kuningemas rounded-xl text-sm font-bold shadow-lg transition hover:opacity-90 flex items-center justify-center gap-2">
-                            + Tambah
-                        </button>
-                        <button @click="downloadRABPDF()" class="no-print flex-1 sm:flex-none px-6 py-3 bg-kuningemas text-birunavy rounded-xl text-sm font-black shadow-lg transition hover:opacity-90 flex items-center justify-center gap-2">
-                            Unduh PDF
+                        <button @click="tambahBarisGlobal('rab')" class="no-print flex-1 sm:flex-none px-5 py-3 bg-birunavy/10 dark:bg-white/10 text-birunavy dark:text-kuningemas rounded-xl text-xs font-bold transition hover:bg-birunavy/20 flex items-center justify-center gap-2">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd"/></svg> Tambah Baris
                         </button>
                     </div>
-                    <button @click="simpanKategoriData()" class="no-print w-full sm:w-auto px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-black shadow-lg transition flex items-center justify-center gap-2 active:scale-95">
-                        💾 Simpan Kategori RAB
+                    <button @click="manualSave()" class="no-print w-full sm:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black shadow-lg transition flex items-center justify-center gap-2 active:scale-95 uppercase tracking-wider">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6h5a2 2 0 012 2v7a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2h5v5.586l-1.293-1.293zM9 4a1 1 0 012 0v2H9V4z"/></svg> Simpan RAB
                     </button>
                 </div>
             </div>
 
             <!-- Tab: Pendapatan -->
-            <div x-show="activeTab === 'pendapatan'" class="glass rounded-3xl p-5 md:p-8 mb-6">
-                <h2 class="text-xl md:text-2xl font-black mb-6 text-birunavy dark:text-kuningemas uppercase border-b-2 border-kuningemas/30 pb-3">Pendapatan - <span x-text="months[activeMonth-1]"></span></h2>
-                <div class="overflow-x-auto rounded-xl border border-birunavy/10 dark:border-kuningemas/20">
+            <div x-show="activeTab === 'pendapatan'" x-transition class="glass rounded-[2rem] p-5 sm:p-8 mb-6 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-2 h-full bg-green-500"></div>
+                <h2 class="text-lg sm:text-2xl font-black mb-6 text-birunavy dark:text-kuningemas uppercase tracking-tight ml-2 border-b border-birunavy/10 dark:border-kuningemas/20 pb-4">Pendapatan - <span x-text="months[activeMonth-1]"></span></h2>
+                <div class="overflow-x-auto rounded-xl border border-birunavy/5 dark:border-kuningemas/10 bg-white/40 dark:bg-black/20">
                     <table class="w-full text-left min-w-[850px]">
-                        <thead class="bg-birunavy/5 dark:bg-birunavy text-birunavy dark:text-kuningemas">
-                            <tr class="text-xs md:text-sm uppercase tracking-wider border-b border-birunavy/10 dark:border-kuningemas/20">
-                                <th class="p-3 w-32">Tanggal</th>
+                        <thead class="bg-slate-100 dark:bg-birunavy text-birunavy dark:text-kuningemas">
+                            <tr class="text-[10px] sm:text-xs uppercase tracking-widest border-b border-birunavy/5 dark:border-kuningemas/20">
+                                <th class="p-3 w-36">Tanggal</th>
                                 <th class="p-3">Uraian / Barang</th>
                                 <th class="p-3">Klien / Sumber</th>
                                 <th class="p-3 w-36">Harga (Rp)</th>
                                 <th class="p-3 w-20 text-center">Jml</th>
-                                <th class="p-3 w-36">Total Omset</th>
+                                <th class="p-3 w-40">Total Omset</th>
                                 <th class="p-3 w-16 text-center no-print">Opsi</th>
                             </tr>
                         </thead>
                         <tbody>
                             <template x-for="(item, index) in getDataBulanan('pendapatan')" :key="index">
-                                <tr class="border-b border-birunavy/5 dark:border-kuningemas/10">
-                                    <td class="p-2"><input type="date" x-model="item.tanggal" class="w-full p-2 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas text-xs font-semibold"></td>
-                                    <td class="p-2"><input type="text" x-model="item.nama" class="w-full p-2 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold" placeholder="Nama barang/jasa..."></td>
-                                    <td class="p-2"><input type="text" x-model="item.klien" class="w-full p-2 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold" placeholder="Nama klien..."></td>
-                                    <td class="p-2"><input type="number" x-model.number="item.biaya" class="w-full p-2 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold"></td>
-                                    <td class="p-2"><input type="number" x-model.number="item.jumlah" class="w-full p-2 bg-transparent border-none text-center font-semibold"></td>
-                                    <td class="p-3 font-black text-green-700 dark:text-green-400" x-text="formatRp(item.biaya * item.jumlah)"></td>
-                                    <td class="p-2 text-center no-print"><button @click="hapusBarisBulan('pendapatan', index)" class="text-red-500 font-black text-xl hover:scale-125 transition">✕</button></td>
+                                <tr class="border-b border-birunavy/5 dark:border-kuningemas/5 hover:bg-white/60 dark:hover:bg-white/5 transition">
+                                    <td class="p-2">
+                                        <input type="date" x-model="item.tanggal" @input="debouncedSave()" class="w-full p-2.5 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas text-xs font-semibold">
+                                        <span class="pdf-text" x-text="item.tanggal"></span>
+                                    </td>
+                                    <td class="p-2">
+                                        <input type="text" x-model="item.nama" @input="debouncedSave()" class="w-full p-2.5 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold text-xs sm:text-sm" placeholder="Nama barang/jasa...">
+                                        <span class="pdf-text" x-text="item.nama"></span>
+                                    </td>
+                                    <td class="p-2">
+                                        <input type="text" x-model="item.klien" @input="debouncedSave()" class="w-full p-2.5 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold text-xs sm:text-sm" placeholder="Nama klien...">
+                                        <span class="pdf-text" x-text="item.klien"></span>
+                                    </td>
+                                    <td class="p-2">
+                                        <input type="number" x-model.number="item.biaya" @input="debouncedSave()" class="w-full p-2.5 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold text-xs sm:text-sm">
+                                        <span class="pdf-text" x-text="formatRp(item.biaya)"></span>
+                                    </td>
+                                    <td class="p-2">
+                                        <input type="number" x-model.number="item.jumlah" @input="debouncedSave()" class="w-full p-2.5 bg-transparent border-none rounded-lg text-center font-semibold text-xs sm:text-sm">
+                                        <span class="pdf-text" x-text="item.jumlah"></span>
+                                    </td>
+                                    <td class="p-2 sm:p-3 font-black text-green-700 dark:text-green-400 text-xs sm:text-sm" x-text="formatRp(item.biaya * item.jumlah)"></td>
+                                    <td class="p-2 text-center no-print">
+                                        <button @click="hapusBarisBulan('pendapatan', index)" class="text-red-500/70 hover:text-red-600 font-black p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition active:scale-90">
+                                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                                        </button>
+                                    </td>
                                 </tr>
                             </template>
                         </tbody>
-                        <tfoot class="bg-green-50 dark:bg-green-900/40 text-green-700 dark:text-green-400">
+                        <tfoot class="bg-green-50/50 dark:bg-green-900/20 text-green-800 dark:text-green-400">
                             <tr>
-                                <td colspan="5" class="p-4 text-right font-black uppercase text-sm">Total Omset Bulan Ini:</td>
-                                <td colspan="2" class="p-4 font-black text-lg" x-text="formatRp(hitungTotalBulan('pendapatan'))"></td>
+                                <td colspan="5" class="p-4 text-right font-black uppercase text-xs tracking-wider">Total Omset Bulan Ini:</td>
+                                <td colspan="2" class="p-4 font-black text-sm sm:text-base" x-text="formatRp(hitungTotalBulan('pendapatan'))"></td>
                             </tr>
                         </tfoot>
                     </table>
                 </div>
-                <div class="flex flex-col sm:flex-row justify-between items-center mt-5 gap-3">
-                    <button @click="tambahBarisBulan('pendapatan')" class="no-print w-full sm:w-auto px-6 py-3 bg-birunavy text-kuningemas rounded-xl text-sm font-bold shadow-lg transition hover:opacity-90 flex items-center justify-center gap-2">
-                        + Tambah Sumber Dana
+                <div class="flex flex-col sm:flex-row justify-between items-center mt-6 gap-3">
+                    <button @click="tambahBarisBulan('pendapatan')" class="no-print w-full sm:w-auto px-5 py-3 bg-birunavy/10 dark:bg-white/10 text-birunavy dark:text-kuningemas rounded-xl text-xs font-bold transition hover:bg-birunavy/20 flex items-center justify-center gap-2">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd"/></svg> Tambah Dana Masuk
                     </button>
-                    <button @click="simpanKategoriData()" class="no-print w-full sm:w-auto px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-black shadow-lg transition flex items-center justify-center gap-2 active:scale-95">
-                        💾 Simpan Pendapatan Bulan Ini
+                    <button @click="manualSave()" class="no-print w-full sm:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black shadow-lg transition flex items-center justify-center gap-2 active:scale-95 uppercase tracking-wider">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6h5a2 2 0 012 2v7a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2h5v5.586l-1.293-1.293zM9 4a1 1 0 012 0v2H9V4z"/></svg> Simpan Pendapatan
                     </button>
                 </div>
             </div>
 
             <!-- Tab: Pengeluaran -->
-            <div x-show="activeTab === 'pengeluaran'" class="glass rounded-3xl p-5 md:p-8 mb-6">
-                <h2 class="text-xl md:text-2xl font-black mb-6 text-birunavy dark:text-kuningemas uppercase border-b-2 border-kuningemas/30 pb-3">Pengeluaran - <span x-text="months[activeMonth-1]"></span></h2>
-                <div class="overflow-x-auto rounded-xl border border-birunavy/10 dark:border-kuningemas/20">
+            <div x-show="activeTab === 'pengeluaran'" x-transition class="glass rounded-[2rem] p-5 sm:p-8 mb-6 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-2 h-full bg-red-500"></div>
+                <h2 class="text-lg sm:text-2xl font-black mb-6 text-birunavy dark:text-kuningemas uppercase tracking-tight ml-2 border-b border-birunavy/10 dark:border-kuningemas/20 pb-4">Pengeluaran - <span x-text="months[activeMonth-1]"></span></h2>
+                <div class="overflow-x-auto rounded-xl border border-birunavy/5 dark:border-kuningemas/10 bg-white/40 dark:bg-black/20">
                     <table class="w-full text-left min-w-[850px]">
-                        <thead class="bg-birunavy/5 dark:bg-birunavy text-birunavy dark:text-kuningemas">
-                            <tr class="text-xs md:text-sm uppercase tracking-wider border-b border-birunavy/10 dark:border-kuningemas/20">
-                                <th class="p-3 w-32">Tanggal</th>
+                        <thead class="bg-slate-100 dark:bg-birunavy text-birunavy dark:text-kuningemas">
+                            <tr class="text-[10px] sm:text-xs uppercase tracking-widest border-b border-birunavy/5 dark:border-kuningemas/20">
+                                <th class="p-3 w-36">Tanggal</th>
                                 <th class="p-3">Nama Barang / Keperluan</th>
                                 <th class="p-3">Penanggung Jawab</th>
                                 <th class="p-3 w-36">Harga (Rp)</th>
                                 <th class="p-3 w-20 text-center">Jml</th>
-                                <th class="p-3 w-36">Total Keluaran</th>
+                                <th class="p-3 w-40">Total Keluaran</th>
                                 <th class="p-3 w-16 text-center no-print">Opsi</th>
                             </tr>
                         </thead>
                         <tbody>
                             <template x-for="(item, index) in getDataBulanan('pengeluaran')" :key="index">
-                                <tr class="border-b border-birunavy/5 dark:border-kuningemas/10">
-                                    <td class="p-2"><input type="date" x-model="item.tanggal" class="w-full p-2 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas text-xs font-semibold"></td>
-                                    <td class="p-2"><input type="text" x-model="item.nama" class="w-full p-2 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold" placeholder="Nama barang..."></td>
-                                    <td class="p-2"><input type="text" x-model="item.pic" class="w-full p-2 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold" placeholder="Penanggung jawab..."></td>
-                                    <td class="p-2"><input type="number" x-model.number="item.biaya" class="w-full p-2 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold"></td>
-                                    <td class="p-2"><input type="number" x-model.number="item.jumlah" class="w-full p-2 bg-transparent border-none text-center font-semibold"></td>
-                                    <td class="p-3 font-black text-red-600 dark:text-red-400" x-text="formatRp(item.biaya * item.jumlah)"></td>
-                                    <td class="p-2 text-center no-print"><button @click="hapusBarisBulan('pengeluaran', index)" class="text-red-500 font-black text-xl hover:scale-125 transition" title="Hapus Baris">✕</button></td>
+                                <tr class="border-b border-birunavy/5 dark:border-kuningemas/5 hover:bg-white/60 dark:hover:bg-white/5 transition">
+                                    <td class="p-2">
+                                        <input type="date" x-model="item.tanggal" @input="debouncedSave()" class="w-full p-2.5 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas text-xs font-semibold">
+                                        <span class="pdf-text" x-text="item.tanggal"></span>
+                                    </td>
+                                    <td class="p-2">
+                                        <input type="text" x-model="item.nama" @input="debouncedSave()" class="w-full p-2.5 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold text-xs sm:text-sm" placeholder="Nama barang...">
+                                        <span class="pdf-text" x-text="item.nama"></span>
+                                    </td>
+                                    <td class="p-2">
+                                        <input type="text" x-model="item.pic" @input="debouncedSave()" class="w-full p-2.5 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold text-xs sm:text-sm" placeholder="Penanggung jawab...">
+                                        <span class="pdf-text" x-text="item.pic"></span>
+                                    </td>
+                                    <td class="p-2">
+                                        <input type="number" x-model.number="item.biaya" @input="debouncedSave()" class="w-full p-2.5 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold text-xs sm:text-sm">
+                                        <span class="pdf-text" x-text="formatRp(item.biaya)"></span>
+                                    </td>
+                                    <td class="p-2">
+                                        <input type="number" x-model.number="item.jumlah" @input="debouncedSave()" class="w-full p-2.5 bg-transparent border-none rounded-lg text-center font-semibold text-xs sm:text-sm">
+                                        <span class="pdf-text" x-text="item.jumlah"></span>
+                                    </td>
+                                    <td class="p-2 sm:p-3 font-black text-red-600 dark:text-red-400 text-xs sm:text-sm" x-text="formatRp(item.biaya * item.jumlah)"></td>
+                                    <td class="p-2 text-center no-print">
+                                        <button @click="hapusBarisBulan('pengeluaran', index)" class="text-red-500/70 hover:text-red-600 font-black p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition active:scale-90">
+                                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                                        </button>
+                                    </td>
                                 </tr>
                             </template>
                         </tbody>
-                        <tfoot class="bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400">
+                        <tfoot class="bg-red-50/50 dark:bg-red-900/20 text-red-800 dark:text-red-400">
                             <tr>
-                                <td colspan="5" class="p-4 text-right font-black uppercase text-sm">Total Belanja Operasional:</td>
-                                <td colspan="2" class="p-4 font-black text-lg" x-text="formatRp(hitungTotalBulan('pengeluaran'))"></td>
+                                <td colspan="5" class="p-4 text-right font-black uppercase text-xs tracking-wider">Total Belanja Operasional:</td>
+                                <td colspan="2" class="p-4 font-black text-sm sm:text-base" x-text="formatRp(hitungTotalBulan('pengeluaran'))"></td>
                             </tr>
                         </tfoot>
                     </table>
                 </div>
-                <div class="flex flex-col sm:flex-row justify-between items-center mt-5 gap-3">
-                    <button @click="tambahBarisBulan('pengeluaran')" class="no-print w-full sm:w-auto px-6 py-3 bg-birunavy text-kuningemas rounded-xl text-sm font-bold shadow-lg transition hover:opacity-90 flex items-center justify-center gap-2">
-                        + Catat Pengeluaran
+                <div class="flex flex-col sm:flex-row justify-between items-center mt-6 gap-3">
+                    <button @click="tambahBarisBulan('pengeluaran')" class="no-print w-full sm:w-auto px-5 py-3 bg-birunavy/10 dark:bg-white/10 text-birunavy dark:text-kuningemas rounded-xl text-xs font-bold transition hover:bg-birunavy/20 flex items-center justify-center gap-2">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd"/></svg> Catat Pengeluaran
                     </button>
-                    <button @click="simpanKategoriData()" class="no-print w-full sm:w-auto px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-black shadow-lg transition flex items-center justify-center gap-2 active:scale-95">
-                        💾 Simpan Pengeluaran Bulan Ini
+                    <button @click="manualSave()" class="no-print w-full sm:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black shadow-lg transition flex items-center justify-center gap-2 active:scale-95 uppercase tracking-wider">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6h5a2 2 0 012 2v7a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2h5v5.586l-1.293-1.293zM9 4a1 1 0 012 0v2H9V4z"/></svg> Simpan Pengeluaran
                     </button>
                 </div>
             </div>
 
             <!-- Tab: Gaji Staff -->
-            <div x-show="activeTab === 'gaji'" class="glass rounded-3xl p-5 md:p-8 mb-6">
-                <h2 class="text-xl md:text-2xl font-black mb-6 text-birunavy dark:text-kuningemas uppercase border-b-2 border-kuningemas/30 pb-3">Distribusi Gaji - <span x-text="months[activeMonth-1]"></span></h2>
-                <div class="overflow-x-auto rounded-xl border border-birunavy/10 dark:border-kuningemas/20">
+            <div x-show="activeTab === 'gaji'" x-transition class="glass rounded-[2rem] p-5 sm:p-8 mb-6 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-2 h-full bg-orange-500"></div>
+                <h2 class="text-lg sm:text-2xl font-black mb-6 text-birunavy dark:text-kuningemas uppercase tracking-tight ml-2 border-b border-birunavy/10 dark:border-kuningemas/20 pb-4">Distribusi Gaji - <span x-text="months[activeMonth-1]"></span></h2>
+                <div class="overflow-x-auto rounded-xl border border-birunavy/5 dark:border-kuningemas/10 bg-white/40 dark:bg-black/20">
                     <table class="w-full text-left min-w-[750px]">
-                        <thead class="bg-birunavy/5 dark:bg-birunavy text-birunavy dark:text-kuningemas">
-                            <tr class="text-xs md:text-sm uppercase tracking-wider border-b border-birunavy/10 dark:border-kuningemas/20">
+                        <thead class="bg-slate-100 dark:bg-birunavy text-birunavy dark:text-kuningemas">
+                            <tr class="text-[10px] sm:text-xs uppercase tracking-widest border-b border-birunavy/5 dark:border-kuningemas/20">
                                 <th class="p-4 min-w-[200px]">Pilih Staff Pengerja</th>
                                 <th class="p-4 w-40">Nilai Jasa (Rp)</th>
                                 <th class="p-4 w-32">Bagi Hasil (%)</th>
@@ -399,81 +492,93 @@
                         </thead>
                         <tbody>
                             <template x-for="(item, index) in getDataBulanan('gaji')" :key="index">
-                                <tr class="border-b border-birunavy/5 dark:border-kuningemas/10">
+                                <tr class="border-b border-birunavy/5 dark:border-kuningemas/5 hover:bg-white/60 dark:hover:bg-white/5 transition">
                                     <td class="p-3">
-                                        <select x-model="item.nama" class="w-full p-2.5 bg-white/50 dark:bg-birunavy border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-bold text-birunavy dark:text-kuningemas">
-                                            <option value="">-- Pilih --</option>
+                                        <select x-model="item.nama" @change="debouncedSave()" class="w-full p-2.5 bg-white/50 dark:bg-birunavy border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-bold text-birunavy dark:text-kuningemas text-xs sm:text-sm">
+                                            <option value="">-- Pilih Staff --</option>
                                             <template x-for="st in data.staffList">
                                                 <option :value="st.nama" x-text="st.nama + (st.jabatan ? ' - '+st.jabatan : '')"></option>
                                             </template>
                                         </select>
+                                        <span class="pdf-text" x-text="item.nama"></span>
                                     </td>
-                                    <td class="p-3"><input type="number" x-model.number="item.jasa" class="w-full p-2.5 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold"></td>
+                                    <td class="p-3">
+                                        <input type="number" x-model.number="item.jasa" @input="debouncedSave()" class="w-full p-2.5 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-semibold text-xs sm:text-sm">
+                                        <span class="pdf-text" x-text="formatRp(item.jasa)"></span>
+                                    </td>
                                     <td class="p-3 relative">
-                                        <input type="number" x-model.number="item.keuntungan" class="w-full p-2.5 bg-birunavy/5 dark:bg-white/5 border-none rounded-lg text-center font-bold text-kuningemas">
+                                        <input type="number" x-model.number="item.keuntungan" @input="debouncedSave()" class="w-full p-2.5 bg-birunavy/5 dark:bg-white/5 border-none rounded-lg text-center font-bold text-kuningemas text-xs sm:text-sm">
                                         <span class="absolute right-6 top-1/2 -translate-y-1/2 opacity-70">%</span>
+                                        <span class="pdf-text" x-text="item.keuntungan + '%'"></span>
                                     </td>
-                                    <td class="p-4 font-black text-orange-600 dark:text-orange-400" x-text="formatRp(hitungGaji(item))"></td>
-                                    <td class="p-3 text-center no-print"><button @click="hapusBarisBulan('gaji', index)" class="text-red-500 font-black text-xl hover:scale-125 transition">✕</button></td>
+                                    <td class="p-3 sm:p-4 font-black text-orange-600 dark:text-orange-400 text-xs sm:text-sm" x-text="formatRp(hitungGaji(item))"></td>
+                                    <td class="p-3 text-center no-print">
+                                        <button @click="hapusBarisBulan('gaji', index)" class="text-red-500/70 hover:text-red-600 font-black p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition active:scale-90">
+                                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                                        </button>
+                                    </td>
                                 </tr>
                             </template>
                         </tbody>
-                        <tfoot class="bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-400">
+                        <tfoot class="bg-orange-50/50 dark:bg-orange-900/20 text-orange-800 dark:text-orange-400">
                             <tr>
-                                <td colspan="3" class="p-4 text-right font-black uppercase text-sm">Total Gaji Dibayarkan:</td>
-                                <td colspan="2" class="p-4 font-black text-lg" x-text="formatRp(hitungTotalGajiBulan())"></td>
+                                <td colspan="3" class="p-4 text-right font-black uppercase text-xs tracking-wider">Total Gaji Dibayarkan:</td>
+                                <td colspan="2" class="p-4 font-black text-sm sm:text-base" x-text="formatRp(hitungTotalGajiBulan())"></td>
                             </tr>
                         </tfoot>
                     </table>
                 </div>
-                <div class="flex flex-col sm:flex-row justify-between items-center mt-5 gap-3">
-                    <button @click="tambahBarisBulan('gaji')" class="no-print w-full sm:w-auto px-6 py-3 bg-birunavy text-kuningemas rounded-xl text-sm font-bold shadow-lg transition hover:opacity-90 flex items-center justify-center gap-2">
-                        + Hitung Gaji Baru
+                <div class="flex flex-col sm:flex-row justify-between items-center mt-6 gap-3">
+                    <button @click="tambahBarisBulan('gaji')" class="no-print w-full sm:w-auto px-5 py-3 bg-birunavy/10 dark:bg-white/10 text-birunavy dark:text-kuningemas rounded-xl text-xs font-bold transition hover:bg-birunavy/20 flex items-center justify-center gap-2">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd"/></svg> Hitung Gaji Baru
                     </button>
-                    <button @click="simpanKategoriData()" class="no-print w-full sm:w-auto px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-black shadow-lg transition flex items-center justify-center gap-2 active:scale-95">
-                        💾 Simpan Distribusi Gaji
+                    <button @click="manualSave()" class="no-print w-full sm:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black shadow-lg transition flex items-center justify-center gap-2 active:scale-95 uppercase tracking-wider">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6h5a2 2 0 012 2v7a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2h5v5.586l-1.293-1.293zM9 4a1 1 0 012 0v2H9V4z"/></svg> Simpan Distribusi Gaji
                     </button>
                 </div>
             </div>
 
             <!-- Tab: Neraca & Laba Bersih -->
-            <div x-show="activeTab === 'neraca'" class="glass rounded-3xl p-5 md:p-8 mb-6">
+            <div x-show="activeTab === 'neraca'" x-transition class="glass rounded-[2rem] p-5 md:p-10 mb-6">
                 
-                <h2 class="text-xl md:text-2xl font-black mb-6 text-center text-birunavy dark:text-kuningemas uppercase border-b-2 border-kuningemas/30 pb-4">
+                <h2 class="text-xl md:text-3xl font-black mb-8 text-center text-birunavy dark:text-kuningemas uppercase tracking-tight border-b-2 border-kuningemas/30 pb-4">
                     Papan Neraca <span class="text-kuningemas" x-text="months[activeMonth-1]"></span>
                 </h2>
                 
-                <div class="max-w-4xl mx-auto space-y-4 mb-10 text-sm md:text-base font-semibold">
-                    <div class="flex justify-between items-center p-4 rounded-xl border border-green-500/40 bg-green-50 dark:bg-green-500/10">
-                        <span class="text-green-800 dark:text-green-400">Pemasukan Omset (+)</span>
-                        <span class="font-black text-green-700 dark:text-green-400 text-lg" x-text="formatRp(hitungTotalBulan('pendapatan'))"></span>
+                <div class="max-w-4xl mx-auto space-y-4 mb-12 text-sm md:text-base font-semibold">
+                    <div class="flex justify-between items-center p-5 rounded-2xl border border-green-500/30 bg-green-50/80 dark:bg-green-500/10 shadow-sm transition hover:scale-[1.01]">
+                        <span class="text-green-800 dark:text-green-400 font-bold uppercase tracking-wider text-xs sm:text-sm">Pemasukan Omset (+)</span>
+                        <span class="font-black text-green-700 dark:text-green-400 text-lg sm:text-xl" x-text="formatRp(hitungTotalBulan('pendapatan'))"></span>
                     </div>
-                    <div class="flex justify-between items-center p-4 rounded-xl border border-red-500/40 bg-red-50 dark:bg-red-500/10">
-                        <span class="text-red-800 dark:text-red-400">Pengeluaran Belanja (-)</span>
-                        <span class="font-black text-red-700 dark:text-red-400 text-lg" x-text="'- ' + formatRp(hitungTotalBulan('pengeluaran'))"></span>
+                    <div class="flex justify-between items-center p-5 rounded-2xl border border-red-500/30 bg-red-50/80 dark:bg-red-500/10 shadow-sm transition hover:scale-[1.01]">
+                        <span class="text-red-800 dark:text-red-400 font-bold uppercase tracking-wider text-xs sm:text-sm">Pengeluaran Belanja (-)</span>
+                        <span class="font-black text-red-700 dark:text-red-400 text-lg sm:text-xl" x-text="'- ' + formatRp(hitungTotalBulan('pengeluaran'))"></span>
                     </div>
-                    <div class="flex justify-between items-center p-4 rounded-xl border border-orange-500/40 bg-orange-50 dark:bg-orange-500/10">
-                        <span class="text-orange-800 dark:text-orange-400">Distribusi Gaji (-)</span>
-                        <span class="font-black text-orange-700 dark:text-orange-400 text-lg" x-text="'- ' + formatRp(hitungTotalGajiBulan())"></span>
+                    <div class="flex justify-between items-center p-5 rounded-2xl border border-orange-500/30 bg-orange-50/80 dark:bg-orange-500/10 shadow-sm transition hover:scale-[1.01]">
+                        <span class="text-orange-800 dark:text-orange-400 font-bold uppercase tracking-wider text-xs sm:text-sm">Distribusi Gaji (-)</span>
+                        <span class="font-black text-orange-700 dark:text-orange-400 text-lg sm:text-xl" x-text="'- ' + formatRp(hitungTotalGajiBulan())"></span>
                     </div>
 
-                    <div class="mt-8 p-6 md:p-8 rounded-3xl border-4 shadow-xl" 
+                    <div class="mt-8 p-8 md:p-10 rounded-[2rem] border-4 shadow-xl relative overflow-hidden" 
                          :class="labaBersihBulan(activeMonth) >= 0 ? 'bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/40 dark:to-green-800/20 border-green-400' : 'bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/40 dark:to-red-800/20 border-red-400'">
-                        <div class="flex flex-col md:flex-row justify-between items-center gap-2">
-                            <span class="text-xl md:text-2xl font-black uppercase tracking-widest text-center md:text-left" 
+                        <div class="absolute -right-10 -top-10 opacity-10 dark:opacity-20 pointer-events-none">
+                            <svg class="w-48 h-48" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                        </div>
+                        <div class="flex flex-col md:flex-row justify-between items-center gap-4 relative z-10">
+                            <span class="text-xl md:text-3xl font-black uppercase tracking-widest text-center md:text-left" 
                                   :class="labaBersihBulan(activeMonth) >= 0 ? 'text-green-900 dark:text-green-300' : 'text-red-900 dark:text-red-300'">
                                 Laba Bersih <br class="hidden md:block"/><span class="text-sm opacity-80" x-text="'Bulan ' + months[activeMonth-1]"></span>
                             </span>
-                            <span class="text-3xl md:text-4xl font-black tracking-tighter" 
-                                  :class="labaBersihBulan(activeMonth) >= 0 ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'" 
+                            <span class="text-3xl md:text-5xl font-black tracking-tighter drop-shadow-md" 
+                                  :class="labaBersihBulan(activeMonth) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'" 
                                   x-text="formatRp(labaBersihBulan(activeMonth))"></span>
                         </div>
                     </div>
                 </div>
 
-                <h3 class="text-xl md:text-2xl font-black mb-6 text-birunavy dark:text-kuningemas uppercase border-b-2 border-kuningemas/30 pb-3 mt-16">Data Buku Besar CFO (<span x-text="activeYear"></span>)</h3>
-                <div class="overflow-x-auto rounded-xl border border-birunavy/20 dark:border-kuningemas/30">
-                    <table class="w-full text-left min-w-[800px] text-sm md:text-base">
+                <h3 class="text-lg md:text-2xl font-black mb-6 text-birunavy dark:text-kuningemas uppercase border-b-2 border-kuningemas/30 pb-3 mt-16">Data Buku Besar CFO (<span x-text="activeYear"></span>)</h3>
+                <div class="overflow-x-auto rounded-2xl border border-birunavy/20 dark:border-kuningemas/30 shadow-inner bg-white/30 dark:bg-black/20">
+                    <table class="w-full text-left min-w-[800px] text-xs sm:text-sm">
                         <thead class="bg-birunavy text-kuningemas">
                             <tr class="uppercase tracking-widest border-b border-birunavy/50">
                                 <th class="p-4 border-r border-white/10 text-center w-28">Bulan</th>
@@ -485,12 +590,12 @@
                         </thead>
                         <tbody>
                             <template x-for="(bulan, index) in months" :key="index">
-                                <tr class="border-b border-gray-200 dark:border-gray-700/50 hover:bg-slate-50 dark:hover:bg-birunavy/30">
-                                    <td class="p-3 font-black uppercase text-birunavy dark:text-kuningemas text-center bg-slate-100 dark:bg-birunavy/50" x-text="bulan.substring(0,3)"></td>
-                                    <td class="p-3 text-green-700 dark:text-green-400 font-bold border-r border-gray-200 dark:border-gray-700/50 text-right" x-text="formatRp(hitungTotalBulan('pendapatan', index + 1))"></td>
-                                    <td class="p-3 text-red-600 dark:text-red-400 font-bold border-r border-gray-200 dark:border-gray-700/50 text-right" x-text="formatRp(hitungTotalBulan('pengeluaran', index + 1))"></td>
-                                    <td class="p-3 text-orange-600 dark:text-orange-400 font-bold border-r border-gray-200 dark:border-gray-700/50 text-right" x-text="formatRp(hitungTotalGajiBulan(index + 1))"></td>
-                                    <td class="p-3 font-black text-right" :class="labaBersihBulan(index + 1) >= 0 ? 'text-green-700 dark:text-green-400 bg-green-50 dark:bg-transparent' : 'text-red-700 dark:text-red-400 bg-red-50 dark:bg-transparent'" x-text="formatRp(labaBersihBulan(index + 1))"></td>
+                                <tr class="border-b border-gray-300/50 dark:border-gray-700/50 hover:bg-white/80 dark:hover:bg-white/5 transition">
+                                    <td class="p-3 font-black uppercase text-birunavy dark:text-kuningemas text-center bg-slate-200/50 dark:bg-birunavy/50" x-text="bulan.substring(0,3)"></td>
+                                    <td class="p-3 text-green-700 dark:text-green-400 font-bold border-r border-gray-300/50 dark:border-gray-700/50 text-right" x-text="formatRp(hitungTotalBulan('pendapatan', index + 1))"></td>
+                                    <td class="p-3 text-red-600 dark:text-red-400 font-bold border-r border-gray-300/50 dark:border-gray-700/50 text-right" x-text="formatRp(hitungTotalBulan('pengeluaran', index + 1))"></td>
+                                    <td class="p-3 text-orange-600 dark:text-orange-400 font-bold border-r border-gray-300/50 dark:border-gray-700/50 text-right" x-text="formatRp(hitungTotalGajiBulan(index + 1))"></td>
+                                    <td class="p-3 font-black text-right" :class="labaBersihBulan(index + 1) >= 0 ? 'text-green-700 dark:text-green-400 bg-green-50/50 dark:bg-transparent' : 'text-red-700 dark:text-red-400 bg-red-50/50 dark:bg-transparent'" x-text="formatRp(labaBersihBulan(index + 1))"></td>
                                 </tr>
                             </template>
                         </tbody>
@@ -505,33 +610,47 @@
                         </tfoot>
                     </table>
                 </div>
-                
-                <div class="mt-6 flex justify-end no-print">
-                    <button @click="downloadPDF('current')" class="glass rounded-xl !bg-birunavy hover:opacity-90 text-kuningemas px-6 py-3 text-sm font-black shadow-xl border border-kuningemas/50 hover:scale-105 transition flex items-center gap-2">
-                        CETAK LAPORAN TAHUNAN
-                    </button>
-                </div>
             </div>
 
         </div> <!-- End Print Area -->
     </div>
 
-    <!-- DOCK MENU NAVIGASI BAWAH -->
-    <nav x-show="!isSplash && isLoggedIn" x-transition class="fixed bottom-3 left-3 right-3 sm:left-auto sm:right-auto sm:left-1/2 sm:-translate-x-1/2 z-40 glass px-2 py-1.5 rounded-full flex items-center justify-around sm:justify-center gap-1 sm:gap-2 shadow-2xl no-print border border-birunavy/10 dark:border-kuningemas/30 backdrop-blur-xl">
-        <template x-for="tab in tabs" :key="tab.id">
-            <button @click="activeTab = tab.id; saveState()" 
-                    class="group flex items-center justify-center rounded-full transition-all duration-300 ease-out h-10 sm:h-11 overflow-hidden outline-none active:scale-95"
-                    :class="activeTab === tab.id ? 'bg-kuningemas text-birunavy dark:bg-birunavy dark:text-kuningemas px-3.5 sm:px-4 shadow border border-birunavy/20' : 'w-10 sm:w-11 text-birunavy dark:text-kuningemas hover:bg-birunavy/10 dark:hover:bg-white/10'">
-                <div class="w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center shrink-0" x-html="tab.icon"></div>
-                <span x-show="activeTab === tab.id" class="ml-1.5 font-black text-[9px] sm:text-[10px] tracking-wider uppercase whitespace-nowrap">
-                    <span x-text="tab.label"></span>
-                </span>
-            </button>
-        </template>
+    <!-- DOCK MENU NAVIGASI BAWAH (Estetik, Vektor Solid Murni) -->
+    <nav x-show="!isSplash && isLoggedIn" x-transition class="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-auto sm:left-1/2 sm:-translate-x-1/2 z-40 glass px-2 py-2 rounded-[2rem] flex items-center justify-around sm:justify-center gap-1 sm:gap-2 shadow-[0_20px_50px_rgba(0,0,0,0.2)] no-print backdrop-blur-2xl border border-white/40 dark:border-kuningemas/30">
+        <!-- Tab Staff -->
+        <button @click="activeTab = 'staff'; saveState()" class="group flex items-center justify-center rounded-2xl transition-all duration-300 ease-out h-12 overflow-hidden outline-none active:scale-95" :class="activeTab === 'staff' ? 'bg-kuningemas text-birunavy dark:bg-birunavy dark:text-kuningemas px-4 shadow-md border border-birunavy/20' : 'w-12 text-birunavy dark:text-kuningemas hover:bg-birunavy/5 dark:hover:bg-white/10'">
+            <svg class="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg>
+            <span x-show="activeTab === 'staff'" class="ml-1.5 font-black text-[10px] tracking-widest uppercase whitespace-nowrap">Staff</span>
+        </button>
+        <!-- Tab RAB -->
+        <button @click="activeTab = 'rab'; saveState()" class="group flex items-center justify-center rounded-2xl transition-all duration-300 ease-out h-12 overflow-hidden outline-none active:scale-95" :class="activeTab === 'rab' ? 'bg-kuningemas text-birunavy dark:bg-birunavy dark:text-kuningemas px-4 shadow-md border border-birunavy/20' : 'w-12 text-birunavy dark:text-kuningemas hover:bg-birunavy/5 dark:hover:bg-white/10'">
+            <svg class="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/></svg>
+            <span x-show="activeTab === 'rab'" class="ml-1.5 font-black text-[10px] tracking-widest uppercase whitespace-nowrap">RAB</span>
+        </button>
+        <!-- Tab Pemasukan -->
+        <button @click="activeTab = 'pendapatan'; saveState()" class="group flex items-center justify-center rounded-2xl transition-all duration-300 ease-out h-12 overflow-hidden outline-none active:scale-95" :class="activeTab === 'pendapatan' ? 'bg-kuningemas text-birunavy dark:bg-birunavy dark:text-kuningemas px-4 shadow-md border border-birunavy/20' : 'w-12 text-birunavy dark:text-kuningemas hover:bg-birunavy/5 dark:hover:bg-white/10'">
+            <svg class="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clip-rule="evenodd"/></svg>
+            <span x-show="activeTab === 'pendapatan'" class="ml-1.5 font-black text-[10px] tracking-widest uppercase whitespace-nowrap">Masuk</span>
+        </button>
+        <!-- Tab Pengeluaran -->
+        <button @click="activeTab = 'pengeluaran'; saveState()" class="group flex items-center justify-center rounded-2xl transition-all duration-300 ease-out h-12 overflow-hidden outline-none active:scale-95" :class="activeTab === 'pengeluaran' ? 'bg-kuningemas text-birunavy dark:bg-birunavy dark:text-kuningemas px-4 shadow-md border border-birunavy/20' : 'w-12 text-birunavy dark:text-kuningemas hover:bg-birunavy/5 dark:hover:bg-white/10'">
+            <svg class="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12 13a1 1 0 100 2h5a1 1 0 001-1V9a1 1 0 10-2 0v2.586l-4.293-4.293a1 1 0 00-1.414 0L8 9.586 3.707 5.293a1 1 0 00-1.414 1.414l5 5a1 1 0 001.414 0L11 9.414 14.586 13H12z" clip-rule="evenodd"/></svg>
+            <span x-show="activeTab === 'pengeluaran'" class="ml-1.5 font-black text-[10px] tracking-widest uppercase whitespace-nowrap">Keluar</span>
+        </button>
+        <!-- Tab Gaji -->
+        <button @click="activeTab = 'gaji'; saveState()" class="group flex items-center justify-center rounded-2xl transition-all duration-300 ease-out h-12 overflow-hidden outline-none active:scale-95" :class="activeTab === 'gaji' ? 'bg-kuningemas text-birunavy dark:bg-birunavy dark:text-kuningemas px-4 shadow-md border border-birunavy/20' : 'w-12 text-birunavy dark:text-kuningemas hover:bg-birunavy/5 dark:hover:bg-white/10'">
+            <svg class="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"/><path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clip-rule="evenodd"/></svg>
+            <span x-show="activeTab === 'gaji'" class="ml-1.5 font-black text-[10px] tracking-widest uppercase whitespace-nowrap">Gaji</span>
+        </button>
+        <!-- Tab Neraca -->
+        <button @click="activeTab = 'neraca'; saveState()" class="group flex items-center justify-center rounded-2xl transition-all duration-300 ease-out h-12 overflow-hidden outline-none active:scale-95" :class="activeTab === 'neraca' ? 'bg-kuningemas text-birunavy dark:bg-birunavy dark:text-kuningemas px-4 shadow-md border border-birunavy/20' : 'w-12 text-birunavy dark:text-kuningemas hover:bg-birunavy/5 dark:hover:bg-white/10'">
+            <svg class="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/></svg>
+            <span x-show="activeTab === 'neraca'" class="ml-1.5 font-black text-[10px] tracking-widest uppercase whitespace-nowrap">Neraca</span>
+        </button>
     </nav>
 
     <!-- Footer -->
-    <footer x-show="!isSplash && isLoggedIn" class="text-center mt-auto text-[10px] sm:text-xs font-bold opacity-50 no-print text-birunavy dark:text-kuningemas tracking-widest pb-16">
+    <footer x-show="!isSplash && isLoggedIn" class="text-center mt-auto text-[10px] sm:text-xs font-bold opacity-40 no-print text-birunavy dark:text-kuningemas tracking-widest pb-24">
         &copy; 2026 PT. MEDIA TULISAN MANUSIA
     </footer>
 
@@ -539,12 +658,11 @@
         const firebaseConfig = {
             apiKey: "AIzaSyCtRNfx_hNUEXY8t_xCXVWRrZPc4SaBTZY",
             authDomain: "keuanganmediatulisanmanusia.firebaseapp.com",
-            databaseURL: "https://keuanganmediatulisanmanusia-default-rtdb.asia-southeast1.firebasedatabase.app",
             projectId: "keuanganmediatulisanmanusia",
             storageBucket: "keuanganmediatulisanmanusia.firebasestorage.app",
             messagingSenderId: "738725988435",
-            appId: "1:738725988435:web:1141daa4224d54ace65ea6",
-            measurementId: "G-WGSC4V934H"
+            appId: "1:738725988435:web:8ab19c78d1f0946fe65ea6",
+            measurementId: "G-P18XXFYG7J"
         };
 
         firebase.initializeApp(firebaseConfig);
@@ -555,6 +673,7 @@
                 isDark: false,
                 isSplash: true,
                 isLoggedIn: false,
+                authChecking: true,
                 loginEmail: '',
                 loginPass: '',
                 loginError: '',
@@ -563,22 +682,15 @@
                 printAll: false,
                 showToast: false,
                 toastMessage: '',
+                isGlobalLoading: false,
+                saveTimeout: null,
                 realtimeClock: '',
                 
                 months: ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'],
                 
                 activeYear: 2026,
-                activeMonth: new Date().getMonth() + 1, // September (9)
+                activeMonth: new Date().getMonth() + 1, // Otomatis ke bulan berjalan
                 availableYears: [2026, 2027, 2028, 2029, 2030, 2031],
-
-                tabs: [
-                    { id: 'staff', label: 'Staff', icon: '<svg fill="currentColor" viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>' },
-                    { id: 'rab', label: 'RAB', icon: '<svg fill="currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>' },
-                    { id: 'pendapatan', label: 'Masuk', icon: '<svg fill="currentColor" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>' },
-                    { id: 'pengeluaran', label: 'Keluar', icon: '<svg fill="currentColor" viewBox="0 0 24 24"><path d="M19 13H5v-2h14v2z"/></svg>' },
-                    { id: 'gaji', label: 'Gaji', icon: '<svg fill="currentColor" viewBox="0 0 24 24"><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>' },
-                    { id: 'neraca', label: 'Neraca', icon: '<svg fill="currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg>' }
-                ],
                 
                 data: {
                     staffList: [{ nama: '', jabatan: '' }],
@@ -595,29 +707,33 @@
                     this.updateClock();
                     setInterval(() => this.updateClock(), 1000);
 
-                    // Paksa bulan aktif ke September (9) secara mutlak saat pertama kali dimuat
-                    this.activeMonth = new Date().getMonth() + 1;
-
-                    // Memuat tab terakhir yang diakses pengguna
-                    const lastState = localStorage.getItem('sistemKeuanganMTM_ActiveTab');
+                    // Panggil status memori Tab (kecuali bulan, biarkan otomatis bulan berjalan)
+                    const lastState = localStorage.getItem('sistemKeuangan_ActiveState');
                     if (lastState) {
                         try {
                             const parsed = JSON.parse(lastState);
                             if (parsed.tab) this.activeTab = parsed.tab;
+                            if (parsed.year) this.activeYear = parsed.year;
                         } catch(e) {}
                     }
 
-                    setTimeout(() => {
-                        this.isSplash = false;
+                    // Deteksi Redirect Auth Firebase (Anti buka pop-up baru)
+                    firebase.auth().getRedirectResult().then(() => {
                         this.checkAuthStatus();
-                        this.scrollToActiveMonth();
-                    }, 800);
+                    }).catch(error => {
+                        this.loginError = error.message;
+                        this.checkAuthStatus();
+                    });
+
+                    // Pantau perubahan data (Auto-Save Instan)
+                    this.$watch('data', (value) => {
+                        this.debouncedSave();
+                    }, { deep: true });
                 },
 
                 saveState() {
-                    localStorage.setItem('sistemKeuanganMTM_ActiveTab', JSON.stringify({
+                    localStorage.setItem('sistemKeuangan_ActiveState', JSON.stringify({
                         tab: this.activeTab,
-                        month: this.activeMonth,
                         year: this.activeYear
                     }));
                 },
@@ -645,6 +761,7 @@
 
                 checkAuthStatus() {
                     firebase.auth().onAuthStateChanged((user) => {
+                        this.authChecking = false;
                         if (user) {
                             this.isLoggedIn = true;
                             this.loadDataFromFirebase();
@@ -652,30 +769,40 @@
                             this.isLoggedIn = false;
                             this.loadLocalData();
                         }
+                        setTimeout(() => {
+                            this.isSplash = false;
+                            if(this.isLoggedIn) this.scrollToActiveMonth();
+                        }, 800);
                     });
                 },
+                
                 loginEmailPassword() {
                     firebase.auth().signInWithEmailAndPassword(this.loginEmail, this.loginPass)
                         .catch(err => this.loginError = "Email atau sandi salah!");
                 },
+
                 loginGoogle() {
                     let provider = new firebase.auth.GoogleAuthProvider();
-                    firebase.auth().signInWithPopup(provider).catch(err => alert("Gagal login Google: " + err.message));
+                    // Pakai Redirect agar responsif dan tidak buka halaman baru yang mengganggu
+                    firebase.auth().signInWithRedirect(provider);
                 },
+
                 loginOffline() {
                     this.isLoggedIn = true;
                     this.loadLocalData();
+                    setTimeout(() => { this.scrollToActiveMonth(); }, 300);
                 },
+
                 logout() {
-                    firebase.auth().signOut().catch(() => { this.isLoggedIn = false; });
+                    firebase.auth().signOut().then(() => { 
+                        this.isLoggedIn = false; 
+                    });
                 },
 
                 loadLocalData() {
-                    const saved = localStorage.getItem('sistemKeuanganMTM_Storage');
+                    const saved = localStorage.getItem('sistemKeuangan_Data');
                     if (saved) {
-                        try {
-                            this.data = JSON.parse(saved);
-                        } catch(e) {}
+                        try { this.data = JSON.parse(saved); } catch(e) {}
                     }
                     this.initYear(this.activeYear);
                 },
@@ -684,19 +811,18 @@
                     dbRef.once('value').then((snapshot) => {
                         if (snapshot.exists()) {
                             this.data = snapshot.val();
+                            localStorage.setItem('sistemKeuangan_Data', JSON.stringify(this.data));
                         } else {
-                            const saved = localStorage.getItem('sistemKeuanganMTM_Storage');
-                            if (saved) {
-                                try { this.data = JSON.parse(saved); } catch(e) {}
-                            }
+                            this.loadLocalData();
                         }
                         this.initYear(this.activeYear);
                         
                         dbRef.on('value', (snap) => {
-                            if (snap.exists()) {
+                            if (snap.exists() && !this.saveTimeout) {
                                 let remoteData = snap.val();
                                 if (JSON.stringify(remoteData) !== JSON.stringify(this.data)) {
                                     this.data = remoteData;
+                                    localStorage.setItem('sistemKeuangan_Data', JSON.stringify(this.data));
                                 }
                             }
                         });
@@ -705,25 +831,57 @@
                     });
                 },
 
-                simpanKategoriData() {
+                // Fungsi Auto Save Siluman (Tidak Muncul Layar Penuh)
+                debouncedSave() {
+                    if(this.saveTimeout) clearTimeout(this.saveTimeout);
+                    this.saveTimeout = setTimeout(() => {
+                        this.executeSave(false);
+                        this.saveTimeout = null;
+                    }, 1500);
+                },
+
+                // Fungsi Save Manual (Muncul animasi kilat)
+                manualSave() {
+                    this.executeSave(true);
+                },
+
+                executeSave(showAnimation) {
                     this.initYear(this.activeYear);
-                    localStorage.setItem('sistemKeuanganMTM_Storage', JSON.stringify(this.data));
+                    localStorage.setItem('sistemKeuangan_Data', JSON.stringify(this.data)); // Instan ke lokal anti hilang
 
                     if (this.isLoggedIn && firebase.auth().currentUser) {
+                        if(showAnimation) this.isGlobalLoading = true;
+                        
                         dbRef.set(this.data).then(() => {
-                            this.triggerToast("Data Berhasil Disimpan ke Cloud & Lokal!");
+                            if(showAnimation) {
+                                setTimeout(() => {
+                                    this.isGlobalLoading = false;
+                                    this.triggerToast("Disimpan ke Cloud!");
+                                }, 300); // 300ms kilat
+                            } else {
+                                this.triggerToast("Otomatis Disimpan");
+                            }
                         }).catch(err => {
-                            this.triggerToast("Tersimpan di Lokal (Cloud Gagal)");
+                            if(showAnimation) this.isGlobalLoading = false;
+                            this.triggerToast("Gagal Cloud, Tersimpan Lokal");
                         });
                     } else {
-                        this.triggerToast("Data Berhasil Disimpan secara Lokal!");
+                        if(showAnimation) {
+                            this.isGlobalLoading = true;
+                            setTimeout(() => {
+                                this.isGlobalLoading = false;
+                                this.triggerToast("Disimpan Lokal!");
+                            }, 300);
+                        } else {
+                            this.triggerToast("Otomatis Disimpan Lokal");
+                        }
                     }
                 },
 
                 triggerToast(msg) {
                     this.toastMessage = msg;
                     this.showToast = true;
-                    setTimeout(() => { this.showToast = false; }, 3000);
+                    setTimeout(() => { this.showToast = false; }, 2500);
                 },
 
                 initYear(year) {
@@ -768,6 +926,7 @@
                 hapusBarisGlobal(kategori, index) {
                     if(this.data[kategori].length > 1 || kategori === 'staffList') {
                         this.data[kategori].splice(index, 1);
+                        this.debouncedSave();
                     }
                 },
 
@@ -797,6 +956,7 @@
                     let arr = this.getDataBulanan(kategori);
                     if(arr && arr.length > 1) {
                         arr.splice(index, 1);
+                        this.debouncedSave();
                     }
                 },
 
@@ -839,6 +999,7 @@
                 },
 
                 downloadRABPDF() {
+                    this.isGlobalLoading = true;
                     const originalTab = this.activeTab;
                     this.activeTab = 'rab';
                     document.getElementById('pdf-header').classList.remove('hidden');
@@ -857,18 +1018,23 @@
                             element.classList.remove('pdf-mode');
                             document.getElementById('pdf-header').classList.add('hidden');
                             this.activeTab = originalTab;
+                            this.isGlobalLoading = false;
+                            this.triggerToast("PDF Berhasil Diunduh!");
                         }).catch(err => {
-                            alert("Gagal cetak PDF: " + err);
+                            alert("Gagal cetak PDF");
                             element.classList.remove('pdf-mode');
                             document.getElementById('pdf-header').classList.add('hidden');
                             this.activeTab = originalTab;
+                            this.isGlobalLoading = false;
                         });
-                    }, 300);
+                    }, 500);
                 },
 
                 downloadPDF(mode) {
+                    this.isGlobalLoading = true;
                     let filename = mode === 'all' ? `Laporan_CFO_Tahunan_${this.activeYear}.pdf` : `Laporan_${this.activeTab.toUpperCase()}_${this.months[this.activeMonth-1]}_${this.activeYear}.pdf`;
                     if (mode !== 'all' && this.activeTab === 'staff') {
+                        this.isGlobalLoading = false;
                         return alert('Gunakan tab laporan atau RAB untuk mengunduh PDF.');
                     }
 
@@ -891,13 +1057,16 @@
                             element.classList.remove('pdf-mode');
                             document.getElementById('pdf-header').classList.add('hidden');
                             if (mode === 'all') this.printAll = false;
+                            this.isGlobalLoading = false;
+                            this.triggerToast("PDF Berhasil Diunduh!");
                         }).catch(err => {
-                            alert("Gagal cetak PDF: " + err);
+                            alert("Gagal cetak PDF");
                             element.classList.remove('pdf-mode');
                             document.getElementById('pdf-header').classList.add('hidden');
                             if (mode === 'all') this.printAll = false;
+                            this.isGlobalLoading = false;
                         });
-                    }, 300);
+                    }, 500);
                 }
             }));
         });
