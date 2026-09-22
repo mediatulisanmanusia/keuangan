@@ -332,50 +332,47 @@
         </div>
     </div>
 
-    <!-- SIDEBAR KIRI VERTICAL (Menggantikan Dock Bawah) - Hanya Muncul jika bukan di Dashboard -->
-    <nav x-show="activeTab !== 'dashboard' && isLoggedIn && !authChecking && !isSplash" x-transition class="fixed left-2 sm:left-4 top-1/2 -translate-y-1/2 z-50 glass px-2 py-4 rounded-[2rem] flex flex-col items-center gap-3 shadow-2xl no-print border border-white/40 dark:border-kuningemas/30">
+    <!-- SIDEBAR KIRI VERTICAL (Melayang Murni Tanpa Margin Paksa, Ukuran Lebih Slim) -->
+    <nav x-show="activeTab !== 'dashboard' && isLoggedIn && !authChecking && !isSplash" x-transition class="fixed left-2 top-1/2 -translate-y-1/2 z-[60] glass p-1.5 rounded-full flex flex-col items-center gap-1.5 shadow-2xl no-print border border-white/50 dark:border-kuningemas/30">
         <!-- Tombol Home -->
-        <button @click="activeTab = 'dashboard'; saveState()" class="group flex items-center justify-center rounded-2xl transition-all duration-300 ease-out w-12 h-12 overflow-hidden outline-none hover:bg-birunavy/10 dark:hover:bg-white/10 active:scale-95 text-birunavy dark:text-kuningemas mb-2" title="Kembali ke Dashboard Utama">
-            <svg class="w-6 h-6 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg>
+        <button @click="activeTab = 'dashboard'; saveState()" class="group flex items-center justify-center rounded-full transition-all duration-300 ease-out w-9 h-9 overflow-hidden outline-none hover:bg-birunavy/10 dark:hover:bg-white/10 active:scale-95 text-birunavy dark:text-kuningemas mb-1" title="Kembali ke Dashboard Utama">
+            <svg class="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg>
         </button>
         
-        <div class="w-8 h-[2px] bg-birunavy/20 dark:bg-kuningemas/30 rounded-full mb-2"></div>
+        <div class="w-5 h-[2px] bg-birunavy/20 dark:bg-kuningemas/30 rounded-full mb-1"></div>
 
-        <button @click="activeTab = 'staff'; saveState()" class="group flex items-center justify-center rounded-2xl transition-all duration-300 ease-out w-12 h-12 overflow-hidden outline-none active:scale-95" :class="activeTab === 'staff' ? 'bg-kuningemas text-birunavy dark:bg-birunavy dark:text-kuningemas shadow-md border border-birunavy/20' : 'text-birunavy dark:text-kuningemas hover:bg-birunavy/5 dark:hover:bg-white/10'" title="Staff">
-            <svg class="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg>
+        <button @click="activeTab = 'staff'; saveState()" class="group flex items-center justify-center rounded-full transition-all duration-300 ease-out w-9 h-9 overflow-hidden outline-none active:scale-95" :class="activeTab === 'staff' ? 'bg-kuningemas text-birunavy dark:bg-birunavy dark:text-kuningemas shadow-md border border-birunavy/20' : 'text-birunavy dark:text-kuningemas hover:bg-birunavy/5 dark:hover:bg-white/10'" title="Staff">
+            <svg class="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg>
         </button>
-        <button @click="activeTab = 'rab'; saveState()" class="group flex items-center justify-center rounded-2xl transition-all duration-300 ease-out w-12 h-12 overflow-hidden outline-none active:scale-95" :class="activeTab === 'rab' ? 'bg-kuningemas text-birunavy dark:bg-birunavy dark:text-kuningemas shadow-md border border-birunavy/20' : 'text-birunavy dark:text-kuningemas hover:bg-birunavy/5 dark:hover:bg-white/10'" title="RAB">
-            <svg class="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/></svg>
+        <button @click="activeTab = 'rab'; saveState()" class="group flex items-center justify-center rounded-full transition-all duration-300 ease-out w-9 h-9 overflow-hidden outline-none active:scale-95" :class="activeTab === 'rab' ? 'bg-kuningemas text-birunavy dark:bg-birunavy dark:text-kuningemas shadow-md border border-birunavy/20' : 'text-birunavy dark:text-kuningemas hover:bg-birunavy/5 dark:hover:bg-white/10'" title="RAB">
+            <svg class="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/></svg>
         </button>
-        <button @click="activeTab = 'pendapatan'; saveState()" class="group flex items-center justify-center rounded-2xl transition-all duration-300 ease-out w-12 h-12 overflow-hidden outline-none active:scale-95" :class="activeTab === 'pendapatan' ? 'bg-kuningemas text-birunavy dark:bg-birunavy dark:text-kuningemas shadow-md border border-birunavy/20' : 'text-birunavy dark:text-kuningemas hover:bg-birunavy/5 dark:hover:bg-white/10'" title="Pendapatan">
-            <svg class="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clip-rule="evenodd"/></svg>
+        <button @click="activeTab = 'pendapatan'; saveState()" class="group flex items-center justify-center rounded-full transition-all duration-300 ease-out w-9 h-9 overflow-hidden outline-none active:scale-95" :class="activeTab === 'pendapatan' ? 'bg-kuningemas text-birunavy dark:bg-birunavy dark:text-kuningemas shadow-md border border-birunavy/20' : 'text-birunavy dark:text-kuningemas hover:bg-birunavy/5 dark:hover:bg-white/10'" title="Pendapatan">
+            <svg class="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clip-rule="evenodd"/></svg>
         </button>
-        <button @click="activeTab = 'pengeluaran'; saveState()" class="group flex items-center justify-center rounded-2xl transition-all duration-300 ease-out w-12 h-12 overflow-hidden outline-none active:scale-95" :class="activeTab === 'pengeluaran' ? 'bg-kuningemas text-birunavy dark:bg-birunavy dark:text-kuningemas shadow-md border border-birunavy/20' : 'text-birunavy dark:text-kuningemas hover:bg-birunavy/5 dark:hover:bg-white/10'" title="Pengeluaran">
-            <svg class="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12 13a1 1 0 100 2h5a1 1 0 001-1V9a1 1 0 10-2 0v2.586l-4.293-4.293a1 1 0 00-1.414 0L8 9.586 3.707 5.293a1 1 0 00-1.414 1.414l5 5a1 1 0 001.414 0L11 9.414 14.586 13H12z" clip-rule="evenodd"/></svg>
+        <button @click="activeTab = 'pengeluaran'; saveState()" class="group flex items-center justify-center rounded-full transition-all duration-300 ease-out w-9 h-9 overflow-hidden outline-none active:scale-95" :class="activeTab === 'pengeluaran' ? 'bg-kuningemas text-birunavy dark:bg-birunavy dark:text-kuningemas shadow-md border border-birunavy/20' : 'text-birunavy dark:text-kuningemas hover:bg-birunavy/5 dark:hover:bg-white/10'" title="Pengeluaran">
+            <svg class="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12 13a1 1 0 100 2h5a1 1 0 001-1V9a1 1 0 10-2 0v2.586l-4.293-4.293a1 1 0 00-1.414 0L8 9.586 3.707 5.293a1 1 0 00-1.414 1.414l5 5a1 1 0 001.414 0L11 9.414 14.586 13H12z" clip-rule="evenodd"/></svg>
         </button>
-        <button @click="activeTab = 'gaji'; saveState()" class="group flex items-center justify-center rounded-2xl transition-all duration-300 ease-out w-12 h-12 overflow-hidden outline-none active:scale-95" :class="activeTab === 'gaji' ? 'bg-kuningemas text-birunavy dark:bg-birunavy dark:text-kuningemas shadow-md border border-birunavy/20' : 'text-birunavy dark:text-kuningemas hover:bg-birunavy/5 dark:hover:bg-white/10'" title="Distribusi Gaji">
-            <svg class="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"/><path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clip-rule="evenodd"/></svg>
+        <button @click="activeTab = 'gaji'; saveState()" class="group flex items-center justify-center rounded-full transition-all duration-300 ease-out w-9 h-9 overflow-hidden outline-none active:scale-95" :class="activeTab === 'gaji' ? 'bg-kuningemas text-birunavy dark:bg-birunavy dark:text-kuningemas shadow-md border border-birunavy/20' : 'text-birunavy dark:text-kuningemas hover:bg-birunavy/5 dark:hover:bg-white/10'" title="Distribusi Gaji">
+            <svg class="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"/><path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clip-rule="evenodd"/></svg>
         </button>
-        <button @click="activeTab = 'neraca'; saveState()" class="group flex items-center justify-center rounded-2xl transition-all duration-300 ease-out w-12 h-12 overflow-hidden outline-none active:scale-95" :class="activeTab === 'neraca' ? 'bg-kuningemas text-birunavy dark:bg-birunavy dark:text-kuningemas shadow-md border border-birunavy/20' : 'text-birunavy dark:text-kuningemas hover:bg-birunavy/5 dark:hover:bg-white/10'" title="Neraca & Laba">
-            <svg class="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/></svg>
+        <button @click="activeTab = 'neraca'; saveState()" class="group flex items-center justify-center rounded-full transition-all duration-300 ease-out w-9 h-9 overflow-hidden outline-none active:scale-95" :class="activeTab === 'neraca' ? 'bg-kuningemas text-birunavy dark:bg-birunavy dark:text-kuningemas shadow-md border border-birunavy/20' : 'text-birunavy dark:text-kuningemas hover:bg-birunavy/5 dark:hover:bg-white/10'" title="Neraca & Laba">
+            <svg class="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/></svg>
         </button>
     </nav>
 
-    <!-- SISTEM APLIKASI UTAMA (Container Berubah Padding Jika Sidebar Aktif) -->
+    <!-- SISTEM APLIKASI UTAMA (Tanpa Margin Paksa, Semua Kembali Simetris) -->
     <div x-show="isLoggedIn && !authChecking && !isSplash" x-transition 
-         class="max-w-7xl mx-auto p-3 sm:p-6 lg:p-8 flex-grow w-full relative transition-all duration-300"
-         :class="activeTab !== 'dashboard' ? 'pl-16 sm:pl-24' : ''">
+         class="max-w-7xl mx-auto p-3 sm:p-6 lg:p-8 flex-grow w-full relative transition-all duration-300 pb-10">
         
-        <!-- HEADER ATAS (Menyesuaikan posisi dengan sidebar) -->
-        <div class="fixed top-4 right-4 sm:right-6 md:right-12 z-40 glass px-4 sm:px-6 py-3 rounded-full flex items-center justify-between no-print transition-all duration-300"
-             :class="activeTab !== 'dashboard' ? 'left-16 sm:left-24 md:left-28' : 'left-4 sm:left-6 md:left-12'">
+        <!-- HEADER ATAS (Normal Position Center) -->
+        <div class="fixed top-4 left-4 right-4 sm:left-6 sm:right-6 md:left-12 md:right-12 z-40 glass px-4 sm:px-6 py-3 rounded-full flex items-center justify-between no-print transition-all duration-300">
             <div class="flex items-center gap-2">
                 <img src="rev1.webp" class="h-6 sm:h-8 w-auto object-contain block dark:hidden drop-shadow-sm">
                 <img src="rev2.webp" class="h-6 sm:h-8 w-auto object-contain hidden dark:block drop-shadow-sm">
             </div>
 
             <div class="flex items-center gap-2 sm:gap-4">
-                <!-- Indikator Waktu Realtime Desktop (Sembunyi di HP kecil) -->
                 <div class="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full border border-birunavy/10 dark:border-kuningemas/20 bg-white/30 dark:bg-black/20">
                     <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]"></span>
                     <span class="text-[10px] font-bold tracking-widest uppercase text-birunavy dark:text-kuningemas opacity-80" x-text="realtimeClock"></span>
@@ -967,7 +964,7 @@
                 loginPass: '',
                 loginError: '',
 
-                activeTab: 'dashboard', // PERUBAHAN: Mulai dari Dashboard
+                activeTab: 'dashboard',
                 printAll: false,
                 showPrint: false,
                 printType: '',
@@ -1026,7 +1023,7 @@
                     this.data = {
                         staffList: [{ nama: '', jabatan: '' }],
                         rab: [{ nama: 'Modal Proyek', biaya: 0, jumlah: 1 }],
-                        saldoBank: 0, // PERUBAHAN: Saldo kas awal otomatis masuk
+                        saldoBank: 0, 
                         years: {},
                         lastUpdate: Date.now()
                     };
@@ -1290,11 +1287,9 @@
                     }
                 },
 
-                // PERUBAHAN: Menghitung Pemasukan Spesifik Hari Ini
                 getIncomeHariIni() {
-                    // Ambil tanggal hari ini format YYYY-MM-DD
                     const todayStr = new Date().toISOString().split('T')[0];
-                    let m = new Date().getMonth() + 1; // bulan hari ini
+                    let m = new Date().getMonth() + 1;
                     let y = new Date().getFullYear();
                     
                     if(this.data.years && this.data.years[y] && this.data.years[y][m]) {
