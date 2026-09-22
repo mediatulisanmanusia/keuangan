@@ -62,7 +62,7 @@
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* PERBAIKAN MUTLAK PDF MODE KESELURUHAN */
+        /* PERBAIKAN MUTLAK PDF MODE */
         .pdf-mode { 
             background: white !important; color: black !important; padding: 20px !important; 
             font-size: 11px !important; width: 1000px !important; max-width: none !important; margin: 0 auto !important; 
@@ -81,21 +81,18 @@
         .pdf-mode th, .pdf-mode td { border: 1px solid #000 !important; padding: 10px !important; word-wrap: break-word !important; }
         .pdf-mode th { background-color: #f3f4f6 !important; font-weight: bold !important; -webkit-print-color-adjust: exact; text-align: left !important; }
         .pdf-mode tfoot td { background-color: #e5e7eb !important; font-weight: 900 !important; -webkit-print-color-adjust: exact; }
-        
-        /* Class khusus yang hanya aktif saat cetak PDF (Supaya layar HP tetap rapi) */
         .pdf-mode .pdf-page-break { page-break-before: always !important; padding-top: 30px !important; }
-        
         .pdf-text { display: none; }
         .pdf-mode .pdf-text { display: inline-block; font-weight: 600; }
         .pdf-mode input, .pdf-mode select { display: none !important; }
         input, select { transition: all 0.2s; }
     </style>
 </head>
-<body class="bg-light-theme text-slate-800 dark:text-slate-200 font-sans min-h-screen flex flex-col pb-32" 
+<body class="bg-light-theme text-slate-800 dark:text-slate-200 font-sans min-h-screen flex flex-col pb-10" 
       x-data="keuanganApp()" 
       x-init="initApp()">
 
-    <!-- CONTAINER CETAK INVOICE/SLIP (Berada tepat di bawah loading overlay agar ter-render sempurna) -->
+    <!-- PRINT CONTAINERS (Slip, Invoice, Receipt) -->
     <div x-show="showPrint" class="absolute top-0 left-0 w-[800px] z-[50] bg-white text-black min-h-screen no-print">
         
         <!-- 1. TEMPLATE SLIP GAJI -->
@@ -269,7 +266,7 @@
         </div>
     </div>
 
-    <!-- OVERLAY LOADING GLOBAL (Loading PDF & Save - Super Cepat & Tepat di atas Z-50) -->
+    <!-- OVERLAY LOADING GLOBAL -->
     <div x-show="isGlobalLoading" x-transition.opacity.duration.100ms class="fixed inset-0 z-[999] bg-slate-900/40 dark:bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center">
         <div class="glass p-6 rounded-3xl flex items-center justify-center border border-white/50 dark:border-kuningemas/30 shadow-2xl scale-110">
             <img src="logopt.webp" class="h-14 w-auto object-contain animate-pulse block dark:hidden">
@@ -288,7 +285,6 @@
         <div class="glass w-full max-w-sm sm:max-w-md p-8 sm:p-10 rounded-[2rem] text-center shadow-glass dark:shadow-glass-dark border border-white/60 dark:border-kuningemas/20 relative overflow-hidden">
             <img src="logopt.webp" class="h-16 sm:h-20 mx-auto mb-6 block dark:hidden drop-shadow-md">
             <img src="logopt2.webp" class="h-16 sm:h-20 mx-auto mb-6 hidden dark:block drop-shadow-md">
-            
             <h2 class="text-xl sm:text-2xl font-black text-birunavy dark:text-kuningemas uppercase tracking-tight mb-2">Selamat Datang!</h2>
             <p class="text-xs sm:text-sm opacity-60 mb-8 font-semibold">Masuk untuk mengakses sistem keuangan.</p>
 
@@ -330,24 +326,61 @@
                 <svg class="w-5 h-5" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
                 Masuk dengan Google
             </button>
-
             <button @click="loginOffline" class="text-[10px] font-bold opacity-60 hover:opacity-100 text-birunavy dark:text-kuningemas uppercase tracking-widest transition">
                 Akses Mode Lokal
             </button>
         </div>
     </div>
 
-    <!-- SISTEM APLIKASI UTAMA -->
-    <div x-show="isLoggedIn && !authChecking && !isSplash" x-transition class="max-w-7xl mx-auto p-3 sm:p-6 lg:p-8 flex-grow w-full relative">
+    <!-- SIDEBAR KIRI VERTICAL (Menggantikan Dock Bawah) - Hanya Muncul jika bukan di Dashboard -->
+    <nav x-show="activeTab !== 'dashboard' && isLoggedIn && !authChecking && !isSplash" x-transition class="fixed left-2 sm:left-4 top-1/2 -translate-y-1/2 z-50 glass px-2 py-4 rounded-[2rem] flex flex-col items-center gap-3 shadow-2xl no-print border border-white/40 dark:border-kuningemas/30">
+        <!-- Tombol Home -->
+        <button @click="activeTab = 'dashboard'; saveState()" class="group flex items-center justify-center rounded-2xl transition-all duration-300 ease-out w-12 h-12 overflow-hidden outline-none hover:bg-birunavy/10 dark:hover:bg-white/10 active:scale-95 text-birunavy dark:text-kuningemas mb-2" title="Kembali ke Dashboard Utama">
+            <svg class="w-6 h-6 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg>
+        </button>
         
-        <!-- HEADER ATAS -->
-        <div class="fixed top-4 left-4 right-4 sm:left-6 sm:right-6 md:left-12 md:right-12 z-40 glass px-4 sm:px-6 py-3 rounded-full flex items-center justify-between no-print">
+        <div class="w-8 h-[2px] bg-birunavy/20 dark:bg-kuningemas/30 rounded-full mb-2"></div>
+
+        <button @click="activeTab = 'staff'; saveState()" class="group flex items-center justify-center rounded-2xl transition-all duration-300 ease-out w-12 h-12 overflow-hidden outline-none active:scale-95" :class="activeTab === 'staff' ? 'bg-kuningemas text-birunavy dark:bg-birunavy dark:text-kuningemas shadow-md border border-birunavy/20' : 'text-birunavy dark:text-kuningemas hover:bg-birunavy/5 dark:hover:bg-white/10'" title="Staff">
+            <svg class="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg>
+        </button>
+        <button @click="activeTab = 'rab'; saveState()" class="group flex items-center justify-center rounded-2xl transition-all duration-300 ease-out w-12 h-12 overflow-hidden outline-none active:scale-95" :class="activeTab === 'rab' ? 'bg-kuningemas text-birunavy dark:bg-birunavy dark:text-kuningemas shadow-md border border-birunavy/20' : 'text-birunavy dark:text-kuningemas hover:bg-birunavy/5 dark:hover:bg-white/10'" title="RAB">
+            <svg class="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/></svg>
+        </button>
+        <button @click="activeTab = 'pendapatan'; saveState()" class="group flex items-center justify-center rounded-2xl transition-all duration-300 ease-out w-12 h-12 overflow-hidden outline-none active:scale-95" :class="activeTab === 'pendapatan' ? 'bg-kuningemas text-birunavy dark:bg-birunavy dark:text-kuningemas shadow-md border border-birunavy/20' : 'text-birunavy dark:text-kuningemas hover:bg-birunavy/5 dark:hover:bg-white/10'" title="Pendapatan">
+            <svg class="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clip-rule="evenodd"/></svg>
+        </button>
+        <button @click="activeTab = 'pengeluaran'; saveState()" class="group flex items-center justify-center rounded-2xl transition-all duration-300 ease-out w-12 h-12 overflow-hidden outline-none active:scale-95" :class="activeTab === 'pengeluaran' ? 'bg-kuningemas text-birunavy dark:bg-birunavy dark:text-kuningemas shadow-md border border-birunavy/20' : 'text-birunavy dark:text-kuningemas hover:bg-birunavy/5 dark:hover:bg-white/10'" title="Pengeluaran">
+            <svg class="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12 13a1 1 0 100 2h5a1 1 0 001-1V9a1 1 0 10-2 0v2.586l-4.293-4.293a1 1 0 00-1.414 0L8 9.586 3.707 5.293a1 1 0 00-1.414 1.414l5 5a1 1 0 001.414 0L11 9.414 14.586 13H12z" clip-rule="evenodd"/></svg>
+        </button>
+        <button @click="activeTab = 'gaji'; saveState()" class="group flex items-center justify-center rounded-2xl transition-all duration-300 ease-out w-12 h-12 overflow-hidden outline-none active:scale-95" :class="activeTab === 'gaji' ? 'bg-kuningemas text-birunavy dark:bg-birunavy dark:text-kuningemas shadow-md border border-birunavy/20' : 'text-birunavy dark:text-kuningemas hover:bg-birunavy/5 dark:hover:bg-white/10'" title="Distribusi Gaji">
+            <svg class="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"/><path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clip-rule="evenodd"/></svg>
+        </button>
+        <button @click="activeTab = 'neraca'; saveState()" class="group flex items-center justify-center rounded-2xl transition-all duration-300 ease-out w-12 h-12 overflow-hidden outline-none active:scale-95" :class="activeTab === 'neraca' ? 'bg-kuningemas text-birunavy dark:bg-birunavy dark:text-kuningemas shadow-md border border-birunavy/20' : 'text-birunavy dark:text-kuningemas hover:bg-birunavy/5 dark:hover:bg-white/10'" title="Neraca & Laba">
+            <svg class="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/></svg>
+        </button>
+    </nav>
+
+    <!-- SISTEM APLIKASI UTAMA (Container Berubah Padding Jika Sidebar Aktif) -->
+    <div x-show="isLoggedIn && !authChecking && !isSplash" x-transition 
+         class="max-w-7xl mx-auto p-3 sm:p-6 lg:p-8 flex-grow w-full relative transition-all duration-300"
+         :class="activeTab !== 'dashboard' ? 'pl-16 sm:pl-24' : ''">
+        
+        <!-- HEADER ATAS (Menyesuaikan posisi dengan sidebar) -->
+        <div class="fixed top-4 right-4 sm:right-6 md:right-12 z-40 glass px-4 sm:px-6 py-3 rounded-full flex items-center justify-between no-print transition-all duration-300"
+             :class="activeTab !== 'dashboard' ? 'left-16 sm:left-24 md:left-28' : 'left-4 sm:left-6 md:left-12'">
             <div class="flex items-center gap-2">
                 <img src="rev1.webp" class="h-6 sm:h-8 w-auto object-contain block dark:hidden drop-shadow-sm">
                 <img src="rev2.webp" class="h-6 sm:h-8 w-auto object-contain hidden dark:block drop-shadow-sm">
             </div>
 
             <div class="flex items-center gap-2 sm:gap-4">
+                <!-- Indikator Waktu Realtime Desktop (Sembunyi di HP kecil) -->
+                <div class="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full border border-birunavy/10 dark:border-kuningemas/20 bg-white/30 dark:bg-black/20">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]"></span>
+                    <span class="text-[10px] font-bold tracking-widest uppercase text-birunavy dark:text-kuningemas opacity-80" x-text="realtimeClock"></span>
+                </div>
+                
                 <button @click="toggleTheme()" class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-slate-200/50 dark:bg-white/10 text-birunavy dark:text-kuningemas hover:bg-slate-300/50 transition flex items-center justify-center shadow-inner" title="Ubah Tema">
                     <svg x-show="!isDark" class="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.59a.75.75 0 101.06 1.061l1.591-1.59zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM12 18.75a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-1.5a.75.75 0 01.75-.75zM6.166 17.834a.75.75 0 00-1.06 1.06l1.59 1.591a.75.75 0 101.06-1.061l-1.59-1.59zM4.5 12a.75.75 0 01-.75.75H1.5a.75.75 0 010-1.5h2.25a.75.75 0 01.75.75zM6.166 6.166a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 00-1.061 1.06l1.59 1.591z" /></svg>
                     <svg x-show="isDark" class="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M9.528 1.718a.75.75 0 01.162.819A8.97 8.97 0 009 6a9 9 0 009 9 8.97 8.97 0 003.463-.69.75.75 0 01.981.98 10.503 10.503 0 01-9.694 6.46c-5.799 0-10.5-4.701-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 01.818.162z" clip-rule="evenodd" /></svg>
@@ -360,15 +393,15 @@
             </div>
         </div>
 
-        <div class="text-center mb-8 pt-20 sm:pt-24">
+        <div class="text-center mb-8 pt-20 sm:pt-24" x-show="activeTab !== 'dashboard'">
             <div class="inline-block glass rounded-2xl px-6 md:px-10 py-3 no-print mb-3">
                 <h1 class="text-sm md:text-xl font-black text-birunavy dark:text-kuningemas tracking-widest uppercase">Sistem Keuangan Perusahaan</h1>
             </div>
             
-            <div class="flex justify-center no-print">
-                <div class="inline-flex items-center gap-2 glass px-4 py-1.5 sm:py-2 rounded-full border border-birunavy/10 dark:border-kuningemas/20">
+            <div class="flex justify-center no-print md:hidden">
+                <div class="inline-flex items-center gap-2 glass px-4 py-1.5 rounded-full border border-birunavy/10 dark:border-kuningemas/20">
                     <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]"></span>
-                    <span class="text-[9px] sm:text-xs font-bold tracking-widest uppercase text-birunavy dark:text-kuningemas opacity-80" x-text="realtimeClock"></span>
+                    <span class="text-[9px] font-bold tracking-widest uppercase text-birunavy dark:text-kuningemas opacity-80" x-text="realtimeClock"></span>
                 </div>
             </div>
 
@@ -379,8 +412,106 @@
             </div>
         </div>
 
-        <!-- Tahun & Tombol Unduh -->
-        <div class="glass rounded-[2rem] p-4 sm:p-5 mb-8 mx-auto max-w-4xl no-print flex flex-col sm:flex-row items-center justify-between gap-4">
+        <!-- ============================================== -->
+        <!-- HALAMAN DASHBOARD UTAMA (Grid 6 Kotak & Saldo) -->
+        <!-- ============================================== -->
+        <div x-show="activeTab === 'dashboard' && !printAll" x-transition class="pt-24 space-y-8 max-w-4xl mx-auto w-full pb-10">
+            
+            <div class="text-center mb-6">
+                <h1 class="text-2xl sm:text-4xl font-black text-birunavy dark:text-kuningemas uppercase tracking-tight">Dashboard Utama</h1>
+                <p class="text-xs sm:text-sm font-bold opacity-60 uppercase tracking-widest mt-2" x-text="currentDateFormatted()"></p>
+            </div>
+
+            <!-- Ringkasan Singkat (Hari ini & Bulan Ini) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="glass p-5 rounded-[2rem] border-l-4 border-emerald-500 hover:scale-[1.02] transition shadow-lg">
+                    <p class="text-[10px] sm:text-xs font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400 mb-1">Pemasukan Hari Ini</p>
+                    <p class="text-xl sm:text-2xl font-black text-birunavy dark:text-white" x-text="formatRp(getIncomeHariIni())"></p>
+                </div>
+                <div class="glass p-5 rounded-[2rem] border-l-4 border-birunavy dark:border-kuningemas hover:scale-[1.02] transition shadow-lg">
+                    <p class="text-[10px] sm:text-xs font-black uppercase tracking-widest text-birunavy/70 dark:text-kuningemas/70 mb-1">Laba Bersih Bulan Ini</p>
+                    <p class="text-xl sm:text-2xl font-black text-birunavy dark:text-white" x-text="formatRp(labaBersihBulan())"></p>
+                </div>
+            </div>
+
+            <!-- 6 KOTAK MENU (Grid 3x2) -->
+            <div class="grid grid-cols-3 grid-rows-2 gap-3 sm:gap-6 mt-8">
+                <button @click="activeTab = 'staff'; saveState()" class="glass aspect-square rounded-3xl flex flex-col items-center justify-center gap-2 hover:bg-birunavy hover:text-kuningemas dark:hover:bg-kuningemas dark:hover:text-birunavy transition group shadow-lg">
+                    <svg class="w-8 h-8 sm:w-10 sm:h-10 text-birunavy dark:text-kuningemas group-hover:text-current transition" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg>
+                    <span class="font-black text-[10px] sm:text-xs uppercase tracking-wider text-birunavy dark:text-kuningemas group-hover:text-current">Staff</span>
+                </button>
+                
+                <button @click="activeTab = 'rab'; saveState()" class="glass aspect-square rounded-3xl flex flex-col items-center justify-center gap-2 hover:bg-birunavy hover:text-kuningemas dark:hover:bg-kuningemas dark:hover:text-birunavy transition group shadow-lg">
+                    <svg class="w-8 h-8 sm:w-10 sm:h-10 text-birunavy dark:text-kuningemas group-hover:text-current transition" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/></svg>
+                    <span class="font-black text-[10px] sm:text-xs uppercase tracking-wider text-birunavy dark:text-kuningemas group-hover:text-current">RAB</span>
+                </button>
+                
+                <button @click="activeTab = 'pendapatan'; saveState()" class="glass aspect-square rounded-3xl flex flex-col items-center justify-center gap-2 hover:bg-green-600 hover:text-white dark:hover:bg-green-500 dark:hover:text-birunavy transition group shadow-lg">
+                    <svg class="w-8 h-8 sm:w-10 sm:h-10 text-green-600 dark:text-green-500 group-hover:text-current transition" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clip-rule="evenodd"/></svg>
+                    <span class="font-black text-[10px] sm:text-xs uppercase tracking-wider text-green-700 dark:text-green-500 group-hover:text-current">Masuk</span>
+                </button>
+                
+                <button @click="activeTab = 'pengeluaran'; saveState()" class="glass aspect-square rounded-3xl flex flex-col items-center justify-center gap-2 hover:bg-red-600 hover:text-white dark:hover:bg-red-500 dark:hover:text-birunavy transition group shadow-lg">
+                    <svg class="w-8 h-8 sm:w-10 sm:h-10 text-red-600 dark:text-red-500 group-hover:text-current transition" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12 13a1 1 0 100 2h5a1 1 0 001-1V9a1 1 0 10-2 0v2.586l-4.293-4.293a1 1 0 00-1.414 0L8 9.586 3.707 5.293a1 1 0 00-1.414 1.414l5 5a1 1 0 001.414 0L11 9.414 14.586 13H12z" clip-rule="evenodd"/></svg>
+                    <span class="font-black text-[10px] sm:text-xs uppercase tracking-wider text-red-700 dark:text-red-500 group-hover:text-current">Keluar</span>
+                </button>
+                
+                <button @click="activeTab = 'gaji'; saveState()" class="glass aspect-square rounded-3xl flex flex-col items-center justify-center gap-2 hover:bg-orange-500 hover:text-white dark:hover:bg-orange-500 dark:hover:text-birunavy transition group shadow-lg">
+                    <svg class="w-8 h-8 sm:w-10 sm:h-10 text-orange-600 dark:text-orange-500 group-hover:text-current transition" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"/><path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clip-rule="evenodd"/></svg>
+                    <span class="font-black text-[10px] sm:text-xs uppercase tracking-wider text-orange-700 dark:text-orange-500 group-hover:text-current">Gaji</span>
+                </button>
+                
+                <button @click="activeTab = 'neraca'; saveState()" class="glass aspect-square rounded-3xl flex flex-col items-center justify-center gap-2 hover:bg-birunavy hover:text-kuningemas dark:hover:bg-kuningemas dark:hover:text-birunavy transition group shadow-lg border-2 border-birunavy/20 dark:border-kuningemas/30">
+                    <svg class="w-8 h-8 sm:w-10 sm:h-10 text-birunavy dark:text-kuningemas group-hover:text-current transition" fill="currentColor" viewBox="0 0 20 20"><path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/></svg>
+                    <span class="font-black text-[10px] sm:text-xs uppercase tracking-wider text-birunavy dark:text-kuningemas group-hover:text-current">Neraca</span>
+                </button>
+            </div>
+
+            <!-- BAGIAN TAMBAHAN: INFORMASI KAS BANK & STAFF -->
+            <div class="mt-8 bg-white/50 dark:bg-black/30 rounded-[2rem] p-6 sm:p-8 shadow-inner border border-birunavy/10 dark:border-kuningemas/20 relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-kuningemas/20 rounded-bl-full pointer-events-none blur-xl"></div>
+                
+                <h3 class="text-base sm:text-xl font-black text-birunavy dark:text-kuningemas uppercase tracking-widest mb-6 border-b-2 border-birunavy/10 dark:border-kuningemas/20 pb-3">Informasi Internal & Kas</h3>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <!-- KOTAK KAS / BANK (Otomatis ditambah laba) -->
+                    <div class="bg-gradient-to-br from-birunavy to-slate-900 rounded-2xl p-6 text-white shadow-xl">
+                        <p class="text-[10px] sm:text-xs font-bold uppercase tracking-widest opacity-70 text-kuningemas mb-2">Total Saldo Bank & Kas</p>
+                        <div class="flex items-center justify-between mt-1">
+                            <span class="text-xl sm:text-3xl font-black" x-text="formatRp((data.saldoBank || 0) + labaBersihSetahun)"></span>
+                        </div>
+                        <div class="mt-4 pt-4 border-t border-white/20 flex flex-col gap-2">
+                            <label class="text-[10px] font-bold uppercase opacity-80">Edit Saldo Awal (Manual)</label>
+                            <div class="flex items-center bg-white/10 rounded-xl px-3 py-2 border border-white/10 focus-within:border-kuningemas transition">
+                                <span class="text-xs font-bold mr-2 text-kuningemas">Rp</span>
+                                <input type="number" x-model.number="data.saldoBank" @input="debouncedSave()" class="bg-transparent border-none w-full text-sm font-bold text-white outline-none focus:ring-0" placeholder="0">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- KOTAK INFO STAFF -->
+                    <div class="glass rounded-2xl p-5 border border-white/30 dark:border-kuningemas/10">
+                        <div class="flex items-center justify-between mb-4">
+                            <p class="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-birunavy dark:text-kuningemas opacity-70">Tim Tercatat</p>
+                            <span class="bg-birunavy text-white dark:bg-kuningemas dark:text-birunavy text-xs font-black px-2 py-0.5 rounded-full" x-text="data.staffList.filter(s => s.nama.trim() !== '').length"></span>
+                        </div>
+                        <div class="flex flex-wrap gap-2 max-h-32 overflow-y-auto hide-scrollbar pr-2">
+                            <template x-for="(st, index) in data.staffList.filter(s => s.nama.trim() !== '')" :key="index">
+                                <span class="bg-white/60 dark:bg-black/40 text-birunavy dark:text-kuningemas border border-birunavy/10 dark:border-kuningemas/20 text-[10px] sm:text-xs font-bold px-3 py-1.5 rounded-lg shadow-sm capitalize" x-text="st.nama"></span>
+                            </template>
+                            <span x-show="data.staffList.filter(s => s.nama.trim() !== '').length === 0" class="text-xs font-semibold opacity-50 italic">Belum ada staff terdaftar.</span>
+                        </div>
+                        <button @click="activeTab = 'staff'; saveState()" class="mt-4 text-[10px] font-black uppercase text-birunavy dark:text-kuningemas hover:underline flex items-center gap-1">Kelola Staff <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg></button>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+
+        <!-- ============================================== -->
+        <!-- Tahun & Tombol Unduh (Hanya saat di Tab Laporan) -->
+        <!-- ============================================== -->
+        <div x-show="activeTab !== 'dashboard'" class="glass rounded-[2rem] p-4 sm:p-5 mb-8 mx-auto max-w-4xl no-print flex flex-col sm:flex-row items-center justify-between gap-4">
             <div class="flex items-center gap-3 w-full sm:w-auto justify-center">
                 <label class="font-black text-xs sm:text-sm text-birunavy dark:text-kuningemas uppercase tracking-widest whitespace-nowrap">Tahun Aktif</label>
                 <select x-model.number="activeYear" @change="gantiTahun(activeYear)" class="p-2 sm:p-2.5 px-4 sm:px-6 rounded-xl font-black bg-slate-100 dark:bg-birunavy border-none focus:ring-2 focus:ring-kuningemas text-sm sm:text-base cursor-pointer shadow-inner text-birunavy dark:text-kuningemas">
@@ -403,7 +534,7 @@
         </div>
 
         <!-- AREA CETAK UTAMA REKAP -->
-        <div id="print-area" class="w-full">
+        <div id="print-area" class="w-full" x-show="activeTab !== 'dashboard' || printAll">
 
             <!-- Sub-Menu 12 Bulan -->
             <div x-show="['pendapatan', 'pengeluaran', 'gaji', 'neraca'].includes(activeTab) && !printAll" class="mb-6 no-print">
@@ -539,7 +670,6 @@
                             <template x-for="(item, index) in getDataBulanan('pendapatan')" :key="index">
                                 <tr class="border-b border-birunavy/5 dark:border-kuningemas/5 hover:bg-white/60 dark:hover:bg-white/5 transition">
                                     <td class="p-2">
-                                        <!-- FAILSAFE @CHANGE -->
                                         <input type="date" x-model="item.tanggal" @change="executeSave(false)" class="w-full p-2 bg-transparent border-none rounded-lg focus:ring-2 focus:ring-kuningemas text-[10px] sm:text-xs font-semibold uppercase">
                                         <span class="pdf-text uppercase text-[10px]" x-text="item.tanggal || '-'"></span>
                                     </td>
@@ -690,7 +820,6 @@
                                     <td class="p-3">
                                         <select x-model="item.nama" @change="executeSave(false)" class="w-full p-2.5 bg-white/50 dark:bg-birunavy border-none rounded-lg focus:ring-2 focus:ring-kuningemas font-bold text-birunavy dark:text-kuningemas text-xs sm:text-sm uppercase">
                                             <option value="">-- Pilih Staff --</option>
-                                            <!-- Pilihan tersembunyi agar tidak blank kalau memori telat -->
                                             <option :value="item.nama" x-text="item.nama" class="hidden"></option>
                                             <template x-for="st in data.staffList">
                                                 <option :value="st.nama" x-text="st.nama + (st.jabatan ? ' - '+st.jabatan : '')"></option>
@@ -710,7 +839,7 @@
                                     <td class="p-3 font-black text-orange-600 dark:text-orange-400 text-xs sm:text-sm" x-text="formatRp(hitungGaji(item))"></td>
                                     <td class="p-3 text-center no-print flex items-center justify-center gap-1 mt-1">
                                         <button @click="cetakDokumen('slip', item, index)" class="text-birunavy hover:text-kuningemas dark:text-white p-2 bg-slate-200 hover:bg-slate-300 dark:bg-white/10 dark:hover:bg-white/20 rounded-lg transition active:scale-90" title="Cetak Slip Gaji">
-                                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 110-2H7z" clip-rule="evenodd"/></svg>
+                                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/></svg>
                                         </button>
                                         <button @click="hapusBarisBulan('gaji', index)" class="text-red-500/70 hover:text-red-600 font-black p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition active:scale-90" title="Hapus">
                                             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
@@ -739,11 +868,9 @@
 
             <!-- Tab: Neraca & Laba Bersih -->
             <div x-show="activeTab === 'neraca' || printAll" :class="{'pdf-page-break': printAll}" x-transition class="glass rounded-[2rem] p-5 md:p-10 mb-6">
-                
                 <h2 class="text-xl md:text-3xl font-black mb-8 text-center text-birunavy dark:text-kuningemas uppercase tracking-tight border-b-2 border-kuningemas/30 pb-4">
                     Papan Neraca <span class="text-kuningemas uppercase" x-text="months[activeMonth-1]"></span>
                 </h2>
-                
                 <div class="max-w-4xl mx-auto space-y-4 mb-12 text-sm md:text-base font-semibold">
                     <div class="flex justify-between items-center p-5 rounded-2xl border border-green-500/30 bg-green-50/80 dark:bg-green-500/10 shadow-sm transition hover:scale-[1.01]">
                         <span class="text-green-800 dark:text-green-400 font-bold uppercase tracking-wider text-xs sm:text-sm">Pemasukan Omset (+)</span>
@@ -815,36 +942,8 @@
         </div> <!-- End Print Area -->
     </div>
 
-    <!-- DOCK MENU NAVIGASI BAWAH -->
-    <nav x-show="!isSplash && isLoggedIn" x-transition class="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-auto sm:left-1/2 sm:-translate-x-1/2 z-40 glass px-2 py-2 rounded-[2rem] flex items-center justify-around sm:justify-center gap-1 sm:gap-2 shadow-[0_20px_50px_rgba(0,0,0,0.2)] no-print backdrop-blur-2xl border border-white/40 dark:border-kuningemas/30">
-        <button @click="activeTab = 'staff'; saveState()" class="group flex items-center justify-center rounded-2xl transition-all duration-300 ease-out h-12 overflow-hidden outline-none active:scale-95" :class="activeTab === 'staff' ? 'bg-kuningemas text-birunavy dark:bg-birunavy dark:text-kuningemas px-4 shadow-md border border-birunavy/20' : 'w-12 text-birunavy dark:text-kuningemas hover:bg-birunavy/5 dark:hover:bg-white/10'">
-            <svg class="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg>
-            <span x-show="activeTab === 'staff'" class="ml-1.5 font-black text-[10px] tracking-widest uppercase whitespace-nowrap">Staff</span>
-        </button>
-        <button @click="activeTab = 'rab'; saveState()" class="group flex items-center justify-center rounded-2xl transition-all duration-300 ease-out h-12 overflow-hidden outline-none active:scale-95" :class="activeTab === 'rab' ? 'bg-kuningemas text-birunavy dark:bg-birunavy dark:text-kuningemas px-4 shadow-md border border-birunavy/20' : 'w-12 text-birunavy dark:text-kuningemas hover:bg-birunavy/5 dark:hover:bg-white/10'">
-            <svg class="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/></svg>
-            <span x-show="activeTab === 'rab'" class="ml-1.5 font-black text-[10px] tracking-widest uppercase whitespace-nowrap">RAB</span>
-        </button>
-        <button @click="activeTab = 'pendapatan'; saveState()" class="group flex items-center justify-center rounded-2xl transition-all duration-300 ease-out h-12 overflow-hidden outline-none active:scale-95" :class="activeTab === 'pendapatan' ? 'bg-kuningemas text-birunavy dark:bg-birunavy dark:text-kuningemas px-4 shadow-md border border-birunavy/20' : 'w-12 text-birunavy dark:text-kuningemas hover:bg-birunavy/5 dark:hover:bg-white/10'">
-            <svg class="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clip-rule="evenodd"/></svg>
-            <span x-show="activeTab === 'pendapatan'" class="ml-1.5 font-black text-[10px] tracking-widest uppercase whitespace-nowrap">Masuk</span>
-        </button>
-        <button @click="activeTab = 'pengeluaran'; saveState()" class="group flex items-center justify-center rounded-2xl transition-all duration-300 ease-out h-12 overflow-hidden outline-none active:scale-95" :class="activeTab === 'pengeluaran' ? 'bg-kuningemas text-birunavy dark:bg-birunavy dark:text-kuningemas px-4 shadow-md border border-birunavy/20' : 'w-12 text-birunavy dark:text-kuningemas hover:bg-birunavy/5 dark:hover:bg-white/10'">
-            <svg class="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12 13a1 1 0 100 2h5a1 1 0 001-1V9a1 1 0 10-2 0v2.586l-4.293-4.293a1 1 0 00-1.414 0L8 9.586 3.707 5.293a1 1 0 00-1.414 1.414l5 5a1 1 0 001.414 0L11 9.414 14.586 13H12z" clip-rule="evenodd"/></svg>
-            <span x-show="activeTab === 'pengeluaran'" class="ml-1.5 font-black text-[10px] tracking-widest uppercase whitespace-nowrap">Keluar</span>
-        </button>
-        <button @click="activeTab = 'gaji'; saveState()" class="group flex items-center justify-center rounded-2xl transition-all duration-300 ease-out h-12 overflow-hidden outline-none active:scale-95" :class="activeTab === 'gaji' ? 'bg-kuningemas text-birunavy dark:bg-birunavy dark:text-kuningemas px-4 shadow-md border border-birunavy/20' : 'w-12 text-birunavy dark:text-kuningemas hover:bg-birunavy/5 dark:hover:bg-white/10'">
-            <svg class="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"/><path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clip-rule="evenodd"/></svg>
-            <span x-show="activeTab === 'gaji'" class="ml-1.5 font-black text-[10px] tracking-widest uppercase whitespace-nowrap">Gaji</span>
-        </button>
-        <button @click="activeTab = 'neraca'; saveState()" class="group flex items-center justify-center rounded-2xl transition-all duration-300 ease-out h-12 overflow-hidden outline-none active:scale-95" :class="activeTab === 'neraca' ? 'bg-kuningemas text-birunavy dark:bg-birunavy dark:text-kuningemas px-4 shadow-md border border-birunavy/20' : 'w-12 text-birunavy dark:text-kuningemas hover:bg-birunavy/5 dark:hover:bg-white/10'">
-            <svg class="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/></svg>
-            <span x-show="activeTab === 'neraca'" class="ml-1.5 font-black text-[10px] tracking-widest uppercase whitespace-nowrap">Neraca</span>
-        </button>
-    </nav>
-
     <script>
-                const firebaseConfig = {
+        const firebaseConfig = {
             apiKey: "AIzaSyCtRNfx_hNUEXY8t_xCXVWRrZPc4SaBTZY",
             authDomain: "keuanganmediatulisanmanusia.firebaseapp.com",
             databaseURL: "https://keuanganmediatulisanmanusia-default-rtdb.asia-southeast1.firebasedatabase.app",
@@ -868,7 +967,7 @@
                 loginPass: '',
                 loginError: '',
 
-                activeTab: 'neraca',
+                activeTab: 'dashboard', // PERUBAHAN: Mulai dari Dashboard
                 printAll: false,
                 showPrint: false,
                 printType: '',
@@ -927,6 +1026,7 @@
                     this.data = {
                         staffList: [{ nama: '', jabatan: '' }],
                         rab: [{ nama: 'Modal Proyek', biaya: 0, jumlah: 1 }],
+                        saldoBank: 0, // PERUBAHAN: Saldo kas awal otomatis masuk
                         years: {},
                         lastUpdate: Date.now()
                     };
@@ -940,11 +1040,10 @@
                 },
 
                 scrollToActiveMonth() {
+                    if(this.activeTab === 'dashboard') return;
                     this.$nextTick(() => {
                         const el = document.getElementById('month-btn-' + this.activeMonth);
-                        if (el) {
-                            el.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-                        }
+                        if (el) { el.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' }); }
                     });
                 },
 
@@ -989,9 +1088,10 @@
                 },
 
                 sanitizeData(d) {
-                    if (!d) return { staffList: [{ nama: '', jabatan: '' }], rab: [{ nama: 'Modal Proyek', biaya: 0, jumlah: 1 }], years: {}, lastUpdate: Date.now() };
+                    if (!d) return { staffList: [{ nama: '', jabatan: '' }], rab: [{ nama: 'Modal Proyek', biaya: 0, jumlah: 1 }], saldoBank: 0, years: {}, lastUpdate: Date.now() };
                     if (!d.staffList || d.staffList.length === 0) d.staffList = [{ nama: '', jabatan: '' }];
                     if (!d.rab || d.rab.length === 0) d.rab = [{ nama: 'Modal Proyek', biaya: 0, jumlah: 1 }];
+                    if (d.saldoBank === undefined) d.saldoBank = 0;
                     if (!d.years) d.years = {};
                     return d;
                 },
@@ -1004,7 +1104,6 @@
                         let remoteTime = remoteData && remoteData.lastUpdate ? remoteData.lastUpdate : 0;
 
                         if (localTime > remoteTime) {
-                            // PERBAIKAN: Ubah Proxy Alpine.js jadi JSON Murni sebelum set ke Firebase
                             dbRef.set(JSON.parse(JSON.stringify(this.data)));
                         } else if (remoteTime >= localTime && remoteData) {
                             this.isSyncing = true; 
@@ -1082,7 +1181,6 @@
                             if(showAnimation) this.triggerToast("Disimpan Lokal (Koneksi Lambat)");
                         }, 2000); 
 
-                        // PERBAIKAN: Ubah Proxy Alpine.js jadi JSON Murni sebelum set ke Firebase
                         let pureData = JSON.parse(JSON.stringify(this.data));
 
                         dbRef.set(pureData).then(() => {
@@ -1117,6 +1215,7 @@
                     if (!this.data) this.initEmptyData();
                     if (!this.data.staffList) this.data.staffList = [{ nama: '', jabatan: '' }];
                     if (!this.data.rab) this.data.rab = [{ nama: 'Modal Proyek', biaya: 0, jumlah: 1 }];
+                    if (this.data.saldoBank === undefined) this.data.saldoBank = 0;
                     if (!this.data.years) this.data.years = {};
                     if (!this.data.years[year]) {
                         this.data.years[year] = {};
@@ -1189,6 +1288,20 @@
                         arr.splice(index, 1);
                         if(this.isReadyToWatch) this.debouncedSave();
                     }
+                },
+
+                // PERUBAHAN: Menghitung Pemasukan Spesifik Hari Ini
+                getIncomeHariIni() {
+                    // Ambil tanggal hari ini format YYYY-MM-DD
+                    const todayStr = new Date().toISOString().split('T')[0];
+                    let m = new Date().getMonth() + 1; // bulan hari ini
+                    let y = new Date().getFullYear();
+                    
+                    if(this.data.years && this.data.years[y] && this.data.years[y][m]) {
+                        let arr = this.data.years[y][m]['pendapatan'] || [];
+                        return arr.filter(i => i.tanggal === todayStr).reduce((sum, item) => sum + ((item.biaya || 0) * (item.jumlah || 0)), 0);
+                    }
+                    return 0;
                 },
 
                 hitungTotalBulan(kategori, m = this.activeMonth, y = this.activeYear) {
@@ -1274,6 +1387,8 @@
                 },
 
                 downloadPDF(mode) {
+                    if(this.activeTab === 'dashboard') return alert("Gunakan menu Laporan (Masuk/Keluar) atau Neraca untuk mencetak Laporan Rekap.");
+
                     this.isGlobalLoading = true;
                     let filename = mode === 'all' ? `Laporan_REKAP_${this.months[this.activeMonth-1]}_${this.activeYear}.pdf` : `Laporan_${this.activeTab.toUpperCase()}_${this.months[this.activeMonth-1]}_${this.activeYear}.pdf`;
                     
